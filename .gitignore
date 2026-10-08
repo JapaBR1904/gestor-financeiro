@@ -1,0 +1,22 @@
+# Arquivos de ambiente e credenciais
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# Dependências futuras
+/vendor/
+/node_modules/
+
+# Arquivos do sistema/IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Arquivos temporários
+*.tmp
+*.temp
