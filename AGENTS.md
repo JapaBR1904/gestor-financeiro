@@ -25,6 +25,14 @@ Construir em etapas pequenas, testáveis e fáceis de entender. Não implementar
 - Não duplicar lógica.
 - Não alterar partes não relacionadas à tarefa atual.
 
+## Comentários no código
+
+- Adicionar comentários curtos e simples quando eles ajudarem a explicar o que um trecho faz.
+- Preferir linguagem didática, por exemplo: `// Busca os clientes da empresa no banco`.
+- Não comentar cada linha nem repetir exatamente o que o código já deixa óbvio.
+- Em trechos mais complexos, explicar a intenção antes do bloco, sem escrever textos longos.
+- O objetivo é ajudar alguém que ainda está aprendendo Next.js e Spring Boot a não se perder no projeto.
+
 ## Frontend
 
 - Usar App Router do Next.js.
