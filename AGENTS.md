@@ -1,73 +1,80 @@
-# Instruções para agentes de código
+# Instruções para agentes de código — Nexo
 
 ## Projeto
 
-Este repositório contém um gestor financeiro web para uma pequena produção e venda de bolos.
+Este repositório contém o Nexo, um gestor financeiro e operacional para pequenos negócios.
 
-## Stack obrigatória
+## Stack desta branch
 
-- PHP puro
-- MySQL
-- PDO
-- HTML
-- CSS
-- JavaScript
+- Frontend: Next.js + React + TypeScript.
+- Backend: Java + Spring Boot.
+- Banco planejado: PostgreSQL.
 
-Não adicionar Java, Node.js, frameworks PHP ou frameworks JavaScript sem necessidade explícita.
+A versão antiga em PHP/MySQL permanece preservada na branch principal enquanto a nova arquitetura é construída nesta branch.
+
+## Regra principal
+
+Construir em etapas pequenas, testáveis e fáceis de entender. Não implementar vários módulos de negócio ao mesmo tempo.
 
 ## Objetivos de código
 
-- Manter o código simples e didático.
-- Priorizar legibilidade em vez de soluções excessivamente abstratas.
+- Priorizar legibilidade e ensino.
+- Evitar abstrações desnecessárias.
 - Usar nomes claros em português quando fizer sentido.
-- Explicar mudanças importantes em comentários apenas quando o código não for autoexplicativo.
-- Não duplicar lógica desnecessariamente.
+- Explicar mudanças estruturais relevantes.
+- Não duplicar lógica.
+- Não alterar partes não relacionadas à tarefa atual.
 
-## Arquitetura
+## Frontend
 
-Usar MVC simples:
+- Usar App Router do Next.js.
+- Usar TypeScript com modo estrito.
+- Separar páginas de componentes reutilizáveis.
+- Manter interface responsiva, simples e limpa.
+- Não colocar regras financeiras importantes apenas no frontend.
 
-- `models/`: regras de acesso e manipulação de dados.
-- `views/`: interface apresentada ao usuário.
-- `controllers/`: recebe ações do usuário e coordena models e views.
-- `config/`: configurações e infraestrutura.
-- `public/`: ponto de entrada e arquivos públicos.
+## Backend
 
-## Banco de dados
+Organizar regras de negócio com separação clara entre Controller, Service e Repository quando o módulo exigir persistência.
 
-- Usar PDO.
-- Usar prepared statements em consultas com valores fornecidos pelo usuário.
-- Nunca concatenar dados do usuário diretamente em SQL.
-- Usar transações quando uma operação depender de várias alterações que precisam ocorrer juntas.
+- Controller: recebe e responde requisições HTTP.
+- Service: concentra regras de negócio.
+- Repository: acessa o banco.
+- Validar dados no backend mesmo que o frontend também valide.
+
+## Multiempresa
+
+Todos os módulos de negócio deverão ser preparados para pertencer a uma organização/empresa. Dados de empresas diferentes nunca devem se misturar.
+
+Papéis planejados para equipe:
+
+- DONO
+- GERENTE
+- OPERADOR
 
 ## Segurança
 
-- Nunca salvar credenciais reais no repositório.
-- Nunca commitar `.env`.
-- Nunca exibir mensagens internas do banco ao usuário final em produção.
-- Validar dados no backend mesmo que exista validação no frontend.
-- Escapar dados exibidos em HTML quando vierem de usuários ou banco de dados.
+- Nunca salvar senhas ou credenciais reais no GitHub.
+- Nunca commitar arquivos `.env` com segredos.
+- Usar variáveis de ambiente para credenciais.
+- Autorização deve ser validada no backend.
 
-## Interface
+## Ordem de desenvolvimento
 
-- O sistema deve funcionar bem em desktop e celular.
-- Visual moderno, limpo e simples.
-- Priorizar facilidade de uso para uma pessoa sem conhecimento técnico.
-- Evitar excesso de animações ou elementos visuais que atrapalhem a leitura.
-
-## Funcionalidades planejadas
-
-1. Dashboard financeiro.
-2. Produtos.
-3. Vendas e pedidos.
-4. Despesas.
-5. Clientes.
-6. Relatórios.
-7. Controle de estoque em uma fase posterior.
+1. Estrutura base do frontend e backend.
+2. PostgreSQL e modelo inicial da organização.
+3. Cadastro da empresa e usuário dono.
+4. Login e autorização.
+5. Dashboard inicial.
+6. Produtos e ingredientes.
+7. Vendas e pedidos.
+8. Despesas e calculadoras.
+9. Clientes.
+10. Relatórios e metas.
+11. Assistente Nexo e recursos por plano.
 
 ## Ao fazer alterações
 
-- Não alterar funcionalidades não relacionadas à tarefa pedida.
-- Reaproveitar a estrutura existente antes de criar novas soluções.
-- Manter compatibilidade com PHP e MySQL comuns em ambiente local.
-- Atualizar o README quando uma mudança alterar instalação, estrutura ou funcionamento importante do sistema.
+- Fazer uma etapa por vez.
+- Manter o projeto executável ao final de cada etapa sempre que possível.
+- Atualizar documentação quando arquitetura, instalação ou execução mudar.
