@@ -13,7 +13,7 @@ backend/    Java + Spring Boot
 
 Pré-requisito: Node.js compatível com Next.js 16.
 
-```bash
+```powershell
 cd frontend
 npm install
 npm run dev
@@ -21,18 +21,58 @@ npm run dev
 
 O frontend fica disponível em `http://localhost:3000`.
 
+## PostgreSQL local
+
+Banco usado pelo projeto:
+
+```text
+nexo
+```
+
+Usuário local recomendado para o backend:
+
+```text
+nexo_app
+```
+
+Os scripts de criação ficam na pasta `database/`.
+
+Nunca coloque a senha real do PostgreSQL no GitHub.
+
 ## Backend
 
-Pré-requisito: Java 21 e Maven.
+Pré-requisitos: Java 21, Maven e PostgreSQL em execução.
 
-```bash
+O Spring Boot lê a senha pela variável de ambiente `DB_PASSWORD`. No PowerShell, defina a senha apenas no terminal que vai executar o backend:
+
+```powershell
+$env:DB_PASSWORD="SUA_SENHA_LOCAL"
+```
+
+A URL e o usuário já possuem valores locais padrão:
+
+```text
+DB_URL=jdbc:postgresql://localhost:5432/nexo
+DB_USERNAME=nexo_app
+```
+
+Se precisar substituir esses valores no terminal:
+
+```powershell
+$env:DB_URL="jdbc:postgresql://localhost:5432/nexo"
+$env:DB_USERNAME="nexo_app"
+```
+
+Depois inicie o backend:
+
+```powershell
 cd backend
 mvn spring-boot:run
 ```
 
 O backend fica disponível em `http://localhost:8080`.
 
-Para conferir se ele está funcionando:
+### Health check
 
 ```text
 GET http://localhost:8080/api/health
@@ -47,11 +87,28 @@ Resposta esperada:
 }
 ```
 
-## Próxima etapa
+### APIs iniciais
 
-1. Adicionar PostgreSQL.
-2. Criar a entidade de organização/empresa.
-3. Criar usuário dono.
-4. Implementar cadastro e login.
+Organizações:
 
-Não colocar credenciais reais no repositório.
+```text
+GET  /api/organizacoes
+POST /api/organizacoes
+```
+
+Produtos:
+
+```text
+GET  /api/produtos?organizacaoId=1
+POST /api/produtos
+```
+
+O custo de cada ingrediente e o lucro unitário estimado são calculados no backend. O frontend ainda será migrado do armazenamento temporário do navegador para essa API.
+
+## Próximas etapas
+
+1. Confirmar conexão do Spring Boot com PostgreSQL.
+2. Testar criação de organização e produto pela API.
+3. Ligar o frontend à API e retirar o armazenamento temporário no navegador.
+4. Criar usuário dono, cadastro e login.
+5. Continuar módulos de vendas, despesas e fluxo de caixa.
