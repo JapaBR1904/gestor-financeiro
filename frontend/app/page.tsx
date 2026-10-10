@@ -50,9 +50,9 @@ export default function HomePage() {
                 <span>Disponível quando o módulo de vendas for criado</span>
               </button>
 
-              <Link className="quick-action" href="/produtos">
+              <Link className="quick-action" href="/produtos/novo">
                 <strong>Novo produto</strong>
-                <span>Abra o cadastro de produtos e ingredientes</span>
+                <span>Cadastre o produto e monte a ficha de custo por ingredientes</span>
               </Link>
 
               <button className="quick-action" type="button" disabled>
