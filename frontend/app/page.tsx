@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { Sidebar } from "../components/Sidebar";
+
 const resumo = [
   { titulo: "Faturamento no mês", valor: "R$ 0,00", detalhe: "Comece registrando sua primeira venda" },
   { titulo: "Despesas no mês", valor: "R$ 0,00", detalhe: "Nenhuma despesa registrada" },
@@ -5,38 +8,10 @@ const resumo = [
   { titulo: "Pedidos em aberto", valor: "0", detalhe: "Tudo em dia por enquanto" },
 ];
 
-const atalhos = [
-  { titulo: "Nova venda", descricao: "Registre uma venda ou pedido" },
-  { titulo: "Novo produto", descricao: "Cadastre produtos e ingredientes" },
-  { titulo: "Nova despesa", descricao: "Anote um gasto do negócio" },
-];
-
 export default function HomePage() {
   return (
     <main className="app-shell">
-      <aside className="sidebar">
-        <div className="brand">
-          <span className="brand-mark">N</span>
-          <div>
-            <strong>Nexo</strong>
-            <small>Gestão do negócio</small>
-          </div>
-        </div>
-
-        <nav className="menu" aria-label="Navegação principal">
-          <a className="menu-item active" href="#dashboard">Dashboard</a>
-          <a className="menu-item" href="#vendas">Vendas</a>
-          <a className="menu-item" href="#produtos">Produtos</a>
-          <a className="menu-item" href="#despesas">Despesas</a>
-          <a className="menu-item" href="#clientes">Clientes</a>
-          <a className="menu-item" href="#relatorios">Relatórios</a>
-        </nav>
-
-        <div className="sidebar-footer">
-          <span>Plano Free</span>
-          <small>Estrutura inicial do Nexo</small>
-        </div>
-      </aside>
+      <Sidebar ativo="dashboard" />
 
       <section className="content" id="dashboard">
         <header className="topbar">
@@ -45,7 +20,9 @@ export default function HomePage() {
             <h1>Dashboard</h1>
             <p className="subtitle">Acompanhe o que está acontecendo no seu negócio.</p>
           </div>
-          <button className="primary-button" type="button">+ Nova venda</button>
+          <button className="primary-button" type="button" disabled title="Módulo de vendas será criado em breve">
+            + Nova venda
+          </button>
         </header>
 
         <section className="summary-grid" aria-label="Resumo financeiro">
@@ -68,12 +45,20 @@ export default function HomePage() {
             </div>
 
             <div className="quick-actions">
-              {atalhos.map((atalho) => (
-                <button className="quick-action" type="button" key={atalho.titulo}>
-                  <strong>{atalho.titulo}</strong>
-                  <span>{atalho.descricao}</span>
-                </button>
-              ))}
+              <button className="quick-action" type="button" disabled>
+                <strong>Nova venda</strong>
+                <span>Disponível quando o módulo de vendas for criado</span>
+              </button>
+
+              <Link className="quick-action" href="/produtos">
+                <strong>Novo produto</strong>
+                <span>Abra o cadastro de produtos e ingredientes</span>
+              </Link>
+
+              <button className="quick-action" type="button" disabled>
+                <strong>Nova despesa</strong>
+                <span>Disponível quando o módulo de despesas for criado</span>
+              </button>
             </div>
           </article>
 
