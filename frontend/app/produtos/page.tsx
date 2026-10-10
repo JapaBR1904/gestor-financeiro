@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Sidebar } from "../../components/Sidebar";
 
 export default function ProdutosPage() {
@@ -12,9 +13,9 @@ export default function ProdutosPage() {
             <h1>Produtos</h1>
             <p className="subtitle">Cadastre o que você vende e, depois, conecte ingredientes e custos.</p>
           </div>
-          <button className="primary-button" type="button" disabled title="O formulário será criado na próxima etapa">
+          <Link className="primary-button" href="/produtos/novo">
             + Novo produto
-          </button>
+          </Link>
         </header>
 
         <article className="panel activity-panel">
@@ -28,7 +29,7 @@ export default function ProdutosPage() {
           <div className="empty-state">
             <span className="empty-icon">P</span>
             <strong>Nenhum produto cadastrado</strong>
-            <p>Na próxima etapa, este botão vai abrir o formulário de cadastro de produto.</p>
+            <p>Use o botão “Novo produto” para abrir o formulário e validar os primeiros dados.</p>
           </div>
         </article>
       </section>
