@@ -85,8 +85,10 @@ export function Sidebar({ ativo }: SidebarProps) {
         </button>
 
         <div className="plan-card">
-          <span>Plano Free</span>
-          <small>Nexo em desenvolvimento</small>
+          <Link className="plan-card-link" href="/conta/assinatura">
+            <strong>Plano e assinatura</strong>
+            <small>Gerencie seu plano Nexo</small>
+          </Link>
         </div>
       </div>
     </aside>
