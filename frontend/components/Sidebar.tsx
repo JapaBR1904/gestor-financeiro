@@ -48,11 +48,7 @@ export function Sidebar({ ativo }: SidebarProps) {
 
       <nav className="menu" aria-label="Navegação principal">
         {itens.map((item) => (
-          <Link
-            className={`menu-item${ativo === item.chave ? " active" : ""}`}
-            href={item.href}
-            key={item.chave}
-          >
+          <Link className={`menu-item${ativo === item.chave ? " active" : ""}`} href={item.href} key={item.chave}>
             <span className="menu-icon" aria-hidden="true">{item.icone}</span>
             <span>{item.nome}</span>
           </Link>
@@ -61,23 +57,20 @@ export function Sidebar({ ativo }: SidebarProps) {
 
       <div className="sidebar-watermark" aria-hidden="true">
         <svg className="nexo-signature" viewBox="0 0 240 170" role="presentation">
-          <path
-            id="nexo-signature-loop"
-            className="nexo-signature-loop"
-            pathLength="1"
-            d="M22 92 C44 46 90 42 120 74 C149 105 176 126 218 92 C190 55 151 45 120 74 C91 102 57 122 22 92"
-          />
-          <circle className="nexo-signature-head" r="3.4">
-            <animateMotion dur="1.85s" begin="0.08s" fill="freeze" calcMode="linear">
-              <mpath href="#nexo-signature-loop" />
-            </animateMotion>
-          </circle>
+          <path id="nexo-signature-loop" className="nexo-signature-loop" pathLength="1" d="M22 92 C44 46 90 42 120 74 C149 105 176 126 218 92 C190 55 151 45 120 74 C91 102 57 122 22 92" />
+          <circle className="nexo-signature-head" r="3.4"><animateMotion dur="1.85s" begin="0.08s" fill="freeze" calcMode="linear"><mpath href="#nexo-signature-loop" /></animateMotion></circle>
         </svg>
         <span className="nexo-signature-n">N</span>
         <span className="nexo-signature-word">NEXO</span>
       </div>
 
       <div className="sidebar-footer">
+        <Link className="menu-item sidebar-account-link" href="/conta">
+          <span className="menu-icon" aria-hidden="true">◎</span>
+          <span>Conta e plano</span>
+          <span className="logout-arrow" aria-hidden="true">→</span>
+        </Link>
+
         <button className="menu-item logout-button" type="button" onClick={handleLogout} disabled={saindo}>
           <span className="menu-icon" aria-hidden="true">↪</span>
           <span>{saindo ? "Saindo..." : "Fazer logout"}</span>
@@ -85,10 +78,7 @@ export function Sidebar({ ativo }: SidebarProps) {
         </button>
 
         <div className="plan-card">
-          <Link className="plan-card-link" href="/conta/assinatura">
-            <strong>Plano e assinatura</strong>
-            <small>Gerencie seu plano Nexo</small>
-          </Link>
+          <Link className="plan-card-link" href="/planos"><strong>Planos Nexo</strong><small>Free · Pro · Business</small></Link>
         </div>
       </div>
     </aside>
