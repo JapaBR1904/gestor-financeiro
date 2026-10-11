@@ -111,26 +111,42 @@ export async function alterarStatusProduto(produtoId: string | number, ativo: bo
   return (await lerResposta(response)) as Produto;
 }
 
+function corpoProduto(produto: Produto, organizacaoId: number) {
+  return {
+    organizacaoId,
+    nome: produto.nome,
+    descricao: produto.descricao,
+    precoVenda: produto.precoVenda,
+    ingredientes: produto.ingredientes.map((ingrediente) => ({
+      nome: ingrediente.nome,
+      precoCompra: ingrediente.precoCompra,
+      quantidadeCompra: ingrediente.quantidadeCompra,
+      unidadeCompra: ingrediente.unidadeCompra,
+      quantidadeUsada: ingrediente.quantidadeUsada,
+      unidadeUso: ingrediente.unidadeUso,
+    })),
+  };
+}
+
 export async function salvarProduto(produto: Produto): Promise<Produto> {
   const organizacaoId = await obterOrganizacaoId();
 
   const response = await fetch(`${API_URL}/api/produtos`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      organizacaoId,
-      nome: produto.nome,
-      descricao: produto.descricao,
-      precoVenda: produto.precoVenda,
-      ingredientes: produto.ingredientes.map((ingrediente) => ({
-        nome: ingrediente.nome,
-        precoCompra: ingrediente.precoCompra,
-        quantidadeCompra: ingrediente.quantidadeCompra,
-        unidadeCompra: ingrediente.unidadeCompra,
-        quantidadeUsada: ingrediente.quantidadeUsada,
-        unidadeUso: ingrediente.unidadeUso,
-      })),
-    }),
+    body: JSON.stringify(corpoProduto(produto, organizacaoId)),
+  });
+
+  return (await lerResposta(response)) as Produto;
+}
+
+export async function atualizarProduto(produtoId: string | number, produto: Produto): Promise<Produto> {
+  const organizacaoId = await obterOrganizacaoId();
+
+  const response = await fetch(`${API_URL}/api/produtos/${produtoId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(corpoProduto(produto, organizacaoId)),
   });
 
   return (await lerResposta(response)) as Produto;
