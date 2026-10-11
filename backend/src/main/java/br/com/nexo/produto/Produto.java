@@ -68,6 +68,10 @@ public class Produto {
         atualizadoEm = OffsetDateTime.now();
     }
 
+    public void alterarAtivo(boolean ativo) {
+        this.ativo = ativo;
+    }
+
     public Long getId() {
         return id;
     }
