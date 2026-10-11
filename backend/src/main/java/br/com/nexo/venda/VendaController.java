@@ -47,6 +47,7 @@ public class VendaController {
     public VendaService.VendaDetalhe criar(@Valid @RequestBody CriarVendaRequest request) {
         return vendaService.criar(new VendaService.NovaVenda(
                 request.organizacaoId(),
+                request.clienteId(),
                 request.formaPagamento(),
                 request.observacao(),
                 request.itens().stream().map(item -> new VendaService.NovoItem(item.produtoId(), item.quantidade())).toList()
@@ -55,6 +56,7 @@ public class VendaController {
 
     public record CriarVendaRequest(
             @NotNull(message = "A organização é obrigatória.") Long organizacaoId,
+            Long clienteId,
             @NotBlank(message = "A forma de pagamento é obrigatória.") String formaPagamento,
             String observacao,
             @NotEmpty(message = "Adicione pelo menos um item à venda.") List<@Valid CriarVendaItemRequest> itens
