@@ -6,6 +6,7 @@ import "./auth-suggestions.css";
 import "./polish.css";
 import "./tables.css";
 import "./refinement.css";
+import "./signature.css";
 
 export const metadata: Metadata = {
   title: "Nexo",
