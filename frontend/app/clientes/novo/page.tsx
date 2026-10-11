@@ -4,13 +4,12 @@ import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "../../../components/Sidebar";
-import { salvarCliente } from "../../../lib/clientes";
+import { formatarTelefone, salvarCliente } from "../../../lib/clientes";
 
 export default function NovoClientePage() {
   const router = useRouter();
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
-  const [email, setEmail] = useState("");
   const [observacao, setObservacao] = useState("");
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
@@ -24,7 +23,7 @@ export default function NovoClientePage() {
     }
     setSalvando(true);
     try {
-      await salvarCliente({ nome: nome.trim(), telefone: telefone.trim(), email: email.trim(), observacao: observacao.trim() });
+      await salvarCliente({ nome: nome.trim(), telefone: telefone.trim(), observacao: observacao.trim() });
       router.push("/clientes");
     } catch (error) {
       setErro(error instanceof Error ? error.message : "Não foi possível cadastrar o cliente.");
@@ -46,8 +45,7 @@ export default function NovoClientePage() {
           <section className="panel product-form">
             <div className="form-grid">
               <label className="field field-wide"><span>Nome *</span><input value={nome} maxLength={160} onChange={(event) => setNome(event.target.value)} placeholder="Ex.: Maria Oliveira" /></label>
-              <label className="field"><span>Telefone / WhatsApp</span><input value={telefone} maxLength={30} onChange={(event) => setTelefone(event.target.value)} placeholder="Ex.: (11) 99999-9999" /></label>
-              <label className="field"><span>E-mail</span><input type="email" value={email} maxLength={180} onChange={(event) => setEmail(event.target.value)} placeholder="Ex.: cliente@email.com" /></label>
+              <label className="field field-wide"><span>Telefone / WhatsApp</span><input inputMode="numeric" value={telefone} maxLength={15} onChange={(event) => setTelefone(formatarTelefone(event.target.value))} placeholder="(11) 99999-9999" /></label>
               <label className="field field-wide"><span>Observação</span><textarea rows={4} value={observacao} onChange={(event) => setObservacao(event.target.value)} placeholder="Anotações importantes sobre o cliente" /></label>
             </div>
           </section>
