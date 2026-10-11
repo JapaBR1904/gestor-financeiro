@@ -68,9 +68,14 @@ export default function ProdutoDetalhePage() {
               Voltar
             </Link>
             {produto ? (
-              <button className="primary-button" type="button" disabled={salvandoStatus} onClick={alternarStatus}>
-                {salvandoStatus ? "Salvando..." : produto.ativo ? "Desativar produto" : "Reativar produto"}
-              </button>
+              <>
+                <Link className="secondary-button" href={`/produtos/${produto.id}/editar`}>
+                  Editar produto
+                </Link>
+                <button className="primary-button" type="button" disabled={salvandoStatus} onClick={alternarStatus}>
+                  {salvandoStatus ? "Salvando..." : produto.ativo ? "Desativar produto" : "Reativar produto"}
+                </button>
+              </>
             ) : null}
           </div>
         </header>
