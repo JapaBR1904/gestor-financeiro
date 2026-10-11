@@ -103,14 +103,12 @@ export default function VendasPage() {
                     </div>
                     <div data-label="Data">
                       <strong>{dataVenda.toLocaleDateString("pt-BR")}</strong>
-                      <small>{dataVenda.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</small>
                     </div>
                     <div data-label="Forma de pagamento">
                       <strong>{nomeFormaPagamento(venda.formaPagamento)}</strong>
                     </div>
                     <div data-label="Itens">
                       <strong>{quantidadeItens}</strong>
-                      <small>{quantidadeItens === 1 ? "item vendido" : "itens vendidos"}</small>
                     </div>
                     <div className="sales-history-total" data-label="Total">
                       <strong>{formatarMoeda(venda.totalVenda)}</strong>
