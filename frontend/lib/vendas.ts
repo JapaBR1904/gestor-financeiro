@@ -60,6 +60,11 @@ export async function carregarVendas(): Promise<Venda[]> {
   return (await lerResposta(await fetch(`${API_URL}/api/vendas?organizacaoId=${organizacaoId}`, { cache: "no-store" }))) as Venda[];
 }
 
+export async function carregarVenda(vendaId: string | number): Promise<Venda> {
+  const organizacaoId = await obterOrganizacaoId();
+  return (await lerResposta(await fetch(`${API_URL}/api/vendas/${vendaId}?organizacaoId=${organizacaoId}`, { cache: "no-store" }))) as Venda;
+}
+
 export async function carregarResumoVendas(): Promise<ResumoVendas> {
   const organizacaoId = await obterOrganizacaoId();
   return (await lerResposta(await fetch(`${API_URL}/api/vendas/resumo?organizacaoId=${organizacaoId}`, { cache: "no-store" }))) as ResumoVendas;
