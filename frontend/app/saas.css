@@ -1,0 +1,352 @@
+.saas-shell {
+  min-height: 100vh;
+  padding: 2rem;
+  background:
+    radial-gradient(circle at top left, rgba(59, 130, 246, .10), transparent 34%),
+    linear-gradient(180deg, #f8fbff 0%, #f6f8fc 100%);
+  color: #172033;
+}
+
+.saas-brandbar {
+  width: min(1180px, 100%);
+  margin: 0 auto 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.saas-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: .8rem;
+  color: inherit;
+}
+
+.saas-brand > span {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  background: linear-gradient(135deg, #2563eb, #4f46e5);
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 900;
+  box-shadow: 0 12px 28px rgba(37, 99, 235, .24);
+}
+
+.saas-brand div {
+  display: grid;
+  gap: .05rem;
+}
+
+.saas-brand strong { font-size: 1rem; }
+.saas-brand small { color: #64748b; font-size: .76rem; }
+
+.saas-step,
+.plan-mini-label,
+.pricing-badge {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  min-height: 28px;
+  padding: .32rem .62rem;
+  border-radius: 999px;
+  background: #eaf2ff;
+  color: #1d4ed8;
+  font-size: .72rem;
+  font-weight: 850;
+}
+
+.onboarding-card,
+.pricing-heading,
+.pricing-grid,
+.pricing-note,
+.subscription-heading,
+.subscription-alert,
+.subscription-grid,
+.plan-capability-grid {
+  width: min(1180px, 100%);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.onboarding-card {
+  max-width: 980px;
+  padding: 2rem;
+  border: 1px solid rgba(148, 163, 184, .18);
+  border-radius: 24px;
+  background: rgba(255,255,255,.94);
+  box-shadow: 0 24px 70px rgba(15,23,42,.08);
+}
+
+.saas-heading {
+  max-width: 700px;
+  margin-bottom: 1.5rem;
+}
+
+.saas-heading h1,
+.pricing-heading h1,
+.subscription-heading h1 {
+  margin: .2rem 0 .65rem;
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  line-height: 1.04;
+  letter-spacing: -.045em;
+}
+
+.saas-heading > p:last-child,
+.pricing-heading > p:last-child,
+.subscription-heading p,
+.subscription-current-card > p,
+.subscription-profile-card > p {
+  color: #64748b;
+  line-height: 1.65;
+}
+
+.use-case-grid {
+  display: grid;
+  gap: .9rem;
+}
+
+.use-case-card {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.05rem;
+  text-align: left;
+  cursor: pointer;
+  border: 1px solid rgba(148, 163, 184, .18);
+  border-radius: 16px;
+  background: #fff;
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+
+.use-case-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(37,99,235,.28);
+  box-shadow: 0 12px 28px rgba(15,23,42,.07);
+}
+
+.use-case-card.selected {
+  border-color: rgba(37,99,235,.42);
+  background: linear-gradient(180deg, #fff, #f5f9ff);
+  box-shadow: 0 14px 34px rgba(37,99,235,.10);
+}
+
+.use-case-icon {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #dbeafe, #eff6ff);
+  color: #1d4ed8;
+  font-weight: 900;
+}
+
+.use-case-copy { display: grid; gap: .28rem; }
+.use-case-copy strong { font-size: .98rem; }
+.use-case-copy > span { color: #475569; font-size: .86rem; line-height: 1.45; }
+.use-case-copy small { color: #94a3b8; font-size: .76rem; }
+.use-case-check { width: 28px; color: #2563eb; font-size: 1.1rem; font-weight: 900; text-align: center; }
+
+.saas-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: .7rem;
+  margin-top: 1.4rem;
+}
+
+.saas-primary { min-width: 160px; }
+.split-actions { flex-wrap: wrap; }
+
+.onboarding-plan-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1.2rem;
+  border: 1px solid rgba(37,99,235,.15);
+  border-radius: 18px;
+  background: linear-gradient(135deg, #f8fbff, #eef5ff);
+}
+
+.plan-preview-main { max-width: 620px; }
+.plan-preview-main > strong { display: block; margin: .55rem 0 .35rem; font-size: 1.45rem; }
+.plan-preview-main p { margin: 0; color: #64748b; line-height: 1.5; }
+.plan-preview-price { display: flex; align-items: baseline; gap: .22rem; white-space: nowrap; }
+.plan-preview-price strong { font-size: 2rem; letter-spacing: -.05em; }
+.plan-preview-price span { color: #64748b; }
+
+.onboarding-benefits {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .7rem;
+  margin-top: 1rem;
+  color: #334155;
+  font-size: .86rem;
+}
+
+.pricing-heading {
+  max-width: 780px;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.pricing-heading > p:last-child { max-width: 650px; margin: 0 auto; }
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.pricing-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 1.35rem;
+  border: 1px solid rgba(148, 163, 184, .18);
+  border-radius: 20px;
+  background: rgba(255,255,255,.95);
+  box-shadow: 0 16px 42px rgba(15,23,42,.06);
+}
+
+.pricing-card.featured {
+  border-color: rgba(37,99,235,.30);
+  box-shadow: 0 22px 55px rgba(37,99,235,.12);
+  transform: translateY(-5px);
+}
+
+.pricing-card-top { display: grid; gap: 1rem; }
+.pricing-card h2 { margin: .6rem 0 .4rem; font-size: 1.35rem; }
+.pricing-card p { margin: 0; color: #64748b; line-height: 1.55; font-size: .88rem; }
+
+.pricing-price { display: flex; align-items: baseline; gap: .25rem; }
+.pricing-price strong { font-size: 2rem; letter-spacing: -.05em; }
+.pricing-price span { color: #64748b; font-size: .82rem; }
+
+.pricing-features {
+  display: grid;
+  gap: .65rem;
+  margin: 1.25rem 0;
+  color: #334155;
+  font-size: .84rem;
+  line-height: 1.4;
+}
+
+.pricing-button { margin-top: auto; width: 100%; justify-content: center; }
+
+.pricing-note {
+  margin-top: 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(148,163,184,.16);
+  border-radius: 14px;
+  background: rgba(255,255,255,.78);
+  color: #64748b;
+  font-size: .82rem;
+}
+
+.pricing-note strong { color: #334155; }
+.pricing-note p { margin: .25rem 0 0; }
+
+.subscription-heading { margin-bottom: 1.3rem; }
+.subscription-alert {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(245,158,11,.2);
+  border-radius: 16px;
+  background: #fffaf0;
+}
+.subscription-alert p { margin: .25rem 0 0; color: #78716c; font-size: .83rem; }
+
+.subscription-grid {
+  display: grid;
+  grid-template-columns: 1.45fr .8fr;
+  gap: 1rem;
+}
+
+.subscription-current-card,
+.subscription-profile-card {
+  padding: 1.35rem;
+  border: 1px solid rgba(148,163,184,.18);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 16px 42px rgba(15,23,42,.055);
+}
+
+.subscription-plan-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: .7rem;
+}
+.subscription-plan-title h2 { margin: 0; font-size: 1.7rem; }
+.compact-features { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.subscription-upgrade { width: fit-content; }
+.subscription-profile-card h2 { margin: .25rem 0 .55rem; }
+
+.plan-capability-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.plan-capability-grid article {
+  display: flex;
+  gap: .8rem;
+  align-items: flex-start;
+  padding: 1rem;
+  border-radius: 16px;
+  background: rgba(255,255,255,.8);
+  border: 1px solid rgba(148,163,184,.14);
+}
+
+.capability-icon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 36px;
+  border-radius: 10px;
+  background: #eaf2ff;
+  color: #1d4ed8;
+  font-weight: 900;
+}
+.plan-capability-grid p { margin: .25rem 0 0; color: #64748b; font-size: .8rem; line-height: 1.45; }
+
+.plan-card-link {
+  display: grid;
+  gap: .16rem;
+  color: inherit;
+}
+
+.plan-card-link:hover strong { color: #bfdbfe; }
+
+@media (max-width: 900px) {
+  .pricing-grid,
+  .plan-capability-grid { grid-template-columns: 1fr; }
+  .pricing-card.featured { transform: none; }
+  .subscription-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 680px) {
+  .saas-shell { padding: 1rem; }
+  .onboarding-card { padding: 1.2rem; border-radius: 18px; }
+  .onboarding-benefits,
+  .compact-features { grid-template-columns: 1fr; }
+  .onboarding-plan-preview,
+  .subscription-alert,
+  .subscription-plan-title { align-items: flex-start; flex-direction: column; }
+  .saas-actions { justify-content: stretch; }
+  .saas-actions > * { flex: 1 1 100%; justify-content: center; }
+}
