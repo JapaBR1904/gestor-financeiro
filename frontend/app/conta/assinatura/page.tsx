@@ -2,15 +2,22 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { carregarPerfilUso, carregarPlanoLocal, nomePerfilUso, PLANOS_NEXO, planoPermite, PlanoNexo } from "../../../lib/saas";
+import { carregarConfiguracaoSaas, nomePerfilUso, PLANOS_NEXO, planoPermite, PlanoNexo, PerfilUso } from "../../../lib/saas";
 
 export default function AssinaturaPage() {
   const [planoAtual, setPlanoAtual] = useState<PlanoNexo>("free");
-  const [perfil, setPerfil] = useState<ReturnType<typeof carregarPerfilUso>>(null);
+  const [perfil, setPerfil] = useState<PerfilUso | null>(null);
+  const [status, setStatus] = useState("prototipo");
+  const [erro, setErro] = useState("");
 
   useEffect(() => {
-    setPlanoAtual(carregarPlanoLocal());
-    setPerfil(carregarPerfilUso());
+    carregarConfiguracaoSaas()
+      .then((dados) => {
+        setPlanoAtual(dados.plano);
+        setPerfil(dados.perfilUso);
+        setStatus(dados.statusAssinatura);
+      })
+      .catch((error) => setErro(error instanceof Error ? error.message : "Não foi possível carregar a assinatura."));
   }, []);
 
   const atual = useMemo(() => PLANOS_NEXO.find((plano) => plano.id === planoAtual) ?? PLANOS_NEXO[0], [planoAtual]);
@@ -24,15 +31,16 @@ export default function AssinaturaPage() {
         <Link className="secondary-button compact-button" href="/conta">Voltar à conta</Link>
       </section>
 
-      <section className="subscription-heading"><div><p className="eyebrow">Conta e assinatura</p><h1>Seu plano Nexo</h1><p>Teste a experiência de cada plano agora. Pagamento e persistência real entram quando ligarmos esta etapa ao banco.</p></div></section>
+      <section className="subscription-heading"><div><p className="eyebrow">Conta e assinatura</p><h1>Seu plano Nexo</h1><p>Seu plano e seu perfil agora ficam vinculados à organização e são carregados diretamente do banco.</p></div></section>
+      {erro ? <p className="form-error-banner">{erro}</p> : null}
 
       <section className="subscription-grid">
         <article className="subscription-current-card">
-          <span className="plan-mini-label">Plano atual no protótipo</span>
+          <span className="plan-mini-label">Plano atual · {status}</span>
           <div className="subscription-plan-title"><h2>{atual.nome}</h2><div className="pricing-price"><strong>{atual.preco}</strong><span>{atual.periodo}</span></div></div>
           <p>{atual.descricao}</p>
           <div className="pricing-features compact-features">{atual.recursos.map((recurso) => <span key={recurso}>✓ {recurso}</span>)}</div>
-          <Link className="primary-button subscription-upgrade" href="/planos">Trocar plano de teste</Link>
+          <Link className="primary-button subscription-upgrade" href="/planos">Trocar plano</Link>
         </article>
 
         <article className="subscription-profile-card">
