@@ -11,6 +11,14 @@ export type PlanoDetalhe = {
   recursos: string[];
 };
 
+export type ConfiguracaoSaas = {
+  perfilUso: PerfilUso | null;
+  objetivos: string[];
+  onboardingConcluido: boolean;
+  plano: PlanoNexo;
+  statusAssinatura: string;
+};
+
 export const PLANOS_NEXO: PlanoDetalhe[] = [
   {
     id: "free",
@@ -18,13 +26,7 @@ export const PLANOS_NEXO: PlanoDetalhe[] = [
     preco: "R$ 0",
     periodo: "/mês",
     descricao: "Para começar a organizar a vida financeira e conhecer o Nexo.",
-    recursos: [
-      "Dashboard financeiro",
-      "Cadastro de produtos e clientes",
-      "Vendas e despesas",
-      "Relatórios essenciais",
-      "1 usuário",
-    ],
+    recursos: ["Dashboard financeiro", "Cadastro de produtos e clientes", "Vendas e despesas", "Relatórios essenciais", "1 usuário"],
   },
   {
     id: "pro",
@@ -33,14 +35,7 @@ export const PLANOS_NEXO: PlanoDetalhe[] = [
     periodo: "/mês",
     destaque: "Mais escolhido",
     descricao: "Para quem usa o Nexo todos os dias e quer mais controle do negócio.",
-    recursos: [
-      "Tudo do plano Free",
-      "Fluxo de caixa avançado",
-      "Metas e comparativos",
-      "Exportação de dados",
-      "Até 3 usuários",
-      "Suporte prioritário",
-    ],
+    recursos: ["Tudo do plano Free", "Fluxo de caixa avançado", "Metas e comparativos", "Exportação de dados", "Até 3 usuários", "Suporte prioritário"],
   },
   {
     id: "business",
@@ -49,14 +44,7 @@ export const PLANOS_NEXO: PlanoDetalhe[] = [
     periodo: "/mês",
     destaque: "Para equipes",
     descricao: "Para empresas com equipe, operação maior e necessidade de gestão compartilhada.",
-    recursos: [
-      "Tudo do plano Pro",
-      "Até 10 usuários",
-      "Perfis e permissões",
-      "Visão por unidade/equipe",
-      "Relatórios gerenciais",
-      "Atendimento prioritário",
-    ],
+    recursos: ["Tudo do plano Pro", "Até 10 usuários", "Perfis e permissões", "Visão por unidade/equipe", "Relatórios gerenciais", "Atendimento prioritário"],
   },
 ];
 
@@ -66,10 +54,63 @@ export const OBJETIVOS_POR_PERFIL: Record<PerfilUso, string[]> = {
   empresa: ["Acompanhar indicadores", "Gerenciar equipe", "Controlar áreas", "Planejar crescimento", "Padronizar a operação"],
 };
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
 const PERFIL_KEY = "nexo.perfilUso";
 const PLANO_KEY = "nexo.plano";
 const ONBOARDING_KEY = "nexo.onboardingConcluido";
 const OBJETIVOS_KEY = "nexo.objetivos";
+
+async function lerResposta(response: Response) {
+  if (response.ok) return response.json();
+  let mensagem = `Erro ${response.status} ao acessar o backend.`;
+  try {
+    const corpo = await response.json();
+    mensagem = corpo.message ?? corpo.mensagem ?? corpo.detail ?? mensagem;
+  } catch {}
+  throw new Error(mensagem);
+}
+
+export async function carregarConfiguracaoSaas(): Promise<ConfiguracaoSaas> {
+  const dados = await lerResposta(await fetch(`${API_URL}/api/saas`, {
+    credentials: "include",
+    cache: "no-store",
+  })) as ConfiguracaoSaas;
+
+  sincronizarLocal(dados);
+  return dados;
+}
+
+export async function salvarOnboardingNoBackend(perfil: PerfilUso, objetivos: string[], concluido: boolean): Promise<ConfiguracaoSaas> {
+  const dados = await lerResposta(await fetch(`${API_URL}/api/saas/onboarding`, {
+    method: "PUT",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ perfilUso: perfil, objetivos, onboardingConcluido: concluido }),
+  })) as ConfiguracaoSaas;
+
+  sincronizarLocal(dados);
+  return dados;
+}
+
+export async function alterarPlanoNoBackend(plano: PlanoNexo): Promise<ConfiguracaoSaas> {
+  const dados = await lerResposta(await fetch(`${API_URL}/api/saas/plano`, {
+    method: "PUT",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ plano }),
+  })) as ConfiguracaoSaas;
+
+  sincronizarLocal(dados);
+  return dados;
+}
+
+function sincronizarLocal(dados: ConfiguracaoSaas) {
+  if (typeof window === "undefined") return;
+  if (dados.perfilUso) window.localStorage.setItem(PERFIL_KEY, dados.perfilUso);
+  window.localStorage.setItem(OBJETIVOS_KEY, JSON.stringify(dados.objetivos ?? []));
+  window.localStorage.setItem(PLANO_KEY, dados.plano ?? "free");
+  window.localStorage.setItem(ONBOARDING_KEY, dados.onboardingConcluido ? "true" : "false");
+}
 
 export function salvarPerfilUso(perfil: PerfilUso) {
   if (typeof window === "undefined") return;
