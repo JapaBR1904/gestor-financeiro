@@ -60,9 +60,10 @@ export function Sidebar({ ativo }: SidebarProps) {
       </nav>
 
       <div className="sidebar-watermark" aria-hidden="true">
-        <span className="sidebar-watermark-line line-one" />
-        <span className="sidebar-watermark-line line-two" />
-        <span className="sidebar-watermark-line line-three" />
+        <svg className="sidebar-watermark-trace" viewBox="0 0 240 180" role="presentation">
+          <path className="sidebar-watermark-path" d="M28 42 H190 L64 138 H214" />
+          <circle className="sidebar-watermark-dot" cx="28" cy="42" r="4" />
+        </svg>
         <span className="sidebar-watermark-n">N</span>
         <span className="sidebar-watermark-name">NEXO</span>
       </div>
