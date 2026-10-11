@@ -37,7 +37,7 @@ export default function VerificarCodigoPage() {
     setValidando(true);
     try {
       await verificarCodigo({ email, codigo: codigoLimpo, finalidade, nome, organizacaoNome });
-      router.push("/");
+      router.push(finalidade === "cadastro" ? "/onboarding" : "/");
       router.refresh();
     } catch (error) {
       setErro(error instanceof Error ? error.message : "Não foi possível validar o código.");
