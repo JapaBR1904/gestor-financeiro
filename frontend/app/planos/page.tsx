@@ -2,18 +2,22 @@
 
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useState } from "react";
 import {
+  alterarPlanoNoBackend,
+  carregarObjetivos,
   carregarPerfilUso,
-  concluirOnboarding,
   PLANOS_NEXO,
   PlanoNexo,
-  salvarPlanoLocal,
+  salvarOnboardingNoBackend,
 } from "../../lib/saas";
 
 export default function PlanosPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const veioDoOnboarding = searchParams.get("origem") === "onboarding";
+  const [erro, setErro] = useState("");
+  const [salvando, setSalvando] = useState<PlanoNexo | null>(null);
 
   function destinoDoPerfil() {
     const perfil = carregarPerfilUso();
@@ -22,16 +26,25 @@ export default function PlanosPage() {
     return "/";
   }
 
-  function escolherPlano(plano: PlanoNexo) {
-    salvarPlanoLocal(plano);
-    if (veioDoOnboarding) concluirOnboarding();
+  async function escolherPlano(plano: PlanoNexo) {
+    setErro("");
+    setSalvando(plano);
+    try {
+      await alterarPlanoNoBackend(plano);
 
-    if (veioDoOnboarding) {
-      router.push(destinoDoPerfil());
-    } else {
-      router.push(`/conta/assinatura?plano=${plano}&modo=prototipo`);
+      if (veioDoOnboarding) {
+        const perfil = carregarPerfilUso();
+        if (perfil) await salvarOnboardingNoBackend(perfil, carregarObjetivos(), true);
+        router.push(destinoDoPerfil());
+      } else {
+        router.push(`/conta/assinatura?plano=${plano}&modo=prototipo`);
+      }
+      router.refresh();
+    } catch (error) {
+      setErro(error instanceof Error ? error.message : "Não foi possível alterar o plano.");
+    } finally {
+      setSalvando(null);
     }
-    router.refresh();
   }
 
   return (
@@ -65,16 +78,18 @@ export default function PlanosPage() {
               {plano.recursos.map((recurso) => <span key={recurso}>✓ {recurso}</span>)}
             </div>
 
-            <button className={plano.id === "pro" ? "primary-button pricing-button" : "secondary-button pricing-button"} type="button" onClick={() => escolherPlano(plano.id)}>
-              {plano.id === "free" ? "Usar plano Free" : `Testar experiência ${plano.nome}`}
+            <button className={plano.id === "pro" ? "primary-button pricing-button" : "secondary-button pricing-button"} type="button" disabled={salvando !== null} onClick={() => escolherPlano(plano.id)}>
+              {salvando === plano.id ? "Salvando..." : plano.id === "free" ? "Usar plano Free" : `Testar experiência ${plano.nome}`}
             </button>
           </article>
         ))}
       </section>
 
+      {erro ? <p className="form-error-banner">{erro}</p> : null}
+
       <section className="pricing-note">
         <strong>Modo de protótipo:</strong>
-        <p>Você já pode alternar entre Free, Pro e Business para testar as páginas. A cobrança real e a assinatura persistida serão conectadas ao banco na próxima etapa.</p>
+        <p>A escolha do plano agora já fica salva no banco da organização. A cobrança financeira real ainda será conectada quando definirmos o provedor de pagamento.</p>
       </section>
     </main>
   );
