@@ -68,6 +68,12 @@ public class Produto {
         atualizadoEm = OffsetDateTime.now();
     }
 
+    public void atualizarDados(String nome, String descricao, BigDecimal precoVenda) {
+        this.nome = nome;
+        this.descricao = descricao;
+        this.precoVenda = precoVenda;
+    }
+
     public void alterarAtivo(boolean ativo) {
         this.ativo = ativo;
     }
