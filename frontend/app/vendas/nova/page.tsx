@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "../../../components/Sidebar";
+import { carregarClientes, Cliente } from "../../../lib/clientes";
 import { carregarProdutos, formatarMoeda, Produto } from "../../../lib/produtos";
 import { FormaPagamento, salvarVenda } from "../../../lib/vendas";
 
@@ -16,6 +17,8 @@ function novaLinha(id = `item-${Date.now()}`): LinhaVenda {
 export default function NovaVendaPage() {
   const router = useRouter();
   const [produtos, setProdutos] = useState<Produto[]>([]);
+  const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [clienteId, setClienteId] = useState("");
   const [itens, setItens] = useState<LinhaVenda[]>([novaLinha("item-1")]);
   const [formaPagamento, setFormaPagamento] = useState<FormaPagamento>("pix");
   const [observacao, setObservacao] = useState("");
@@ -24,9 +27,12 @@ export default function NovaVendaPage() {
   const [erro, setErro] = useState("");
 
   useEffect(() => {
-    carregarProdutos()
-      .then((dados) => setProdutos(dados.filter((produto) => produto.ativo !== false)))
-      .catch((error) => setErro(error instanceof Error ? error.message : "Não foi possível carregar os produtos."))
+    Promise.all([carregarProdutos(), carregarClientes()])
+      .then(([produtosDados, clientesDados]) => {
+        setProdutos(produtosDados.filter((produto) => produto.ativo !== false));
+        setClientes(clientesDados.filter((cliente) => cliente.ativo));
+      })
+      .catch((error) => setErro(error instanceof Error ? error.message : "Não foi possível carregar os dados da venda."))
       .finally(() => setCarregando(false));
   }, []);
 
@@ -65,7 +71,7 @@ export default function NovaVendaPage() {
 
     setSalvando(true);
     try {
-      await salvarVenda({ formaPagamento, observacao: observacao.trim(), itens: itensValidos });
+      await salvarVenda({ clienteId: clienteId || null, formaPagamento, observacao: observacao.trim(), itens: itensValidos });
       router.push("/vendas");
     } catch (error) {
       setErro(error instanceof Error ? error.message : "Não foi possível registrar a venda.");
@@ -90,6 +96,13 @@ export default function NovaVendaPage() {
         <form className="product-form-stack" onSubmit={handleSubmit}>
           <section className="panel product-form">
             <div className="form-grid">
+              <label className="field">
+                <span>Cliente</span>
+                <select value={clienteId} onChange={(event) => setClienteId(event.target.value)}>
+                  <option value="">Venda sem cliente identificado</option>
+                  {clientes.map((cliente) => <option key={cliente.id} value={String(cliente.id)}>{cliente.nome}</option>)}
+                </select>
+              </label>
               <label className="field">
                 <span>Forma de pagamento *</span>
                 <select value={formaPagamento} onChange={(event) => setFormaPagamento(event.target.value as FormaPagamento)}>
@@ -117,7 +130,7 @@ export default function NovaVendaPage() {
               <button className="secondary-button compact-button" type="button" onClick={adicionarItem}>+ Produto</button>
             </div>
 
-            {carregando ? <div className="empty-state"><strong>Carregando produtos...</strong></div> : produtos.length === 0 ? <div className="empty-state"><strong>Nenhum produto ativo disponível</strong><p>Ative ou cadastre um produto antes de registrar uma venda.</p></div> : (
+            {carregando ? <div className="empty-state"><strong>Carregando dados...</strong></div> : produtos.length === 0 ? <div className="empty-state"><strong>Nenhum produto ativo disponível</strong><p>Ative ou cadastre um produto antes de registrar uma venda.</p></div> : (
               <div className="ingredient-list">
                 {itens.map((item) => {
                   const produto = produtos.find((p) => String(p.id) === item.produtoId);
@@ -148,12 +161,7 @@ export default function NovaVendaPage() {
             )}
           </section>
 
-          <section className="panel product-totals">
-            <div>
-              <span>Total da venda</span>
-              <strong>{formatarMoeda(totalVenda)}</strong>
-            </div>
-          </section>
+          <section className="panel product-totals"><div><span>Total da venda</span><strong>{formatarMoeda(totalVenda)}</strong></div></section>
 
           {erro ? <p className="form-error-banner">{erro}</p> : null}
           <div className="form-actions standalone-actions">
