@@ -227,7 +227,7 @@
   border-radius: 50%;
   background: radial-gradient(circle, rgba(59,130,246,.15), rgba(59,130,246,.035) 45%, transparent 70%);
   filter: blur(10px);
-  animation: nexo-watermark-glow 8s ease-in-out infinite alternate;
+  animation: nexo-watermark-glow 18s ease-in-out infinite alternate;
 }
 
 .sidebar-watermark-n {
@@ -239,8 +239,9 @@
   line-height: 1;
   letter-spacing: -.12em;
   text-shadow: 0 0 35px rgba(96,165,250,.08);
-  transform: rotate(-8deg);
-  animation: nexo-watermark-float 7s ease-in-out infinite alternate;
+  transform: translate3d(0, 0, 0) rotate(-8deg) scale(1);
+  opacity: .92;
+  animation: nexo-watermark-float 22s ease-in-out infinite alternate;
 }
 
 .sidebar-watermark-name {
@@ -268,46 +269,46 @@
 .sidebar-watermark-line.line-one {
   top: 32%;
   transform: rotate(-20deg);
-  animation: nexo-watermark-line-one 9s ease-in-out infinite alternate;
+  animation: nexo-watermark-line-one 24s ease-in-out infinite alternate;
 }
 
 .sidebar-watermark-line.line-two {
   top: 53%;
   transform: rotate(16deg);
   opacity: .58;
-  animation: nexo-watermark-line-two 11s ease-in-out infinite alternate;
+  animation: nexo-watermark-line-two 28s ease-in-out infinite alternate;
 }
 
 .sidebar-watermark-line.line-three {
   top: 68%;
   transform: rotate(-9deg);
   opacity: .38;
-  animation: nexo-watermark-line-three 13s ease-in-out infinite alternate;
+  animation: nexo-watermark-line-three 32s ease-in-out infinite alternate;
 }
 
 @keyframes nexo-watermark-float {
-  from { transform: translate3d(-2px, 4px, 0) rotate(-8deg) scale(.98); opacity: .7; }
-  to { transform: translate3d(5px, -5px, 0) rotate(-5deg) scale(1.04); opacity: 1; }
+  from { transform: translate3d(-1px, 1px, 0) rotate(-8deg) scale(.995); opacity: .88; }
+  to { transform: translate3d(2px, -2px, 0) rotate(-7deg) scale(1.012); opacity: .96; }
 }
 
 @keyframes nexo-watermark-glow {
-  from { transform: scale(.9) translateY(4px); opacity: .45; }
-  to { transform: scale(1.08) translateY(-6px); opacity: .9; }
+  from { transform: scale(.97) translateY(1px); opacity: .48; }
+  to { transform: scale(1.03) translateY(-2px); opacity: .68; }
 }
 
 @keyframes nexo-watermark-line-one {
-  from { transform: translateX(-6px) rotate(-20deg); }
-  to { transform: translateX(12px) rotate(-16deg); }
+  from { transform: translateX(-2px) rotate(-20deg); }
+  to { transform: translateX(4px) rotate(-19deg); }
 }
 
 @keyframes nexo-watermark-line-two {
-  from { transform: translateX(10px) rotate(16deg); }
-  to { transform: translateX(-10px) rotate(20deg); }
+  from { transform: translateX(3px) rotate(16deg); }
+  to { transform: translateX(-3px) rotate(17deg); }
 }
 
 @keyframes nexo-watermark-line-three {
-  from { transform: translateX(-4px) rotate(-9deg); }
-  to { transform: translateX(8px) rotate(-5deg); }
+  from { transform: translateX(-2px) rotate(-9deg); }
+  to { transform: translateX(3px) rotate(-8deg); }
 }
 
 .summary-card::before {
