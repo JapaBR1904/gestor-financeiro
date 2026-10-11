@@ -18,6 +18,8 @@ export type Produto = {
   descricao: string;
   ingredientes: IngredienteProduto[];
   custoEstimado: number;
+  lucroEstimado?: number;
+  ativo: boolean;
   criadoEm?: string;
 };
 
@@ -89,6 +91,24 @@ export async function carregarProdutos(): Promise<Produto[]> {
     cache: "no-store",
   });
   return (await lerResposta(response)) as Produto[];
+}
+
+export async function carregarProduto(produtoId: string | number): Promise<Produto> {
+  const organizacaoId = await obterOrganizacaoId();
+  const response = await fetch(`${API_URL}/api/produtos/${produtoId}?organizacaoId=${organizacaoId}`, {
+    cache: "no-store",
+  });
+  return (await lerResposta(response)) as Produto;
+}
+
+export async function alterarStatusProduto(produtoId: string | number, ativo: boolean): Promise<Produto> {
+  const organizacaoId = await obterOrganizacaoId();
+  const response = await fetch(`${API_URL}/api/produtos/${produtoId}/status`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ organizacaoId, ativo }),
+  });
+  return (await lerResposta(response)) as Produto;
 }
 
 export async function salvarProduto(produto: Produto): Promise<Produto> {
