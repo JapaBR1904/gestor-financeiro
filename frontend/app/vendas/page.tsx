@@ -21,11 +21,7 @@ export default function VendasPage() {
   const resumo = useMemo(() => {
     const faturamento = vendas.reduce((total, venda) => total + venda.totalVenda, 0);
     const custo = vendas.reduce((total, venda) => total + venda.custoTotal, 0);
-    const itensVendidos = vendas.reduce(
-      (total, venda) => total + venda.itens.reduce((subtotal, item) => subtotal + item.quantidade, 0),
-      0,
-    );
-
+    const itensVendidos = vendas.reduce((total, venda) => total + venda.itens.reduce((subtotal, item) => subtotal + item.quantidade, 0), 0);
     return { faturamento, custo, itensVendidos };
   }, [vendas]);
 
@@ -34,91 +30,36 @@ export default function VendasPage() {
       <Sidebar ativo="vendas" />
       <section className="content">
         <header className="topbar">
-          <div>
-            <p className="eyebrow">Comercial</p>
-            <h1>Vendas</h1>
-            <p className="subtitle">Registre vendas e acompanhe os principais dados comerciais do negócio.</p>
-          </div>
+          <div><p className="eyebrow">Comercial</p><h1>Vendas</h1><p className="subtitle">Registre vendas e acompanhe os principais dados comerciais do negócio.</p></div>
           <Link className="primary-button" href="/vendas/nova">+ Nova venda</Link>
         </header>
 
         {erro ? <p className="form-error-banner">{erro}</p> : null}
 
         <section className="summary-grid" aria-label="Resumo das vendas">
-          <article className="summary-card">
-            <span>Vendas registradas</span>
-            <strong>{carregando ? "—" : vendas.length}</strong>
-            <small>{carregando ? "Carregando histórico..." : `${resumo.itensVendidos} item(ns) vendido(s) no total`}</small>
-          </article>
-
-          <article className="summary-card">
-            <span>Faturamento</span>
-            <strong>{carregando ? "—" : formatarMoeda(resumo.faturamento)}</strong>
-            <small>Valor total recebido nas vendas</small>
-          </article>
-
-          <article className="summary-card">
-            <span>Custo das vendas</span>
-            <strong>{carregando ? "—" : formatarMoeda(resumo.custo)}</strong>
-            <small>Custo histórico dos produtos vendidos</small>
-          </article>
+          <article className="summary-card"><span>Vendas registradas</span><strong>{carregando ? "—" : vendas.length}</strong><small>{carregando ? "Carregando histórico..." : `${resumo.itensVendidos} item(ns) vendido(s) no total`}</small></article>
+          <article className="summary-card"><span>Faturamento</span><strong>{carregando ? "—" : formatarMoeda(resumo.faturamento)}</strong><small>Valor total recebido nas vendas</small></article>
+          <article className="summary-card"><span>Custo das vendas</span><strong>{carregando ? "—" : formatarMoeda(resumo.custo)}</strong><small>Custo histórico dos produtos vendidos</small></article>
         </section>
 
-        <article className="panel">
-          <div className="panel-header">
-            <div>
-              <p className="eyebrow">Histórico</p>
-              <h2>Vendas registradas</h2>
-              <p className="subtitle">Consulte rapidamente cada venda e abra os detalhes quando precisar.</p>
-            </div>
-          </div>
+        <article className="panel history-panel">
+          <div className="panel-header"><div><p className="eyebrow">Histórico</p><h2>Vendas registradas</h2><p className="subtitle">Cada registro reúne valor, pagamento e quantidade vendida.</p></div></div>
 
-          {carregando ? (
-            <div className="empty-state"><strong>Carregando vendas...</strong></div>
-          ) : vendas.length === 0 ? (
-            <div className="empty-state">
-              <span className="empty-icon">V</span>
-              <strong>Nenhuma venda registrada</strong>
-              <p>Cadastre a primeira venda para começar a alimentar o financeiro.</p>
-            </div>
+          {carregando ? <div className="empty-state"><strong>Carregando vendas...</strong></div> : vendas.length === 0 ? (
+            <div className="empty-state"><span className="empty-icon">V</span><strong>Nenhuma venda registrada</strong><p>Cadastre a primeira venda para começar a alimentar o financeiro.</p></div>
           ) : (
-            <div className="sales-history-list">
-              <div className="sales-history-head" aria-hidden="true">
-                <span>Venda</span>
-                <span>Data</span>
-                <span>Forma de pagamento</span>
-                <span>Itens</span>
-                <span>Total</span>
-                <span></span>
-              </div>
-
+            <div className="record-list">
               {vendas.map((venda) => {
                 const quantidadeItens = venda.itens.reduce((total, item) => total + item.quantidade, 0);
                 const dataVenda = new Date(venda.criadoEm);
-
                 return (
-                  <div className="sales-history-row" key={venda.id}>
-                    <div className="sales-history-primary" data-label="Venda">
-                      <strong>Venda #{venda.id}</strong>
-                    </div>
-                    <div data-label="Data">
-                      <strong>{dataVenda.toLocaleDateString("pt-BR")}</strong>
-                    </div>
-                    <div data-label="Forma de pagamento">
-                      <strong>{nomeFormaPagamento(venda.formaPagamento)}</strong>
-                    </div>
-                    <div data-label="Itens">
-                      <strong>{quantidadeItens}</strong>
-                    </div>
-                    <div className="sales-history-total" data-label="Total">
-                      <strong>{formatarMoeda(venda.totalVenda)}</strong>
-                    </div>
-                    <div className="sales-history-action">
-                      <Link className="secondary-button compact-button" href={`/vendas/${venda.id}`}>
-                        Ver detalhes
-                      </Link>
-                    </div>
-                  </div>
+                  <Link className="record-card" href={`/vendas/${venda.id}`} key={venda.id}>
+                    <span className="record-icon record-icon-sale" aria-hidden="true">↗</span>
+                    <div className="record-main"><strong>Venda #{venda.id}</strong><span>{dataVenda.toLocaleDateString("pt-BR")} · {quantidadeItens} item{quantidadeItens === 1 ? "" : "s"}</span></div>
+                    <span className="record-badge">{nomeFormaPagamento(venda.formaPagamento)}</span>
+                    <div className="record-value"><strong>{formatarMoeda(venda.totalVenda)}</strong><span>Total da venda</span></div>
+                    <span className="record-arrow" aria-hidden="true">→</span>
+                  </Link>
                 );
               })}
             </div>
