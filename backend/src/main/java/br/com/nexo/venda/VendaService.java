@@ -5,6 +5,8 @@ import java.math.RoundingMode;
 import java.time.OffsetDateTime;
 import java.util.List;
 
+import br.com.nexo.cliente.Cliente;
+import br.com.nexo.cliente.ClienteService;
 import br.com.nexo.organizacao.Organizacao;
 import br.com.nexo.organizacao.OrganizacaoService;
 import br.com.nexo.produto.Produto;
@@ -16,13 +18,15 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class VendaService {
     private final OrganizacaoService organizacaoService;
+    private final ClienteService clienteService;
     private final ProdutoRepository produtoRepository;
     private final ProdutoService produtoService;
     private final VendaRepository vendaRepository;
     private final VendaItemRepository vendaItemRepository;
 
-    public VendaService(OrganizacaoService organizacaoService, ProdutoRepository produtoRepository, ProdutoService produtoService, VendaRepository vendaRepository, VendaItemRepository vendaItemRepository) {
+    public VendaService(OrganizacaoService organizacaoService, ClienteService clienteService, ProdutoRepository produtoRepository, ProdutoService produtoService, VendaRepository vendaRepository, VendaItemRepository vendaItemRepository) {
         this.organizacaoService = organizacaoService;
+        this.clienteService = clienteService;
         this.produtoRepository = produtoRepository;
         this.produtoService = produtoService;
         this.vendaRepository = vendaRepository;
@@ -35,6 +39,8 @@ public class VendaService {
         if (dados.itens() == null || dados.itens().isEmpty()) throw new IllegalArgumentException("Adicione pelo menos um produto à venda.");
 
         Organizacao organizacao = organizacaoService.buscarPorId(dados.organizacaoId());
+        Cliente cliente = dados.clienteId() == null ? null : clienteService.buscarEntidade(dados.organizacaoId(), dados.clienteId());
+        if (cliente != null && !cliente.isAtivo()) throw new IllegalArgumentException("O cliente selecionado está inativo.");
         String formaPagamento = normalizarFormaPagamento(dados.formaPagamento());
 
         List<ItemCalculado> itens = dados.itens().stream().map(item -> calcularItem(dados.organizacaoId(), item)).toList();
@@ -42,21 +48,10 @@ public class VendaService {
         BigDecimal custo = itens.stream().map(ItemCalculado::custoSubtotal).reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, RoundingMode.HALF_UP);
         BigDecimal lucro = total.subtract(custo).setScale(2, RoundingMode.HALF_UP);
 
-        Venda venda = vendaRepository.save(new Venda(organizacao, formaPagamento, normalizarTexto(dados.observacao()), total, custo, lucro));
+        Venda venda = vendaRepository.save(new Venda(organizacao, cliente, formaPagamento, normalizarTexto(dados.observacao()), total, custo, lucro));
 
         for (ItemCalculado item : itens) {
-            vendaItemRepository.save(new VendaItem(
-                    organizacao,
-                    venda,
-                    item.produto(),
-                    item.produto().getNome(),
-                    item.quantidade(),
-                    item.precoUnitario(),
-                    item.custoUnitario(),
-                    item.subtotal(),
-                    item.custoSubtotal(),
-                    item.lucroSubtotal()
-            ));
+            vendaItemRepository.save(new VendaItem(organizacao, venda, item.produto(), item.produto().getNome(), item.quantidade(), item.precoUnitario(), item.custoUnitario(), item.subtotal(), item.custoSubtotal(), item.lucroSubtotal()));
         }
 
         return montarDetalhe(venda);
@@ -88,11 +83,9 @@ public class VendaService {
     private ItemCalculado calcularItem(Long organizacaoId, NovoItem item) {
         if (item.produtoId() == null) throw new IllegalArgumentException("Selecione um produto.");
         if (item.quantidade() == null || item.quantidade() <= 0) throw new IllegalArgumentException("A quantidade deve ser maior que zero.");
-
         Produto produto = produtoRepository.findByIdAndOrganizacaoId(item.produtoId(), organizacaoId)
                 .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado para esta organização."));
         if (!produto.isAtivo()) throw new IllegalArgumentException("O produto " + produto.getNome() + " está inativo.");
-
         ProdutoService.ProdutoDetalhe detalhe = produtoService.buscar(organizacaoId, produto.getId());
         BigDecimal quantidade = BigDecimal.valueOf(item.quantidade());
         BigDecimal preco = produto.getPrecoVenda().setScale(2, RoundingMode.HALF_UP);
@@ -107,25 +100,22 @@ public class VendaService {
         List<ItemDetalhe> itens = vendaItemRepository.findByVendaIdOrderByIdAsc(venda.getId()).stream()
                 .map(item -> new ItemDetalhe(item.getId(), item.getProduto().getId(), item.getProdutoNome(), item.getQuantidade(), item.getPrecoUnitario(), item.getCustoUnitario(), item.getSubtotal(), item.getCustoSubtotal(), item.getLucroSubtotal()))
                 .toList();
-        return new VendaDetalhe(venda.getId(), venda.getFormaPagamento(), venda.getObservacao(), venda.getTotalVenda(), venda.getCustoTotal(), venda.getLucroTotal(), venda.getCriadoEm(), itens);
+        Cliente cliente = venda.getCliente();
+        return new VendaDetalhe(venda.getId(), cliente == null ? null : cliente.getId(), cliente == null ? null : cliente.getNome(), venda.getFormaPagamento(), venda.getObservacao(), venda.getTotalVenda(), venda.getCustoTotal(), venda.getLucroTotal(), venda.getCriadoEm(), itens);
     }
 
     private String normalizarFormaPagamento(String valor) {
         String normalizada = valor == null ? "" : valor.trim().toLowerCase();
-        if (!List.of("pix", "dinheiro", "debito", "credito", "outro").contains(normalizada)) {
-            throw new IllegalArgumentException("Forma de pagamento inválida.");
-        }
+        if (!List.of("pix", "dinheiro", "debito", "credito", "outro").contains(normalizada)) throw new IllegalArgumentException("Forma de pagamento inválida.");
         return normalizada;
     }
 
-    private String normalizarTexto(String valor) {
-        return valor == null || valor.trim().isBlank() ? null : valor.trim();
-    }
+    private String normalizarTexto(String valor) { return valor == null || valor.trim().isBlank() ? null : valor.trim(); }
 
-    public record NovaVenda(Long organizacaoId, String formaPagamento, String observacao, List<NovoItem> itens) {}
+    public record NovaVenda(Long organizacaoId, Long clienteId, String formaPagamento, String observacao, List<NovoItem> itens) {}
     public record NovoItem(Long produtoId, Integer quantidade) {}
     private record ItemCalculado(Produto produto, Integer quantidade, BigDecimal precoUnitario, BigDecimal custoUnitario, BigDecimal subtotal, BigDecimal custoSubtotal, BigDecimal lucroSubtotal) {}
     public record ItemDetalhe(Long id, Long produtoId, String produtoNome, Integer quantidade, BigDecimal precoUnitario, BigDecimal custoUnitario, BigDecimal subtotal, BigDecimal custoSubtotal, BigDecimal lucroSubtotal) {}
-    public record VendaDetalhe(Long id, String formaPagamento, String observacao, BigDecimal totalVenda, BigDecimal custoTotal, BigDecimal lucroTotal, OffsetDateTime criadoEm, List<ItemDetalhe> itens) {}
+    public record VendaDetalhe(Long id, Long clienteId, String clienteNome, String formaPagamento, String observacao, BigDecimal totalVenda, BigDecimal custoTotal, BigDecimal lucroTotal, OffsetDateTime criadoEm, List<ItemDetalhe> itens) {}
     public record VendaResumo(int quantidadeVendas, BigDecimal faturamento, BigDecimal custo, BigDecimal lucro) {}
 }
