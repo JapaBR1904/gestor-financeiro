@@ -246,21 +246,17 @@
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
-  path-length: 1;
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
   filter: drop-shadow(0 0 7px rgba(96,165,250,.3));
-  animation: nexo-trace-draw 1.42s cubic-bezier(.2,.8,.22,1) .08s forwards;
+  animation: nexo-trace-draw 1.5s cubic-bezier(.2,.8,.22,1) .08s forwards;
 }
 
 .sidebar-watermark-dot {
   fill: #dbeafe;
-  r: 3.4;
-  filter: drop-shadow(0 0 7px #60a5fa) drop-shadow(0 0 16px rgba(96,165,250,.5));
-  offset-path: path("M18 84 C52 74, 82 72, 112 88 C139 102, 164 111, 222 93");
-  offset-distance: 0%;
   opacity: 0;
-  animation: nexo-trace-dot 1.42s cubic-bezier(.2,.8,.22,1) .08s forwards;
+  filter: drop-shadow(0 0 7px #60a5fa) drop-shadow(0 0 16px rgba(96,165,250,.5));
+  animation: nexo-trace-dot-visibility 1.5s ease .08s forwards;
 }
 
 .sidebar-watermark-n {
@@ -291,17 +287,17 @@
 }
 
 @keyframes nexo-trace-draw {
-  0% { stroke-dashoffset: 1; opacity: .08; }
-  14% { opacity: .9; }
-  68% { opacity: .72; }
+  0% { stroke-dashoffset: 1; opacity: 0; }
+  8% { opacity: .9; }
+  82% { opacity: .78; }
   100% { stroke-dashoffset: 0; opacity: .42; }
 }
 
-@keyframes nexo-trace-dot {
-  0% { offset-distance: 0%; opacity: 0; transform: scale(.7); }
-  7% { opacity: 1; }
-  78% { opacity: .92; transform: scale(1); }
-  100% { offset-distance: 100%; opacity: 0; transform: scale(.72); }
+@keyframes nexo-trace-dot-visibility {
+  0% { opacity: 0; }
+  5% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 @keyframes nexo-watermark-reveal {
