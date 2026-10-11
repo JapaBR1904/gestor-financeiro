@@ -4,6 +4,13 @@ import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FinalidadeAuth, verificarCodigo } from "../../lib/auth";
+import { carregarConfiguracaoSaas, PerfilUso } from "../../lib/saas";
+
+function destinoDoPerfil(perfil: PerfilUso | null) {
+  if (perfil === "pessoal") return "/pessoal";
+  if (perfil === "empresa") return "/empresa";
+  return "/";
+}
 
 export default function VerificarCodigoPage() {
   const router = useRouter();
@@ -37,7 +44,13 @@ export default function VerificarCodigoPage() {
     setValidando(true);
     try {
       await verificarCodigo({ email, codigo: codigoLimpo, finalidade, nome, organizacaoNome });
-      router.push(finalidade === "cadastro" ? "/onboarding" : "/");
+
+      if (finalidade === "cadastro") {
+        router.push("/onboarding");
+      } else {
+        const configuracao = await carregarConfiguracaoSaas();
+        router.push(configuracao.onboardingConcluido ? destinoDoPerfil(configuracao.perfilUso) : "/onboarding");
+      }
       router.refresh();
     } catch (error) {
       setErro(error instanceof Error ? error.message : "Não foi possível validar o código.");
@@ -60,15 +73,7 @@ export default function VerificarCodigoPage() {
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
           <label className="field">
             <span>Código de acesso</span>
-            <input
-              className="auth-code-input"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              maxLength={6}
-              value={codigo}
-              onChange={(event) => setCodigo(event.target.value.replace(/\D/g, "").slice(0, 6))}
-              placeholder="000000"
-            />
+            <input className="auth-code-input" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={codigo} onChange={(event) => setCodigo(event.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="000000" />
           </label>
           {erro ? <p className="form-error-banner">{erro}</p> : null}
           <button className="primary-button auth-primary" type="submit" disabled={validando}>{validando ? "Validando..." : "Confirmar código"}</button>
