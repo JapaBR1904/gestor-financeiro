@@ -35,7 +35,7 @@ export const PLANOS_NEXO: PlanoDetalhe[] = [
     descricao: "Para quem usa o Nexo todos os dias e quer mais controle do negócio.",
     recursos: [
       "Tudo do plano Free",
-      "Relatórios avançados",
+      "Fluxo de caixa avançado",
       "Metas e comparativos",
       "Exportação de dados",
       "Até 3 usuários",
@@ -60,9 +60,16 @@ export const PLANOS_NEXO: PlanoDetalhe[] = [
   },
 ];
 
+export const OBJETIVOS_POR_PERFIL: Record<PerfilUso, string[]> = {
+  pessoal: ["Controlar gastos", "Acompanhar saldo", "Criar metas", "Entender para onde meu dinheiro vai"],
+  negocio: ["Aumentar vendas", "Controlar custos", "Acompanhar lucro", "Organizar clientes", "Melhorar o fluxo de caixa"],
+  empresa: ["Acompanhar indicadores", "Gerenciar equipe", "Controlar áreas", "Planejar crescimento", "Padronizar a operação"],
+};
+
 const PERFIL_KEY = "nexo.perfilUso";
 const PLANO_KEY = "nexo.plano";
 const ONBOARDING_KEY = "nexo.onboardingConcluido";
+const OBJETIVOS_KEY = "nexo.objetivos";
 
 export function salvarPerfilUso(perfil: PerfilUso) {
   if (typeof window === "undefined") return;
@@ -73,6 +80,21 @@ export function carregarPerfilUso(): PerfilUso | null {
   if (typeof window === "undefined") return null;
   const valor = window.localStorage.getItem(PERFIL_KEY);
   return valor === "pessoal" || valor === "negocio" || valor === "empresa" ? valor : null;
+}
+
+export function salvarObjetivos(objetivos: string[]) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(OBJETIVOS_KEY, JSON.stringify(objetivos));
+}
+
+export function carregarObjetivos(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const valor = window.localStorage.getItem(OBJETIVOS_KEY);
+    return valor ? JSON.parse(valor) : [];
+  } catch {
+    return [];
+  }
 }
 
 export function salvarPlanoLocal(plano: PlanoNexo) {
@@ -101,4 +123,18 @@ export function nomePerfilUso(perfil: PerfilUso | null) {
   if (perfil === "empresa") return "Empresa e equipe";
   if (perfil === "negocio") return "Meu negócio";
   return "Não definido";
+}
+
+export function nomePlano(plano: PlanoNexo) {
+  return PLANOS_NEXO.find((item) => item.id === plano)?.nome ?? "Free";
+}
+
+export function nivelPlano(plano: PlanoNexo) {
+  if (plano === "business") return 3;
+  if (plano === "pro") return 2;
+  return 1;
+}
+
+export function planoPermite(planoAtual: PlanoNexo, minimo: PlanoNexo) {
+  return nivelPlano(planoAtual) >= nivelPlano(minimo);
 }
