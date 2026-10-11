@@ -30,17 +30,12 @@ export default function NovaVendaPage() {
       .finally(() => setCarregando(false));
   }, []);
 
-  const calculo = useMemo(() => {
-    let total = 0;
-    let custo = 0;
-    for (const item of itens) {
+  const totalVenda = useMemo(() => {
+    return itens.reduce((total, item) => {
       const produto = produtos.find((p) => String(p.id) === item.produtoId);
       const quantidade = Math.max(0, Number(item.quantidade) || 0);
-      if (!produto || quantidade <= 0) continue;
-      total += produto.precoVenda * quantidade;
-      custo += produto.custoEstimado * quantidade;
-    }
-    return { total, custo, lucro: total - custo };
+      return total + (produto ? produto.precoVenda * quantidade : 0);
+    }, 0);
   }, [itens, produtos]);
 
   function atualizarItem(id: string, campo: keyof LinhaVenda, valor: string) {
@@ -84,7 +79,11 @@ export default function NovaVendaPage() {
       <Sidebar ativo="vendas" />
       <section className="content">
         <header className="topbar">
-          <div><p className="eyebrow">Comercial</p><h1>Nova venda</h1><p className="subtitle">Selecione os produtos vendidos e registre a forma de pagamento.</p></div>
+          <div>
+            <p className="eyebrow">Comercial</p>
+            <h1>Nova venda</h1>
+            <p className="subtitle">Selecione os produtos vendidos e registre a forma de pagamento.</p>
+          </div>
           <Link className="secondary-button" href="/vendas">Voltar para vendas</Link>
         </header>
 
@@ -101,13 +100,20 @@ export default function NovaVendaPage() {
                   <option value="outro">Outro</option>
                 </select>
               </label>
-              <label className="field field-wide"><span>Observação</span><textarea rows={3} value={observacao} onChange={(event) => setObservacao(event.target.value)} placeholder="Ex.: encomenda para retirada às 18h" /></label>
+              <label className="field field-wide">
+                <span>Observação</span>
+                <textarea rows={3} value={observacao} onChange={(event) => setObservacao(event.target.value)} placeholder="Ex.: encomenda para retirada às 18h" />
+              </label>
             </div>
           </section>
 
           <section className="panel ingredient-panel">
             <div className="panel-header ingredient-header">
-              <div><p className="eyebrow">Itens</p><h2>Produtos vendidos</h2><p className="ingredient-help">Os valores usam o preço e o custo atuais do produto no momento da venda.</p></div>
+              <div>
+                <p className="eyebrow">Itens</p>
+                <h2>Produtos vendidos</h2>
+                <p className="ingredient-help">Selecione os produtos e informe a quantidade vendida.</p>
+              </div>
               <button className="secondary-button compact-button" type="button" onClick={adicionarItem}>+ Produto</button>
             </div>
 
@@ -118,9 +124,22 @@ export default function NovaVendaPage() {
                   const quantidade = Math.max(0, Number(item.quantidade) || 0);
                   return (
                     <div className="ingredient-row" key={item.id}>
-                      <label className="field ingredient-name"><span>Produto</span><select value={item.produtoId} onChange={(event) => atualizarItem(item.id, "produtoId", event.target.value)}><option value="">Selecione...</option>{produtos.map((produto) => <option value={String(produto.id)} key={produto.id}>{produto.nome} — {formatarMoeda(produto.precoVenda)}</option>)}</select></label>
-                      <label className="field"><span>Quantidade</span><input min="1" step="1" type="number" value={item.quantidade} onChange={(event) => atualizarItem(item.id, "quantidade", event.target.value)} /></label>
-                      <div className="ingredient-cost"><span>Subtotal</span><strong>{formatarMoeda(produto ? produto.precoVenda * quantidade : 0)}</strong><small>{produto ? `custo ${formatarMoeda(produto.custoEstimado * quantidade)}` : "Selecione um produto"}</small></div>
+                      <label className="field ingredient-name">
+                        <span>Produto</span>
+                        <select value={item.produtoId} onChange={(event) => atualizarItem(item.id, "produtoId", event.target.value)}>
+                          <option value="">Selecione...</option>
+                          {produtos.map((produto) => <option value={String(produto.id)} key={produto.id}>{produto.nome} — {formatarMoeda(produto.precoVenda)}</option>)}
+                        </select>
+                      </label>
+                      <label className="field">
+                        <span>Quantidade</span>
+                        <input min="1" step="1" type="number" value={item.quantidade} onChange={(event) => atualizarItem(item.id, "quantidade", event.target.value)} />
+                      </label>
+                      <div className="ingredient-cost">
+                        <span>Subtotal</span>
+                        <strong>{formatarMoeda(produto ? produto.precoVenda * quantidade : 0)}</strong>
+                        <small>{produto ? `${formatarMoeda(produto.precoVenda)} por unidade` : "Selecione um produto"}</small>
+                      </div>
                       <button className="remove-button" type="button" onClick={() => removerItem(item.id)}>Remover</button>
                     </div>
                   );
@@ -130,13 +149,17 @@ export default function NovaVendaPage() {
           </section>
 
           <section className="panel product-totals">
-            <div><span>Total da venda</span><strong>{formatarMoeda(calculo.total)}</strong></div>
-            <div><span>Custo estimado</span><strong>{formatarMoeda(calculo.custo)}</strong></div>
-            <div><span>Lucro estimado</span><strong>{formatarMoeda(calculo.lucro)}</strong></div>
+            <div>
+              <span>Total da venda</span>
+              <strong>{formatarMoeda(totalVenda)}</strong>
+            </div>
           </section>
 
           {erro ? <p className="form-error-banner">{erro}</p> : null}
-          <div className="form-actions standalone-actions"><Link className="secondary-button" href="/vendas">Cancelar</Link><button className="primary-button" type="submit" disabled={salvando || carregando || produtos.length === 0}>{salvando ? "Registrando..." : "Registrar venda"}</button></div>
+          <div className="form-actions standalone-actions">
+            <Link className="secondary-button" href="/vendas">Cancelar</Link>
+            <button className="primary-button" type="submit" disabled={salvando || carregando || produtos.length === 0}>{salvando ? "Registrando..." : "Registrar venda"}</button>
+          </div>
         </form>
       </section>
     </main>
