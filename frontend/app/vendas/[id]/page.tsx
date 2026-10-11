@@ -25,7 +25,11 @@ export default function VendaDetalhePage() {
       <Sidebar ativo="vendas" />
       <section className="content">
         <header className="topbar">
-          <div><p className="eyebrow">Histórico de vendas</p><h1>{venda ? `Venda #${venda.id}` : "Venda"}</h1><p className="subtitle">Confira os itens e os valores registrados no momento da venda.</p></div>
+          <div>
+            <p className="eyebrow">Histórico de vendas</p>
+            <h1>{venda ? `Venda #${venda.id}` : "Venda"}</h1>
+            <p className="subtitle">Confira os produtos e as informações registradas nessa venda.</p>
+          </div>
           <Link className="secondary-button" href="/vendas">Voltar para vendas</Link>
         </header>
 
@@ -34,28 +38,54 @@ export default function VendaDetalhePage() {
         ) : (
           <div className="product-form-stack">
             <section className="summary-grid">
-              <article className="summary-card"><span>Total vendido</span><strong>{formatarMoeda(venda.totalVenda)}</strong><small>{nomeFormaPagamento(venda.formaPagamento)}</small></article>
-              <article className="summary-card"><span>Custo</span><strong>{formatarMoeda(venda.custoTotal)}</strong><small>Custo histórico dos itens</small></article>
-              <article className="summary-card"><span>Lucro estimado</span><strong>{formatarMoeda(venda.lucroTotal)}</strong><small>Total menos custo</small></article>
-              <article className="summary-card"><span>Data</span><strong>{new Date(venda.criadoEm).toLocaleDateString("pt-BR")}</strong><small>{new Date(venda.criadoEm).toLocaleTimeString("pt-BR")}</small></article>
+              <article className="summary-card">
+                <span>Total da venda</span>
+                <strong>{formatarMoeda(venda.totalVenda)}</strong>
+                <small>Valor registrado no momento da venda</small>
+              </article>
+              <article className="summary-card">
+                <span>Pagamento</span>
+                <strong>{nomeFormaPagamento(venda.formaPagamento)}</strong>
+                <small>Forma de pagamento utilizada</small>
+              </article>
+              <article className="summary-card">
+                <span>Data</span>
+                <strong>{new Date(venda.criadoEm).toLocaleDateString("pt-BR")}</strong>
+                <small>{new Date(venda.criadoEm).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</small>
+              </article>
             </section>
 
             <article className="panel">
-              <div className="panel-header"><div><p className="eyebrow">Itens</p><h2>Produtos vendidos</h2></div></div>
+              <div className="panel-header">
+                <div>
+                  <p className="eyebrow">Itens</p>
+                  <h2>Produtos vendidos</h2>
+                </div>
+              </div>
               <div className="ingredient-detail-list">
-                <div className="ingredient-detail-head" aria-hidden="true"><span>Produto</span><span>Quantidade</span><span>Preço unitário</span><span>Subtotal</span></div>
+                <div className="ingredient-detail-head" aria-hidden="true">
+                  <span>Produto</span>
+                  <span>Quantidade</span>
+                  <span>Preço unitário</span>
+                  <span>Subtotal</span>
+                </div>
                 {venda.itens.map((item) => (
                   <div className="ingredient-detail-row" key={item.id}>
-                    <div><strong>{item.produtoNome}</strong><small>custo unitário {formatarMoeda(item.custoUnitario)}</small></div>
+                    <div><strong>{item.produtoNome}</strong></div>
                     <div data-label="Quantidade">{item.quantidade}</div>
                     <div data-label="Preço unitário">{formatarMoeda(item.precoUnitario)}</div>
-                    <div data-label="Subtotal"><strong>{formatarMoeda(item.subtotal)}</strong><small> lucro {formatarMoeda(item.lucroSubtotal)}</small></div>
+                    <div data-label="Subtotal"><strong>{formatarMoeda(item.subtotal)}</strong></div>
                   </div>
                 ))}
               </div>
             </article>
 
-            {venda.observacao ? <article className="panel"><div className="panel-header"><div><p className="eyebrow">Observação</p><h2>Anotação da venda</h2></div></div><p>{venda.observacao}</p></article> : null}
+            {venda.observacao ? (
+              <article className="panel">
+                <div className="panel-header"><div><p className="eyebrow">Observação</p><h2>Anotação da venda</h2></div></div>
+                <p>{venda.observacao}</p>
+              </article>
+            ) : null}
           </div>
         )}
       </section>
