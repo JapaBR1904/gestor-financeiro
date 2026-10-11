@@ -5,6 +5,7 @@ import "./auth.css";
 import "./auth-suggestions.css";
 import "./polish.css";
 import "./tables.css";
+import "./refinement.css";
 
 export const metadata: Metadata = {
   title: "Nexo",
