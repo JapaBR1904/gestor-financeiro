@@ -8,10 +8,26 @@ import { carregarProdutos, formatarMoeda, Produto } from "../../lib/produtos";
 export default function ProdutosPage() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState("");
 
   useEffect(() => {
-    setProdutos(carregarProdutos());
-    setCarregando(false);
+    let ativo = true;
+
+    async function carregar() {
+      try {
+        const dados = await carregarProdutos();
+        if (ativo) setProdutos(dados);
+      } catch (error) {
+        if (ativo) setErro(error instanceof Error ? error.message : "Não foi possível carregar os produtos.");
+      } finally {
+        if (ativo) setCarregando(false);
+      }
+    }
+
+    carregar();
+    return () => {
+      ativo = false;
+    };
   }, []);
 
   return (
@@ -42,6 +58,12 @@ export default function ProdutosPage() {
             <div className="empty-state">
               <span className="empty-icon">P</span>
               <strong>Carregando produtos...</strong>
+            </div>
+          ) : erro ? (
+            <div className="empty-state">
+              <span className="empty-icon">!</span>
+              <strong>Não foi possível carregar os produtos</strong>
+              <p>{erro}</p>
             </div>
           ) : produtos.length === 0 ? (
             <div className="empty-state">
@@ -78,10 +100,6 @@ export default function ProdutosPage() {
             </div>
           )}
         </article>
-
-        <p className="temporary-note catalog-note">
-          Os produtos desta etapa ficam salvos somente neste navegador. A próxima integração de persistência será feita no Spring Boot com PostgreSQL.
-        </p>
       </section>
     </main>
   );
