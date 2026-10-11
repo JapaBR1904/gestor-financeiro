@@ -56,44 +56,67 @@
   margin-bottom: 1.25rem;
 }
 
-.dashboard-chart {
-  display: grid;
-  gap: 1rem;
+.dashboard-column-chart {
+  position: relative;
+  min-height: 330px;
+  padding: 1rem 0.5rem 0;
 }
 
-.dashboard-chart-row {
+.dashboard-column-grid {
+  position: absolute;
+  inset: 1rem 0.5rem 3.5rem;
   display: grid;
-  gap: 0.45rem;
+  grid-template-rows: repeat(4, 1fr);
+  pointer-events: none;
 }
 
-.dashboard-chart-label {
+.dashboard-column-grid span {
+  border-top: 1px dashed #e2e8f0;
+}
+
+.dashboard-columns {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(1rem, 4vw, 3rem);
+  align-items: end;
+  min-height: 300px;
+}
+
+.dashboard-column-item {
+  display: grid;
+  grid-template-rows: auto 220px auto;
+  gap: 0.65rem;
+  min-width: 0;
+  text-align: center;
+}
+
+.dashboard-column-value {
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+.dashboard-column-slot {
   display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  align-items: baseline;
+  align-items: flex-end;
+  justify-content: center;
+  height: 220px;
+  border-bottom: 2px solid #cbd5e1;
 }
 
-.dashboard-chart-label span {
+.dashboard-column-bar {
+  width: min(84px, 72%);
+  min-height: 8px;
+  border-radius: 12px 12px 4px 4px;
+  box-shadow: 0 8px 20px rgb(15 23 42 / 0.08);
+  transition: height 0.25s ease;
+}
+
+.dashboard-column-name {
   color: #475569;
-  font-weight: 700;
-}
-
-.dashboard-chart-label strong {
-  font-size: 1rem;
-}
-
-.dashboard-chart-track {
-  width: 100%;
-  min-height: 18px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: #e2e8f0;
-}
-
-.dashboard-chart-bar {
-  min-height: 18px;
-  border-radius: 999px;
-  transition: width 0.25s ease;
+  font-size: 0.82rem;
+  font-weight: 800;
 }
 
 .chart-income,
@@ -307,10 +330,17 @@
     grid-column: auto;
   }
 
-  .dashboard-chart-label {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 0.15rem;
+  .dashboard-column-chart {
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+  }
+
+  .dashboard-columns {
+    min-width: 620px;
+  }
+
+  .dashboard-column-grid {
+    min-width: 620px;
   }
 
   .dashboard-product-row {
