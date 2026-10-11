@@ -38,37 +38,16 @@ export default function VendaDetalhePage() {
         ) : (
           <div className="product-form-stack">
             <section className="summary-grid">
-              <article className="summary-card">
-                <span>Total da venda</span>
-                <strong>{formatarMoeda(venda.totalVenda)}</strong>
-                <small>Valor registrado no momento da venda</small>
-              </article>
-              <article className="summary-card">
-                <span>Pagamento</span>
-                <strong>{nomeFormaPagamento(venda.formaPagamento)}</strong>
-                <small>Forma de pagamento utilizada</small>
-              </article>
-              <article className="summary-card">
-                <span>Data</span>
-                <strong>{new Date(venda.criadoEm).toLocaleDateString("pt-BR")}</strong>
-                <small>{new Date(venda.criadoEm).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</small>
-              </article>
+              <article className="summary-card"><span>Total da venda</span><strong>{formatarMoeda(venda.totalVenda)}</strong><small>Valor registrado no momento da venda</small></article>
+              <article className="summary-card"><span>Forma de pagamento</span><strong>{nomeFormaPagamento(venda.formaPagamento)}</strong><small>Forma utilizada na venda</small></article>
+              <article className="summary-card"><span>Cliente</span><strong>{venda.clienteNome || "Não informado"}</strong><small>{venda.clienteId ? "Cliente vinculado à venda" : "Venda sem cliente identificado"}</small></article>
+              <article className="summary-card"><span>Data</span><strong>{new Date(venda.criadoEm).toLocaleDateString("pt-BR")}</strong><small>Data do registro</small></article>
             </section>
 
             <article className="panel">
-              <div className="panel-header">
-                <div>
-                  <p className="eyebrow">Itens</p>
-                  <h2>Produtos vendidos</h2>
-                </div>
-              </div>
+              <div className="panel-header"><div><p className="eyebrow">Itens</p><h2>Produtos vendidos</h2></div></div>
               <div className="ingredient-detail-list">
-                <div className="ingredient-detail-head" aria-hidden="true">
-                  <span>Produto</span>
-                  <span>Quantidade</span>
-                  <span>Preço unitário</span>
-                  <span>Subtotal</span>
-                </div>
+                <div className="ingredient-detail-head" aria-hidden="true"><span>Produto</span><span>Quantidade</span><span>Preço unitário</span><span>Subtotal</span></div>
                 {venda.itens.map((item) => (
                   <div className="ingredient-detail-row" key={item.id}>
                     <div><strong>{item.produtoNome}</strong></div>
@@ -80,12 +59,7 @@ export default function VendaDetalhePage() {
               </div>
             </article>
 
-            {venda.observacao ? (
-              <article className="panel">
-                <div className="panel-header"><div><p className="eyebrow">Observação</p><h2>Anotação da venda</h2></div></div>
-                <p>{venda.observacao}</p>
-              </article>
-            ) : null}
+            {venda.observacao ? <article className="panel"><div className="panel-header"><div><p className="eyebrow">Observação</p><h2>Anotação da venda</h2></div></div><p>{venda.observacao}</p></article> : null}
           </div>
         )}
       </section>
