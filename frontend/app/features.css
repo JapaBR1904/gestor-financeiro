@@ -146,7 +146,7 @@
 .sales-history-head,
 .sales-history-row {
   display: grid;
-  grid-template-columns: minmax(220px, 1.5fr) minmax(150px, 0.9fr) minmax(120px, 0.7fr) minmax(130px, 0.8fr) minmax(120px, auto);
+  grid-template-columns: minmax(115px, 0.7fr) minmax(150px, 0.9fr) minmax(180px, 1.1fr) minmax(105px, 0.65fr) minmax(120px, 0.75fr) minmax(120px, auto);
   gap: 1rem;
   align-items: center;
 }
