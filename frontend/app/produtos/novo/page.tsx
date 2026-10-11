@@ -62,6 +62,8 @@ export default function NovoProdutoPage() {
   const [descricao, setDescricao] = useState("");
   const [ingredientes, setIngredientes] = useState<IngredienteEdicao[]>([ingredienteInicial]);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [salvando, setSalvando] = useState(false);
+  const [erroSalvar, setErroSalvar] = useState("");
 
   const ingredientesCalculados = useMemo(
     () => ingredientes.map(paraIngrediente),
@@ -115,7 +117,7 @@ export default function NovoProdutoPage() {
     );
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const novosErros: FormErrors = {};
@@ -129,20 +131,28 @@ export default function NovoProdutoPage() {
     }
 
     setErrors(novosErros);
+    setErroSalvar("");
 
     if (Object.keys(novosErros).length > 0) return;
 
-    salvarProduto({
-      id: `produto-${Date.now()}`,
-      nome: nome.trim(),
-      precoVenda,
-      descricao: descricao.trim(),
-      ingredientes: ingredientesValidos,
-      custoEstimado,
-      criadoEm: new Date().toISOString(),
-    });
+    setSalvando(true);
+    try {
+      await salvarProduto({
+        id: `produto-${Date.now()}`,
+        nome: nome.trim(),
+        precoVenda,
+        descricao: descricao.trim(),
+        ingredientes: ingredientesValidos,
+        custoEstimado,
+        criadoEm: new Date().toISOString(),
+      });
 
-    router.push("/produtos");
+      router.push("/produtos");
+    } catch (error) {
+      setErroSalvar(error instanceof Error ? error.message : "Não foi possível salvar o produto.");
+    } finally {
+      setSalvando(false);
+    }
   }
 
   return (
@@ -262,7 +272,7 @@ export default function NovoProdutoPage() {
                     <label className="field field-unit">
                       <span>Unidade</span>
                       <select
-                        onChange={(event) => atualizarIngrediente(ingrediente.id, "unidadeCompra", event.target.value)}
+                        onChange={(event) => atualizarIngrediente(ingrediente.id, "unidadeCompra", event.target.value as Unidade)}
                         value={ingrediente.unidadeCompra}
                       >
                         <option value="kg">kg</option>
@@ -287,7 +297,7 @@ export default function NovoProdutoPage() {
                     <label className="field field-unit">
                       <span>Unidade</span>
                       <select
-                        onChange={(event) => atualizarIngrediente(ingrediente.id, "unidadeUso", event.target.value)}
+                        onChange={(event) => atualizarIngrediente(ingrediente.id, "unidadeUso", event.target.value as Unidade)}
                         value={ingrediente.unidadeUso}
                       >
                         <option value="kg">kg</option>
@@ -332,16 +342,14 @@ export default function NovoProdutoPage() {
             </div>
           </section>
 
-          <p className="temporary-note">
-            Nesta etapa, o produto fica salvo somente neste navegador. Quando o PostgreSQL estiver criado, esse salvamento será movido para o backend.
-          </p>
+          {erroSalvar ? <p className="field-error">{erroSalvar}</p> : null}
 
           <div className="form-actions standalone-actions">
             <Link className="secondary-button" href="/produtos">
               Cancelar
             </Link>
-            <button className="primary-button" type="submit">
-              Salvar produto
+            <button className="primary-button" disabled={salvando} type="submit">
+              {salvando ? "Salvando..." : "Salvar produto"}
             </button>
           </div>
         </form>
