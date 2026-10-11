@@ -1,14 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Sidebar } from "../../../components/Sidebar";
-import { alterarStatusCliente, carregarCliente, Cliente } from "../../../lib/clientes";
+import { alterarStatusCliente, carregarCliente, Cliente, formatarTelefone } from "../../../lib/clientes";
 
 export default function ClienteDetalhePage() {
   const params = useParams<{ id: string }>();
-  const router = useRouter();
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [alterando, setAlterando] = useState(false);
@@ -56,8 +55,7 @@ export default function ClienteDetalhePage() {
 
         <section className="summary-grid">
           <article className="summary-card"><span>Status</span><strong>{cliente.ativo ? "Ativo" : "Inativo"}</strong><small>{cliente.ativo ? "Disponível para novas vendas" : "Não aparece para novas vendas"}</small></article>
-          <article className="summary-card"><span>Telefone</span><strong>{cliente.telefone || "—"}</strong><small>Contato principal</small></article>
-          <article className="summary-card"><span>E-mail</span><strong>{cliente.email || "—"}</strong><small>Contato eletrônico</small></article>
+          <article className="summary-card"><span>Telefone / WhatsApp</span><strong>{formatarTelefone(cliente.telefone) || "—"}</strong><small>Contato principal</small></article>
         </section>
 
         {cliente.observacao ? <article className="panel"><div className="panel-header"><div><p className="eyebrow">Observação</p><h2>Anotações</h2></div></div><p>{cliente.observacao}</p></article> : null}
