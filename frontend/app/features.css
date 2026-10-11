@@ -52,6 +52,65 @@
   min-height: 120px;
 }
 
+.dashboard-chart-panel {
+  margin-bottom: 1.25rem;
+}
+
+.dashboard-chart {
+  display: grid;
+  gap: 1rem;
+}
+
+.dashboard-chart-row {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.dashboard-chart-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: baseline;
+}
+
+.dashboard-chart-label span {
+  color: #475569;
+  font-weight: 700;
+}
+
+.dashboard-chart-label strong {
+  font-size: 1rem;
+}
+
+.dashboard-chart-track {
+  width: 100%;
+  min-height: 18px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+.dashboard-chart-bar {
+  min-height: 18px;
+  border-radius: 999px;
+  transition: width 0.25s ease;
+}
+
+.chart-income,
+.chart-balance-positive,
+.chart-profit {
+  background: #16a34a;
+}
+
+.chart-expense,
+.chart-balance-negative {
+  background: #dc2626;
+}
+
+.dashboard-lower-grid {
+  margin-top: 0;
+}
+
 .dashboard-product-list {
   display: grid;
   gap: 0.65rem;
@@ -246,6 +305,12 @@
 
   .product-info-wide {
     grid-column: auto;
+  }
+
+  .dashboard-chart-label {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.15rem;
   }
 
   .dashboard-product-row {
