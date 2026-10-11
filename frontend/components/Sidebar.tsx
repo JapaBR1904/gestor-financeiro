@@ -60,20 +60,13 @@ export function Sidebar({ ativo }: SidebarProps) {
       </nav>
 
       <div className="sidebar-watermark" aria-hidden="true">
-        <svg className="sidebar-watermark-trace" viewBox="0 0 240 180" role="presentation">
-          <path
-            id="nexo-watermark-path"
-            className="sidebar-watermark-path"
-            pathLength="1"
-            d="M18 100 C54 86, 84 68, 116 82 C144 94, 164 118, 222 94"
-          />
-          <circle className="sidebar-watermark-dot" r="3.2">
-            <animateMotion dur="1.65s" begin="0.08s" fill="freeze" calcMode="linear">
-              <mpath href="#nexo-watermark-path" />
-            </animateMotion>
-          </circle>
+        <svg className="nexo-signature" viewBox="0 0 240 170" role="presentation">
+          <path className="nexo-signature-path nexo-signature-left" pathLength="1" d="M18 108 C52 108 72 89 101 78 C112 74 118 73 120 73" />
+          <path className="nexo-signature-path nexo-signature-right" pathLength="1" d="M222 108 C188 108 168 89 139 78 C128 74 122 73 120 73" />
+          <path className="nexo-signature-bridge" pathLength="1" d="M68 104 C91 91 102 88 120 73 C138 88 149 91 172 104" />
         </svg>
-        <span className="sidebar-watermark-n">N</span>
+        <span className="nexo-signature-n">N</span>
+        <span className="nexo-signature-word">NEXO</span>
       </div>
 
       <div className="sidebar-footer">
