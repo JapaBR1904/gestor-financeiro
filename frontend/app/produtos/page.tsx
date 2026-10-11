@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Sidebar } from "../../components/Sidebar";
-import { carregarProdutos, formatarMoeda, Produto } from "../../lib/produtos";
+import { alterarStatusProduto, carregarProdutos, formatarMoeda, Produto } from "../../lib/produtos";
 
 export default function ProdutosPage() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [carregando, setCarregando] = useState(true);
+  const [alterandoId, setAlterandoId] = useState<string | number | null>(null);
   const [erro, setErro] = useState("");
 
   useEffect(() => {
@@ -29,6 +30,20 @@ export default function ProdutosPage() {
       ativo = false;
     };
   }, []);
+
+  async function alternarStatus(produto: Produto) {
+    setErro("");
+    setAlterandoId(produto.id);
+
+    try {
+      const atualizado = await alterarStatusProduto(produto.id, !produto.ativo);
+      setProdutos((atuais) => atuais.map((item) => (item.id === produto.id ? atualizado : item)));
+    } catch (error) {
+      setErro(error instanceof Error ? error.message : "Não foi possível alterar o status do produto.");
+    } finally {
+      setAlterandoId(null);
+    }
+  }
 
   return (
     <main className="app-shell">
@@ -54,12 +69,14 @@ export default function ProdutosPage() {
             </div>
           </div>
 
+          {erro && produtos.length > 0 ? <p className="form-error-banner">{erro}</p> : null}
+
           {carregando ? (
             <div className="empty-state">
               <span className="empty-icon">P</span>
               <strong>Carregando produtos...</strong>
             </div>
-          ) : erro ? (
+          ) : erro && produtos.length === 0 ? (
             <div className="empty-state">
               <span className="empty-icon">!</span>
               <strong>Não foi possível carregar os produtos</strong>
@@ -78,11 +95,12 @@ export default function ProdutosPage() {
                 <span>Venda</span>
                 <span>Custo</span>
                 <span>Lucro estimado</span>
-                <span>Ingredientes</span>
+                <span>Status</span>
+                <span>Ações</span>
               </div>
 
               {produtos.map((produto) => {
-                const lucro = produto.precoVenda - produto.custoEstimado;
+                const lucro = produto.lucroEstimado ?? produto.precoVenda - produto.custoEstimado;
 
                 return (
                   <div className="product-list-row" key={produto.id}>
@@ -93,7 +111,24 @@ export default function ProdutosPage() {
                     <div data-label="Venda">{formatarMoeda(produto.precoVenda)}</div>
                     <div data-label="Custo">{formatarMoeda(produto.custoEstimado)}</div>
                     <div data-label="Lucro estimado">{formatarMoeda(lucro)}</div>
-                    <div data-label="Ingredientes">{produto.ingredientes.length}</div>
+                    <div data-label="Status">
+                      <span className={`status-badge ${produto.ativo ? "status-active" : "status-inactive"}`}>
+                        {produto.ativo ? "Ativo" : "Inativo"}
+                      </span>
+                    </div>
+                    <div className="product-actions" data-label="Ações">
+                      <Link className="secondary-button compact-button" href={`/produtos/${produto.id}`}>
+                        Ver ficha
+                      </Link>
+                      <button
+                        className="secondary-button compact-button"
+                        type="button"
+                        disabled={alterandoId === produto.id}
+                        onClick={() => alternarStatus(produto)}
+                      >
+                        {alterandoId === produto.id ? "Salvando..." : produto.ativo ? "Desativar" : "Reativar"}
+                      </button>
+                    </div>
                   </div>
                 );
               })}
