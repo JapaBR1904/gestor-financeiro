@@ -30,11 +30,7 @@ export default function VendasPage() {
       <Sidebar ativo="vendas" />
       <section className="content">
         <header className="topbar">
-          <div>
-            <p className="eyebrow">Comercial</p>
-            <h1>Vendas</h1>
-            <p className="subtitle">Registre vendas e acompanhe faturamento, custo e lucro realizados.</p>
-          </div>
+          <div><p className="eyebrow">Comercial</p><h1>Vendas</h1><p className="subtitle">Registre vendas e acompanhe faturamento, custo e lucro realizados.</p></div>
           <Link className="primary-button" href="/vendas/nova">+ Nova venda</Link>
         </header>
 
@@ -48,24 +44,19 @@ export default function VendasPage() {
         </section>
 
         <article className="panel">
-          <div className="panel-header">
-            <div><p className="eyebrow">Histórico</p><h2>Vendas registradas</h2></div>
-          </div>
-
-          {carregando ? (
-            <div className="empty-state"><strong>Carregando vendas...</strong></div>
-          ) : vendas.length === 0 ? (
+          <div className="panel-header"><div><p className="eyebrow">Histórico</p><h2>Vendas registradas</h2></div></div>
+          {carregando ? <div className="empty-state"><strong>Carregando vendas...</strong></div> : vendas.length === 0 ? (
             <div className="empty-state"><span className="empty-icon">V</span><strong>Nenhuma venda registrada</strong><p>Cadastre a primeira venda para começar a alimentar o financeiro.</p></div>
           ) : (
             <div className="ingredient-detail-list">
               <div className="ingredient-detail-head" aria-hidden="true"><span>Venda</span><span>Pagamento</span><span>Itens</span><span>Resultado</span></div>
               {vendas.map((venda) => (
-                <div className="ingredient-detail-row" key={venda.id}>
+                <Link className="ingredient-detail-row" href={`/vendas/${venda.id}`} key={venda.id}>
                   <div><strong>Venda #{venda.id}</strong><small>{new Date(venda.criadoEm).toLocaleString("pt-BR")}</small></div>
                   <div data-label="Pagamento">{nomeFormaPagamento(venda.formaPagamento)}</div>
                   <div data-label="Itens">{venda.itens.reduce((total, item) => total + item.quantidade, 0)} item(ns)</div>
                   <div data-label="Resultado"><strong>{formatarMoeda(venda.totalVenda)}</strong><small> lucro {formatarMoeda(venda.lucroTotal)}</small></div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
