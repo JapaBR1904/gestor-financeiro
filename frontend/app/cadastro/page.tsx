@@ -9,7 +9,6 @@ import { capitalizarPalavras, emailValido } from "../../lib/formatacao";
 export default function CadastroPage() {
   const router = useRouter();
   const [nome, setNome] = useState("");
-  const [organizacaoNome, setOrganizacaoNome] = useState("");
   const [email, setEmail] = useState("");
   const [erro, setErro] = useState("");
   const [enviando, setEnviando] = useState(false);
@@ -19,7 +18,6 @@ export default function CadastroPage() {
     setErro("");
 
     if (!nome.trim()) return setErro("Informe seu nome.");
-    if (!organizacaoNome.trim()) return setErro("Informe o nome do negócio.");
     if (!emailValido(email)) return setErro("Informe um e-mail válido.");
 
     setEnviando(true);
@@ -29,7 +27,6 @@ export default function CadastroPage() {
         email: email.trim(),
         finalidade: "cadastro",
         nome: nome.trim(),
-        organizacaoNome: organizacaoNome.trim(),
       });
       router.push(`/verificar-codigo?${params.toString()}`);
     } catch (error) {
@@ -47,17 +44,13 @@ export default function CadastroPage() {
         <div className="auth-heading">
           <p className="eyebrow">Primeiro acesso</p>
           <h1>Criar conta</h1>
-          <p>Cadastre seus dados. O acesso só será liberado depois da confirmação do e-mail.</p>
+          <p>Cadastre seus dados básicos. Depois você escolhe como quer usar o Nexo.</p>
         </div>
 
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
           <label className="field">
             <span>Seu nome</span>
             <input value={nome} onChange={(event) => setNome(capitalizarPalavras(event.target.value))} placeholder="Maria Oliveira" />
-          </label>
-          <label className="field">
-            <span>Nome do negócio</span>
-            <input value={organizacaoNome} onChange={(event) => setOrganizacaoNome(capitalizarPalavras(event.target.value))} placeholder="Doce Encanto" />
           </label>
           <label className="field">
             <span>E-mail</span>
