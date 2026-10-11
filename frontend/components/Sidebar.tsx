@@ -61,9 +61,17 @@ export function Sidebar({ ativo }: SidebarProps) {
 
       <div className="sidebar-watermark" aria-hidden="true">
         <svg className="nexo-signature" viewBox="0 0 240 170" role="presentation">
-          <path className="nexo-signature-path nexo-signature-left" pathLength="1" d="M18 108 C52 108 72 89 101 78 C112 74 118 73 120 73" />
-          <path className="nexo-signature-path nexo-signature-right" pathLength="1" d="M222 108 C188 108 168 89 139 78 C128 74 122 73 120 73" />
-          <path className="nexo-signature-bridge" pathLength="1" d="M68 104 C91 91 102 88 120 73 C138 88 149 91 172 104" />
+          <path
+            id="nexo-signature-loop"
+            className="nexo-signature-loop"
+            pathLength="1"
+            d="M22 92 C44 46 90 42 120 74 C149 105 176 126 218 92 C190 55 151 45 120 74 C91 102 57 122 22 92"
+          />
+          <circle className="nexo-signature-head" r="3.4">
+            <animateMotion dur="1.85s" begin="0.08s" fill="freeze" calcMode="linear">
+              <mpath href="#nexo-signature-loop" />
+            </animateMotion>
+          </circle>
         </svg>
         <span className="nexo-signature-n">N</span>
         <span className="nexo-signature-word">NEXO</span>
