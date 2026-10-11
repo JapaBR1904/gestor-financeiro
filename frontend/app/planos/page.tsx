@@ -2,23 +2,36 @@
 
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { PLANOS_NEXO, PlanoNexo, salvarPlanoLocal, concluirOnboarding } from "../../lib/saas";
+import {
+  carregarPerfilUso,
+  concluirOnboarding,
+  PLANOS_NEXO,
+  PlanoNexo,
+  salvarPlanoLocal,
+} from "../../lib/saas";
 
 export default function PlanosPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const veioDoOnboarding = searchParams.get("origem") === "onboarding";
 
-  function escolherPlano(plano: PlanoNexo) {
-    if (plano === "free") {
-      salvarPlanoLocal("free");
-      if (veioDoOnboarding) concluirOnboarding();
-      router.push(veioDoOnboarding ? "/" : "/conta/assinatura");
-      router.refresh();
-      return;
-    }
+  function destinoDoPerfil() {
+    const perfil = carregarPerfilUso();
+    if (perfil === "pessoal") return "/pessoal";
+    if (perfil === "empresa") return "/empresa";
+    return "/";
+  }
 
-    router.push(`/conta/assinatura?plano=${plano}`);
+  function escolherPlano(plano: PlanoNexo) {
+    salvarPlanoLocal(plano);
+    if (veioDoOnboarding) concluirOnboarding();
+
+    if (veioDoOnboarding) {
+      router.push(destinoDoPerfil());
+    } else {
+      router.push(`/conta/assinatura?plano=${plano}&modo=prototipo`);
+    }
+    router.refresh();
   }
 
   return (
@@ -53,15 +66,15 @@ export default function PlanosPage() {
             </div>
 
             <button className={plano.id === "pro" ? "primary-button pricing-button" : "secondary-button pricing-button"} type="button" onClick={() => escolherPlano(plano.id)}>
-              {plano.id === "free" ? "Usar plano Free" : `Escolher ${plano.nome}`}
+              {plano.id === "free" ? "Usar plano Free" : `Testar experiência ${plano.nome}`}
             </button>
           </article>
         ))}
       </section>
 
       <section className="pricing-note">
-        <strong>Importante:</strong>
-        <p>Os planos pagos já têm a experiência e as páginas preparadas. A cobrança real será conectada quando definirmos o provedor de pagamento do Nexo.</p>
+        <strong>Modo de protótipo:</strong>
+        <p>Você já pode alternar entre Free, Pro e Business para testar as páginas. A cobrança real e a assinatura persistida serão conectadas ao banco na próxima etapa.</p>
       </section>
     </main>
   );
