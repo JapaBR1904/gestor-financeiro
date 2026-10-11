@@ -94,8 +94,7 @@ public class AuthService {
                 throw new IllegalArgumentException("Já existe uma conta com este e-mail.");
             }
             String nomeFormatado = formatarNome(nome, "Informe seu nome para criar a conta.");
-            String empresaFormatada = formatarNome(organizacaoNome, "Informe o nome do negócio para criar a conta.");
-            Organizacao organizacao = organizacaoService.criar(empresaFormatada);
+            Organizacao organizacao = organizacaoService.criar("Meu espaço");
             usuario = usuarioRepository.save(new Usuario(organizacao, nomeFormatado, email));
         } else {
             usuario = usuarioRepository.findByEmailIgnoreCase(email)
