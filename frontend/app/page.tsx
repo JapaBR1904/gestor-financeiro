@@ -55,6 +55,15 @@ export default function HomePage() {
     { titulo: "Produtos ativos", valor: String(ativos.length), detalhe: `${produtos.length} produto(s) no catálogo` },
   ];
 
+  const grafico = [
+    { nome: "Faturamento", valor: relatorio.faturamento, classe: "chart-income" },
+    { nome: "Despesas", valor: relatorio.totalDespesas, classe: "chart-expense" },
+    { nome: "Saldo financeiro", valor: relatorio.saldoFinanceiro, classe: relatorio.saldoFinanceiro >= 0 ? "chart-balance-positive" : "chart-balance-negative" },
+    { nome: "Lucro bruto", valor: relatorio.lucroBruto, classe: relatorio.lucroBruto >= 0 ? "chart-profit" : "chart-balance-negative" },
+  ];
+
+  const maiorValorGrafico = Math.max(1, ...grafico.map((item) => Math.abs(item.valor)));
+
   return (
     <main className="app-shell">
       <Sidebar ativo="dashboard" />
@@ -72,7 +81,34 @@ export default function HomePage() {
           ))}
         </section>
 
-        <section className="dashboard-grid">
+        <article className="panel dashboard-chart-panel">
+          <div className="panel-header">
+            <div><p className="eyebrow">Visão financeira</p><h2>Panorama do negócio</h2><p className="subtitle">Comparação geral entre entradas, saídas e resultado acumulado.</p></div>
+          </div>
+
+          {carregando ? (
+            <div className="empty-state compact-empty-state"><strong>Carregando gráfico...</strong></div>
+          ) : (
+            <div className="dashboard-chart" aria-label="Gráfico financeiro do negócio">
+              {grafico.map((item) => {
+                const largura = Math.max(item.valor === 0 ? 0 : 8, (Math.abs(item.valor) / maiorValorGrafico) * 100);
+                return (
+                  <div className="dashboard-chart-row" key={item.nome}>
+                    <div className="dashboard-chart-label">
+                      <span>{item.nome}</span>
+                      <strong>{formatarMoeda(item.valor)}</strong>
+                    </div>
+                    <div className="dashboard-chart-track">
+                      <div className={`dashboard-chart-bar ${item.classe}`} style={{ width: `${largura}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </article>
+
+        <section className="dashboard-grid dashboard-lower-grid">
           <article className="panel">
             <div className="panel-header"><div><p className="eyebrow">Ações rápidas</p><h2>Movimente o negócio</h2></div></div>
             <div className="quick-actions">
@@ -80,7 +116,6 @@ export default function HomePage() {
               <Link className="quick-action" href="/despesas/nova"><strong>Nova despesa</strong><span>Registre uma saída de dinheiro do negócio</span></Link>
               <Link className="quick-action" href="/produtos/novo"><strong>Novo produto</strong><span>Cadastre um produto e monte a ficha de custo</span></Link>
               <Link className="quick-action" href="/clientes/novo"><strong>Novo cliente</strong><span>Cadastre um cliente para vincular às vendas</span></Link>
-              <Link className="quick-action" href="/relatorios"><strong>Ver relatórios</strong><span>Analise faturamento, despesas e desempenho</span></Link>
             </div>
           </article>
 
