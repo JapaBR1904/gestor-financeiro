@@ -19,7 +19,7 @@ export type Produto = {
   ingredientes: IngredienteProduto[];
   custoEstimado: number;
   lucroEstimado?: number;
-  ativo: boolean;
+  ativo?: boolean;
   criadoEm?: string;
 };
 
