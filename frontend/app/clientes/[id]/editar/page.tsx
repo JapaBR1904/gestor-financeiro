@@ -1,0 +1,70 @@
+"use client";
+
+import Link from "next/link";
+import { FormEvent, useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { Sidebar } from "../../../../components/Sidebar";
+import { atualizarCliente, carregarCliente } from "../../../../lib/clientes";
+
+export default function EditarClientePage() {
+  const params = useParams<{ id: string }>();
+  const router = useRouter();
+  const [nome, setNome] = useState("");
+  const [telefone, setTelefone] = useState("");
+  const [email, setEmail] = useState("");
+  const [observacao, setObservacao] = useState("");
+  const [carregando, setCarregando] = useState(true);
+  const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState("");
+
+  useEffect(() => {
+    carregarCliente(params.id)
+      .then((cliente) => {
+        setNome(cliente.nome);
+        setTelefone(cliente.telefone ?? "");
+        setEmail(cliente.email ?? "");
+        setObservacao(cliente.observacao ?? "");
+      })
+      .catch((error) => setErro(error instanceof Error ? error.message : "Não foi possível carregar o cliente."))
+      .finally(() => setCarregando(false));
+  }, [params.id]);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setErro("");
+    if (!nome.trim()) {
+      setErro("Informe o nome do cliente.");
+      return;
+    }
+    setSalvando(true);
+    try {
+      await atualizarCliente(params.id, { nome: nome.trim(), telefone: telefone.trim(), email: email.trim(), observacao: observacao.trim() });
+      router.push(`/clientes/${params.id}`);
+    } catch (error) {
+      setErro(error instanceof Error ? error.message : "Não foi possível atualizar o cliente.");
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  return (
+    <main className="app-shell">
+      <Sidebar ativo="clientes" />
+      <section className="content">
+        <header className="topbar"><div><p className="eyebrow">Cliente</p><h1>Editar cliente</h1><p className="subtitle">Atualize os dados cadastrais.</p></div><Link className="secondary-button" href={`/clientes/${params.id}`}>Voltar</Link></header>
+        {carregando ? <article className="panel"><div className="empty-state"><strong>Carregando cliente...</strong></div></article> : (
+          <form className="product-form-stack" onSubmit={handleSubmit}>
+            <section className="panel product-form"><div className="form-grid">
+              <label className="field field-wide"><span>Nome *</span><input value={nome} maxLength={160} onChange={(event) => setNome(event.target.value)} /></label>
+              <label className="field"><span>Telefone / WhatsApp</span><input value={telefone} maxLength={30} onChange={(event) => setTelefone(event.target.value)} /></label>
+              <label className="field"><span>E-mail</span><input type="email" value={email} maxLength={180} onChange={(event) => setEmail(event.target.value)} /></label>
+              <label className="field field-wide"><span>Observação</span><textarea rows={4} value={observacao} onChange={(event) => setObservacao(event.target.value)} /></label>
+            </div></section>
+            {erro ? <p className="form-error-banner">{erro}</p> : null}
+            <div className="form-actions standalone-actions"><Link className="secondary-button" href={`/clientes/${params.id}`}>Cancelar</Link><button className="primary-button" type="submit" disabled={salvando}>{salvando ? "Salvando..." : "Salvar alterações"}</button></div>
+          </form>
+        )}
+      </section>
+    </main>
+  );
+}
