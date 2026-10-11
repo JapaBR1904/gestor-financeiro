@@ -3,6 +3,7 @@ package br.com.nexo.venda;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
+import br.com.nexo.cliente.Cliente;
 import br.com.nexo.organizacao.Organizacao;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -26,6 +27,10 @@ public class Venda {
     @JoinColumn(name = "organizacao_id", nullable = false)
     private Organizacao organizacao;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cliente_id")
+    private Cliente cliente;
+
     @Column(name = "forma_pagamento", nullable = false, length = 30)
     private String formaPagamento;
 
@@ -46,8 +51,9 @@ public class Venda {
 
     protected Venda() {}
 
-    public Venda(Organizacao organizacao, String formaPagamento, String observacao, BigDecimal totalVenda, BigDecimal custoTotal, BigDecimal lucroTotal) {
+    public Venda(Organizacao organizacao, Cliente cliente, String formaPagamento, String observacao, BigDecimal totalVenda, BigDecimal custoTotal, BigDecimal lucroTotal) {
         this.organizacao = organizacao;
+        this.cliente = cliente;
         this.formaPagamento = formaPagamento;
         this.observacao = observacao;
         this.totalVenda = totalVenda;
@@ -60,6 +66,7 @@ public class Venda {
 
     public Long getId() { return id; }
     public Organizacao getOrganizacao() { return organizacao; }
+    public Cliente getCliente() { return cliente; }
     public String getFormaPagamento() { return formaPagamento; }
     public String getObservacao() { return observacao; }
     public BigDecimal getTotalVenda() { return totalVenda; }
