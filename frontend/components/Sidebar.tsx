@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 type SidebarProps = {
-  ativo: "dashboard" | "vendas" | "produtos" | "despesas";
+  ativo: "dashboard" | "vendas" | "produtos" | "despesas" | "clientes";
 };
 
 const itens = [
@@ -9,7 +9,7 @@ const itens = [
   { chave: "vendas", nome: "Vendas", href: "/vendas", disponivel: true },
   { chave: "produtos", nome: "Produtos", href: "/produtos", disponivel: true },
   { chave: "despesas", nome: "Despesas", href: "/despesas", disponivel: true },
-  { chave: "clientes", nome: "Clientes", href: "/clientes", disponivel: false },
+  { chave: "clientes", nome: "Clientes", href: "/clientes", disponivel: true },
   { chave: "relatorios", nome: "Relatórios", href: "/relatorios", disponivel: false },
 ] as const;
 
