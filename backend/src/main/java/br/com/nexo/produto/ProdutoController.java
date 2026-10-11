@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -46,6 +47,26 @@ public class ProdutoController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ProdutoService.ProdutoDetalhe criar(@Valid @RequestBody CriarProdutoRequest request) {
+        return produtoService.criar(mapearProduto(request));
+    }
+
+    @PutMapping("/{produtoId}")
+    public ProdutoService.ProdutoDetalhe atualizar(
+            @PathVariable Long produtoId,
+            @Valid @RequestBody CriarProdutoRequest request
+    ) {
+        return produtoService.atualizar(produtoId, mapearProduto(request));
+    }
+
+    @PatchMapping("/{produtoId}/status")
+    public ProdutoService.ProdutoDetalhe alterarStatus(
+            @PathVariable Long produtoId,
+            @Valid @RequestBody AlterarStatusRequest request
+    ) {
+        return produtoService.alterarStatus(request.organizacaoId(), produtoId, request.ativo());
+    }
+
+    private ProdutoService.NovoProduto mapearProduto(CriarProdutoRequest request) {
         List<ProdutoService.NovoIngrediente> ingredientes = request.ingredientes().stream()
                 .map(item -> new ProdutoService.NovoIngrediente(
                         item.nome(),
@@ -57,21 +78,13 @@ public class ProdutoController {
                 ))
                 .toList();
 
-        return produtoService.criar(new ProdutoService.NovoProduto(
+        return new ProdutoService.NovoProduto(
                 request.organizacaoId(),
                 request.nome(),
                 request.descricao(),
                 request.precoVenda(),
                 ingredientes
-        ));
-    }
-
-    @PatchMapping("/{produtoId}/status")
-    public ProdutoService.ProdutoDetalhe alterarStatus(
-            @PathVariable Long produtoId,
-            @Valid @RequestBody AlterarStatusRequest request
-    ) {
-        return produtoService.alterarStatus(request.organizacaoId(), produtoId, request.ativo());
+        );
     }
 
     public record CriarProdutoRequest(
