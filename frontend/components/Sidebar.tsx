@@ -10,12 +10,12 @@ type SidebarProps = {
 };
 
 const itens = [
-  { chave: "dashboard", nome: "Dashboard", href: "/", disponivel: true },
-  { chave: "vendas", nome: "Vendas", href: "/vendas", disponivel: true },
-  { chave: "produtos", nome: "Produtos", href: "/produtos", disponivel: true },
-  { chave: "despesas", nome: "Despesas", href: "/despesas", disponivel: true },
-  { chave: "clientes", nome: "Clientes", href: "/clientes", disponivel: true },
-  { chave: "relatorios", nome: "Relatórios", href: "/relatorios", disponivel: true },
+  { chave: "dashboard", nome: "Dashboard", href: "/", icone: "D" },
+  { chave: "vendas", nome: "Vendas", href: "/vendas", icone: "V" },
+  { chave: "produtos", nome: "Produtos", href: "/produtos", icone: "P" },
+  { chave: "despesas", nome: "Despesas", href: "/despesas", icone: "$" },
+  { chave: "clientes", nome: "Clientes", href: "/clientes", icone: "C" },
+  { chave: "relatorios", nome: "Relatórios", href: "/relatorios", icone: "R" },
 ] as const;
 
 export function Sidebar({ ativo }: SidebarProps) {
@@ -28,7 +28,7 @@ export function Sidebar({ ativo }: SidebarProps) {
     try {
       await logout();
     } catch {
-      // Mesmo se o backend já considerar a sessão encerrada, devolvemos o usuário ao login.
+      // Mesmo se a sessão já tiver expirado, o usuário deve voltar ao login.
     } finally {
       router.push("/login");
       router.refresh();
@@ -42,35 +42,34 @@ export function Sidebar({ ativo }: SidebarProps) {
         <span className="brand-mark">N</span>
         <div>
           <strong>Nexo</strong>
-          <small>Gestão do negócio</small>
+          <small>Seu espaço financeiro</small>
         </div>
       </Link>
 
       <nav className="menu" aria-label="Navegação principal">
-        {itens.map((item) =>
-          item.disponivel ? (
-            <Link
-              className={`menu-item${ativo === item.chave ? " active" : ""}`}
-              href={item.href}
-              key={item.chave}
-            >
-              {item.nome}
-            </Link>
-          ) : (
-            <span className="menu-item menu-item-disabled" key={item.chave}>
-              {item.nome}
-              <small>Em breve</small>
-            </span>
-          ),
-        )}
+        {itens.map((item) => (
+          <Link
+            className={`menu-item${ativo === item.chave ? " active" : ""}`}
+            href={item.href}
+            key={item.chave}
+          >
+            <span className="menu-icon" aria-hidden="true">{item.icone}</span>
+            <span>{item.nome}</span>
+          </Link>
+        ))}
       </nav>
 
       <div className="sidebar-footer">
-        <button className="menu-item" type="button" onClick={handleLogout} disabled={saindo}>
-          {saindo ? "Saindo..." : "Sair"}
+        <button className="menu-item logout-button" type="button" onClick={handleLogout} disabled={saindo}>
+          <span className="menu-icon" aria-hidden="true">↪</span>
+          <span>{saindo ? "Saindo..." : "Fazer logout"}</span>
+          <span className="logout-arrow" aria-hidden="true">→</span>
         </button>
-        <span>Plano Free</span>
-        <small>Estrutura inicial do Nexo</small>
+
+        <div className="plan-card">
+          <span>Plano Free</span>
+          <small>Nexo em desenvolvimento</small>
+        </div>
       </div>
     </aside>
   );
