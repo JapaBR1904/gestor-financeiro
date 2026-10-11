@@ -1,12 +1,12 @@
 import Link from "next/link";
 
 type SidebarProps = {
-  ativo: "dashboard" | "produtos";
+  ativo: "dashboard" | "vendas" | "produtos";
 };
 
 const itens = [
   { chave: "dashboard", nome: "Dashboard", href: "/", disponivel: true },
-  { chave: "vendas", nome: "Vendas", href: "/vendas", disponivel: false },
+  { chave: "vendas", nome: "Vendas", href: "/vendas", disponivel: true },
   { chave: "produtos", nome: "Produtos", href: "/produtos", disponivel: true },
   { chave: "despesas", nome: "Despesas", href: "/despesas", disponivel: false },
   { chave: "clientes", nome: "Clientes", href: "/clientes", disponivel: false },
