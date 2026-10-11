@@ -14,6 +14,8 @@ export type VendaItem = {
 
 export type Venda = {
   id: number;
+  clienteId?: number | null;
+  clienteNome?: string | null;
   formaPagamento: FormaPagamento;
   observacao?: string | null;
   totalVenda: number;
@@ -70,13 +72,14 @@ export async function carregarResumoVendas(): Promise<ResumoVendas> {
   return (await lerResposta(await fetch(`${API_URL}/api/vendas/resumo?organizacaoId=${organizacaoId}`, { cache: "no-store" }))) as ResumoVendas;
 }
 
-export async function salvarVenda(dados: { formaPagamento: FormaPagamento; observacao?: string; itens: Array<{ produtoId: number | string; quantidade: number }> }): Promise<Venda> {
+export async function salvarVenda(dados: { clienteId?: number | string | null; formaPagamento: FormaPagamento; observacao?: string; itens: Array<{ produtoId: number | string; quantidade: number }> }): Promise<Venda> {
   const organizacaoId = await obterOrganizacaoId();
   const response = await fetch(`${API_URL}/api/vendas`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       organizacaoId,
+      clienteId: dados.clienteId ? Number(dados.clienteId) : null,
       formaPagamento: dados.formaPagamento,
       observacao: dados.observacao ?? "",
       itens: dados.itens.map((item) => ({ produtoId: Number(item.produtoId), quantidade: item.quantidade })),
