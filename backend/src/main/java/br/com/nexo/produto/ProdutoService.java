@@ -77,6 +77,25 @@ public class ProdutoService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public ProdutoDetalhe buscar(Long organizacaoId, Long produtoId) {
+        organizacaoService.buscarPorId(organizacaoId);
+        return montarDetalhe(buscarProdutoDaOrganizacao(organizacaoId, produtoId));
+    }
+
+    @Transactional
+    public ProdutoDetalhe alterarStatus(Long organizacaoId, Long produtoId, boolean ativo) {
+        organizacaoService.buscarPorId(organizacaoId);
+        Produto produto = buscarProdutoDaOrganizacao(organizacaoId, produtoId);
+        produto.alterarAtivo(ativo);
+        return montarDetalhe(produtoRepository.save(produto));
+    }
+
+    private Produto buscarProdutoDaOrganizacao(Long organizacaoId, Long produtoId) {
+        return produtoRepository.findByIdAndOrganizacaoId(produtoId, organizacaoId)
+                .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado para esta organização."));
+    }
+
     private ProdutoDetalhe montarDetalhe(Produto produto) {
         List<ProdutoIngrediente> vinculos = produtoIngredienteRepository.findByProdutoId(produto.getId());
 
