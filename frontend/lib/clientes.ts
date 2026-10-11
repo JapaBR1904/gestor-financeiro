@@ -34,6 +34,17 @@ async function obterOrganizacaoId(): Promise<number> {
   return organizacao.id;
 }
 
+export function formatarTelefone(valor: string | null | undefined) {
+  const numeros = (valor ?? "").replace(/\D/g, "").slice(0, 11);
+  if (!numeros) return "";
+  if (numeros.length <= 2) return `(${numeros}`;
+  const ddd = numeros.slice(0, 2);
+  const restante = numeros.slice(2);
+  if (restante.length <= 4) return `(${ddd}) ${restante}`;
+  if (restante.length <= 8) return `(${ddd}) ${restante.slice(0, 4)}-${restante.slice(4)}`;
+  return `(${ddd}) ${restante.slice(0, 5)}-${restante.slice(5)}`;
+}
+
 export async function carregarClientes(): Promise<Cliente[]> {
   const organizacaoId = await obterOrganizacaoId();
   return (await lerResposta(await fetch(`${API_URL}/api/clientes?organizacaoId=${organizacaoId}`, { cache: "no-store" }))) as Cliente[];
@@ -44,7 +55,7 @@ export async function carregarCliente(clienteId: string | number): Promise<Clien
   return (await lerResposta(await fetch(`${API_URL}/api/clientes/${clienteId}?organizacaoId=${organizacaoId}`, { cache: "no-store" }))) as Cliente;
 }
 
-export async function salvarCliente(dados: { nome: string; telefone?: string; email?: string; observacao?: string }): Promise<Cliente> {
+export async function salvarCliente(dados: { nome: string; telefone?: string; observacao?: string }): Promise<Cliente> {
   const organizacaoId = await obterOrganizacaoId();
   return (await lerResposta(await fetch(`${API_URL}/api/clientes`, {
     method: "POST",
@@ -53,7 +64,7 @@ export async function salvarCliente(dados: { nome: string; telefone?: string; em
   }))) as Cliente;
 }
 
-export async function atualizarCliente(clienteId: string | number, dados: { nome: string; telefone?: string; email?: string; observacao?: string }): Promise<Cliente> {
+export async function atualizarCliente(clienteId: string | number, dados: { nome: string; telefone?: string; observacao?: string }): Promise<Cliente> {
   const organizacaoId = await obterOrganizacaoId();
   return (await lerResposta(await fetch(`${API_URL}/api/clientes/${clienteId}`, {
     method: "PUT",
