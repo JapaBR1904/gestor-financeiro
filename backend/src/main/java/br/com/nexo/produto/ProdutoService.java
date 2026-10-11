@@ -45,7 +45,45 @@ public class ProdutoService {
                 dados.precoVenda().setScale(2, RoundingMode.HALF_UP)
         ));
 
-        for (NovoIngrediente item : dados.ingredientes()) {
+        salvarIngredientes(organizacao, produto, dados.ingredientes());
+        return montarDetalhe(produto);
+    }
+
+    @Transactional
+    public ProdutoDetalhe atualizar(Long produtoId, NovoProduto dados) {
+        validarProduto(dados);
+
+        Organizacao organizacao = organizacaoService.buscarPorId(dados.organizacaoId());
+        Produto produto = buscarProdutoDaOrganizacao(dados.organizacaoId(), produtoId);
+
+        produto.atualizarDados(
+                dados.nome().trim(),
+                normalizarTextoOpcional(dados.descricao()),
+                dados.precoVenda().setScale(2, RoundingMode.HALF_UP)
+        );
+        produtoRepository.save(produto);
+
+        List<ProdutoIngrediente> vinculosAtuais = produtoIngredienteRepository.findByProdutoId(produtoId);
+        List<Ingrediente> ingredientesAntigos = vinculosAtuais.stream()
+                .map(ProdutoIngrediente::getIngrediente)
+                .toList();
+
+        if (!vinculosAtuais.isEmpty()) {
+            produtoIngredienteRepository.deleteAll(vinculosAtuais);
+            produtoIngredienteRepository.flush();
+        }
+
+        if (!ingredientesAntigos.isEmpty()) {
+            ingredienteRepository.deleteAll(ingredientesAntigos);
+            ingredienteRepository.flush();
+        }
+
+        salvarIngredientes(organizacao, produto, dados.ingredientes());
+        return montarDetalhe(produto);
+    }
+
+    private void salvarIngredientes(Organizacao organizacao, Produto produto, List<NovoIngrediente> itens) {
+        for (NovoIngrediente item : itens) {
             validarIngrediente(item);
 
             Ingrediente ingrediente = ingredienteRepository.save(new Ingrediente(
@@ -64,8 +102,6 @@ public class ProdutoService {
                     normalizarUnidade(item.unidadeUso())
             ));
         }
-
-        return montarDetalhe(produto);
     }
 
     @Transactional(readOnly = true)
