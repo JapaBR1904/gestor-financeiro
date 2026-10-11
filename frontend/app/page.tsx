@@ -58,7 +58,7 @@ export default function HomePage() {
   const grafico = [
     { nome: "Faturamento", valor: relatorio.faturamento, classe: "chart-income" },
     { nome: "Despesas", valor: relatorio.totalDespesas, classe: "chart-expense" },
-    { nome: "Saldo financeiro", valor: relatorio.saldoFinanceiro, classe: relatorio.saldoFinanceiro >= 0 ? "chart-balance-positive" : "chart-balance-negative" },
+    { nome: "Saldo", valor: relatorio.saldoFinanceiro, classe: relatorio.saldoFinanceiro >= 0 ? "chart-balance-positive" : "chart-balance-negative" },
     { nome: "Lucro bruto", valor: relatorio.lucroBruto, classe: relatorio.lucroBruto >= 0 ? "chart-profit" : "chart-balance-negative" },
   ];
 
@@ -83,27 +83,30 @@ export default function HomePage() {
 
         <article className="panel dashboard-chart-panel">
           <div className="panel-header">
-            <div><p className="eyebrow">Visão financeira</p><h2>Panorama do negócio</h2><p className="subtitle">Comparação geral entre entradas, saídas e resultado acumulado.</p></div>
+            <div><p className="eyebrow">Visão financeira</p><h2>Panorama do negócio</h2><p className="subtitle">Compare rapidamente faturamento, despesas e resultados.</p></div>
           </div>
 
           {carregando ? (
             <div className="empty-state compact-empty-state"><strong>Carregando gráfico...</strong></div>
           ) : (
-            <div className="dashboard-chart" aria-label="Gráfico financeiro do negócio">
-              {grafico.map((item) => {
-                const largura = Math.max(item.valor === 0 ? 0 : 8, (Math.abs(item.valor) / maiorValorGrafico) * 100);
-                return (
-                  <div className="dashboard-chart-row" key={item.nome}>
-                    <div className="dashboard-chart-label">
-                      <span>{item.nome}</span>
-                      <strong>{formatarMoeda(item.valor)}</strong>
+            <div className="dashboard-column-chart" aria-label="Gráfico financeiro do negócio">
+              <div className="dashboard-column-grid" aria-hidden="true">
+                <span></span><span></span><span></span><span></span>
+              </div>
+              <div className="dashboard-columns">
+                {grafico.map((item) => {
+                  const altura = Math.max(item.valor === 0 ? 3 : 10, (Math.abs(item.valor) / maiorValorGrafico) * 100);
+                  return (
+                    <div className="dashboard-column-item" key={item.nome}>
+                      <strong className="dashboard-column-value">{formatarMoeda(item.valor)}</strong>
+                      <div className="dashboard-column-slot">
+                        <div className={`dashboard-column-bar ${item.classe}`} style={{ height: `${altura}%` }} />
+                      </div>
+                      <span className="dashboard-column-name">{item.nome}</span>
                     </div>
-                    <div className="dashboard-chart-track">
-                      <div className={`dashboard-chart-bar ${item.classe}`} style={{ width: `${largura}%` }} />
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           )}
         </article>
