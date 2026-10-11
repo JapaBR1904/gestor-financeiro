@@ -224,10 +224,10 @@
   width: 190px;
   height: 190px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(59,130,246,.16), rgba(59,130,246,.035) 45%, transparent 70%);
+  background: radial-gradient(circle, rgba(59,130,246,.15), rgba(59,130,246,.03) 46%, transparent 72%);
   filter: blur(12px);
   opacity: .2;
-  animation: nexo-watermark-glow-in 1.45s ease .1s forwards, nexo-watermark-glow 20s ease-in-out 1.7s infinite alternate;
+  animation: nexo-watermark-glow-in 1.65s ease .08s forwards, nexo-watermark-glow 22s ease-in-out 1.8s infinite alternate;
 }
 
 .sidebar-watermark-trace {
@@ -237,7 +237,6 @@
   width: 92%;
   height: 90%;
   overflow: visible;
-  animation: nexo-trace-ambient 26s ease-in-out 1.7s infinite alternate;
 }
 
 .sidebar-watermark-path {
@@ -249,14 +248,14 @@
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
   filter: drop-shadow(0 0 7px rgba(96,165,250,.3));
-  animation: nexo-trace-draw 1.5s cubic-bezier(.2,.8,.22,1) .08s forwards;
+  animation: nexo-trace-draw 1.65s linear .08s forwards;
 }
 
 .sidebar-watermark-dot {
   fill: #dbeafe;
   opacity: 0;
   filter: drop-shadow(0 0 7px #60a5fa) drop-shadow(0 0 16px rgba(96,165,250,.5));
-  animation: nexo-trace-dot-visibility 1.5s ease .08s forwards;
+  animation: nexo-trace-dot-visibility 1.65s linear .08s forwards;
 }
 
 .sidebar-watermark-n {
@@ -269,51 +268,33 @@
   letter-spacing: -.12em;
   text-shadow: 0 0 34px rgba(96,165,250,.1);
   opacity: 0;
-  transform: translateY(6px) rotate(-8deg) scale(.94);
-  animation: nexo-watermark-reveal 1.18s cubic-bezier(.18,.85,.2,1) .34s forwards, nexo-watermark-float 24s ease-in-out 1.65s infinite alternate;
-}
-
-.sidebar-watermark-name {
-  position: absolute;
-  z-index: 4;
-  bottom: 12%;
-  color: rgba(191,219,254,.16);
-  font-size: .66rem;
-  font-weight: 900;
-  letter-spacing: .36em;
-  text-indent: .36em;
-  opacity: 0;
-  animation: nexo-name-reveal .55s ease 1.22s forwards;
+  transform: translateY(5px) rotate(-8deg) scale(.95);
+  animation: nexo-watermark-reveal 1.35s cubic-bezier(.18,.85,.2,1) .26s forwards, nexo-watermark-float 26s ease-in-out 1.8s infinite alternate;
 }
 
 @keyframes nexo-trace-draw {
   0% { stroke-dashoffset: 1; opacity: 0; }
-  8% { opacity: .9; }
-  82% { opacity: .78; }
-  100% { stroke-dashoffset: 0; opacity: .42; }
+  5% { opacity: .9; }
+  95% { opacity: .82; }
+  100% { stroke-dashoffset: 0; opacity: .4; }
 }
 
 @keyframes nexo-trace-dot-visibility {
   0% { opacity: 0; }
-  5% { opacity: 1; }
-  88% { opacity: 1; }
+  4% { opacity: 1; }
+  92% { opacity: 1; }
   100% { opacity: 0; }
 }
 
 @keyframes nexo-watermark-reveal {
-  0% { opacity: 0; transform: translateY(6px) rotate(-8deg) scale(.94); filter: blur(5px); }
-  36% { opacity: .34; }
-  72% { opacity: .78; transform: translateY(-1px) rotate(-8deg) scale(1.01); filter: blur(.5px); }
+  0% { opacity: 0; transform: translateY(5px) rotate(-8deg) scale(.95); filter: blur(5px); }
+  38% { opacity: .35; }
+  76% { opacity: .8; transform: translateY(-1px) rotate(-8deg) scale(1.01); filter: blur(.5px); }
   100% { opacity: .92; transform: translateY(0) rotate(-8deg) scale(1); filter: blur(0); }
 }
 
-@keyframes nexo-name-reveal {
-  from { opacity: 0; transform: translateY(3px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
 @keyframes nexo-watermark-glow-in {
-  from { opacity: 0; transform: scale(.8); }
+  from { opacity: 0; transform: scale(.82); }
   to { opacity: .5; transform: scale(1); }
 }
 
@@ -323,13 +304,8 @@
 }
 
 @keyframes nexo-watermark-glow {
-  from { transform: scale(.98) translateY(1px); opacity: .45; }
-  to { transform: scale(1.035) translateY(-2px); opacity: .66; }
-}
-
-@keyframes nexo-trace-ambient {
-  from { transform: translate3d(-1px, 1px, 0) rotate(-.4deg); }
-  to { transform: translate3d(2px, -1px, 0) rotate(.45deg); }
+  from { transform: scale(.98) translateY(1px); opacity: .44; }
+  to { transform: scale(1.03) translateY(-2px); opacity: .64; }
 }
 
 .summary-card::before {
@@ -409,18 +385,15 @@
 @media (prefers-reduced-motion: reduce) {
   .sidebar::before,
   .sidebar-watermark::before,
-  .sidebar-watermark-trace,
   .sidebar-watermark-path,
   .sidebar-watermark-dot,
   .sidebar-watermark-n,
-  .sidebar-watermark-name,
   .summary-card::before,
   .report-progress > span {
     animation: none !important;
   }
 
-  .sidebar-watermark-path { stroke-dashoffset: 0; opacity: .42; }
-  .sidebar-watermark-n,
-  .sidebar-watermark-name { opacity: .92; transform: none; }
+  .sidebar-watermark-path { stroke-dashoffset: 0; opacity: .4; }
+  .sidebar-watermark-n { opacity: .92; transform: none; }
   .sidebar-watermark-dot { display: none; }
 }
