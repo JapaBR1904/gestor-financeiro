@@ -10,6 +10,7 @@ import jakarta.validation.constraints.NotNull;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,6 +35,11 @@ public class VendaController {
     @GetMapping("/resumo")
     public VendaService.VendaResumo resumo(@RequestParam Long organizacaoId) {
         return vendaService.resumo(organizacaoId);
+    }
+
+    @GetMapping("/{vendaId}")
+    public VendaService.VendaDetalhe buscar(@PathVariable Long vendaId, @RequestParam Long organizacaoId) {
+        return vendaService.buscar(organizacaoId, vendaId);
     }
 
     @PostMapping
