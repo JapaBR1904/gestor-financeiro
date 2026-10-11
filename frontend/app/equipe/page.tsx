@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { carregarPlanoLocal, planoPermite, PlanoNexo } from "../../lib/saas";
+import { carregarConfiguracaoSaas, planoPermite, PlanoNexo } from "../../lib/saas";
 
 const membrosExemplo = [
   { nome: "Você", papel: "Dono", status: "Ativo" },
@@ -12,7 +12,14 @@ const membrosExemplo = [
 
 export default function EquipePage() {
   const [plano, setPlano] = useState<PlanoNexo>("free");
-  useEffect(() => setPlano(carregarPlanoLocal()), []);
+  const [carregando, setCarregando] = useState(true);
+
+  useEffect(() => {
+    carregarConfiguracaoSaas()
+      .then((dados) => setPlano(dados.plano))
+      .finally(() => setCarregando(false));
+  }, []);
+
   const liberado = planoPermite(plano, "business");
 
   return (
@@ -22,9 +29,9 @@ export default function EquipePage() {
         <Link className="secondary-button compact-button" href="/">Voltar ao Nexo</Link>
       </section>
 
-      {!liberado ? (
+      {!carregando && !liberado ? (
         <section className="premium-lock-card"><span className="premium-lock-icon">◎</span><p className="eyebrow">Recurso Business</p><h1>Equipe e permissões</h1><p>Convide pessoas e defina o que cada uma pode acessar dentro da operação.</p><Link className="primary-button" href="/planos">Conhecer o Business</Link></section>
-      ) : (
+      ) : liberado ? (
         <>
           <section className="premium-heading"><p className="eyebrow">Plano Business</p><h1>Equipe e permissões</h1><p>Estrutura preparada para dono, gerente e operador trabalharem sem misturar responsabilidades.</p></section>
           <section className="team-summary-grid">
@@ -33,13 +40,13 @@ export default function EquipePage() {
             <article><span>Perfis disponíveis</span><strong>3</strong><small>Dono · Gerente · Operador</small></article>
           </section>
           <section className="team-card">
-            <div className="team-card-header"><div><p className="eyebrow">Acessos</p><h2>Pessoas da organização</h2><p>Esta lista será persistida quando ligarmos a estrutura SaaS ao banco.</p></div><button className="primary-button" type="button" disabled>+ Convidar pessoa</button></div>
+            <div className="team-card-header"><div><p className="eyebrow">Acessos</p><h2>Pessoas da organização</h2><p>A tabela de convites já existe no banco. A próxima etapa é ligar envio e aceite por e-mail.</p></div><button className="primary-button" type="button" disabled>+ Convidar pessoa</button></div>
             <div className="team-list">
               {membrosExemplo.map((membro, indice) => <div className={`team-row${indice > 0 ? " muted" : ""}`} key={`${membro.nome}-${membro.papel}`}><span className="team-avatar">{membro.nome.charAt(0)}</span><div><strong>{membro.nome}</strong><small>{membro.papel}</small></div><span className="team-status">{membro.status}</span></div>)}
             </div>
           </section>
         </>
-      )}
+      ) : null}
     </main>
   );
 }
