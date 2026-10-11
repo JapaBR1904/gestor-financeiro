@@ -11,6 +11,8 @@ import jakarta.validation.constraints.Size;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,6 +33,14 @@ public class ProdutoController {
     @GetMapping
     public List<ProdutoService.ProdutoDetalhe> listar(@RequestParam Long organizacaoId) {
         return produtoService.listar(organizacaoId);
+    }
+
+    @GetMapping("/{produtoId}")
+    public ProdutoService.ProdutoDetalhe buscar(
+            @PathVariable Long produtoId,
+            @RequestParam Long organizacaoId
+    ) {
+        return produtoService.buscar(organizacaoId, produtoId);
     }
 
     @PostMapping
@@ -54,6 +64,14 @@ public class ProdutoController {
                 request.precoVenda(),
                 ingredientes
         ));
+    }
+
+    @PatchMapping("/{produtoId}/status")
+    public ProdutoService.ProdutoDetalhe alterarStatus(
+            @PathVariable Long produtoId,
+            @Valid @RequestBody AlterarStatusRequest request
+    ) {
+        return produtoService.alterarStatus(request.organizacaoId(), produtoId, request.ativo());
     }
 
     public record CriarProdutoRequest(
@@ -85,6 +103,12 @@ public class ProdutoController {
             @DecimalMin(value = "0.0001", message = "A quantidade usada deve ser maior que zero.")
             BigDecimal quantidadeUsada,
             @NotBlank(message = "A unidade de uso é obrigatória.") String unidadeUso
+    ) {
+    }
+
+    public record AlterarStatusRequest(
+            @NotNull(message = "A organização é obrigatória.") Long organizacaoId,
+            boolean ativo
     ) {
     }
 }
