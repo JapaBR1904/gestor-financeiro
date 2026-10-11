@@ -1,4 +1,9 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { logout } from "../lib/auth";
 
 type SidebarProps = {
   ativo: "dashboard" | "vendas" | "produtos" | "despesas" | "clientes" | "relatorios";
@@ -14,6 +19,23 @@ const itens = [
 ] as const;
 
 export function Sidebar({ ativo }: SidebarProps) {
+  const router = useRouter();
+  const [saindo, setSaindo] = useState(false);
+
+  async function handleLogout() {
+    if (saindo) return;
+    setSaindo(true);
+    try {
+      await logout();
+    } catch {
+      // Mesmo se o backend já considerar a sessão encerrada, devolvemos o usuário ao login.
+    } finally {
+      router.push("/login");
+      router.refresh();
+      setSaindo(false);
+    }
+  }
+
   return (
     <aside className="sidebar">
       <Link className="brand" href="/">
@@ -44,6 +66,9 @@ export function Sidebar({ ativo }: SidebarProps) {
       </nav>
 
       <div className="sidebar-footer">
+        <button className="menu-item" type="button" onClick={handleLogout} disabled={saindo}>
+          {saindo ? "Saindo..." : "Sair"}
+        </button>
         <span>Plano Free</span>
         <small>Estrutura inicial do Nexo</small>
       </div>
