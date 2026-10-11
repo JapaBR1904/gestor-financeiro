@@ -1,0 +1,66 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { Sidebar } from "../../components/Sidebar";
+import { formatarMoeda } from "../../lib/produtos";
+import { carregarDespesas, Despesa, nomeFormaPagamentoDespesa } from "../../lib/despesas";
+
+export default function DespesasPage() {
+  const [despesas, setDespesas] = useState<Despesa[]>([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState("");
+
+  useEffect(() => {
+    carregarDespesas()
+      .then(setDespesas)
+      .catch((error) => setErro(error instanceof Error ? error.message : "Não foi possível carregar as despesas."))
+      .finally(() => setCarregando(false));
+  }, []);
+
+  const total = useMemo(() => despesas.reduce((soma, despesa) => soma + despesa.valor, 0), [despesas]);
+
+  return (
+    <main className="app-shell">
+      <Sidebar ativo="despesas" />
+      <section className="content">
+        <header className="topbar">
+          <div>
+            <p className="eyebrow">Financeiro</p>
+            <h1>Despesas</h1>
+            <p className="subtitle">Registre e acompanhe as saídas de dinheiro do negócio.</p>
+          </div>
+          <Link className="primary-button" href="/despesas/nova">+ Nova despesa</Link>
+        </header>
+
+        {erro ? <p className="form-error-banner">{erro}</p> : null}
+
+        <section className="summary-grid">
+          <article className="summary-card"><span>Despesas registradas</span><strong>{carregando ? "—" : despesas.length}</strong><small>Total de lançamentos</small></article>
+          <article className="summary-card"><span>Total gasto</span><strong>{carregando ? "—" : formatarMoeda(total)}</strong><small>Soma das despesas registradas</small></article>
+        </section>
+
+        <article className="panel">
+          <div className="panel-header"><div><p className="eyebrow">Histórico</p><h2>Despesas registradas</h2><p className="subtitle">Consulte cada lançamento e abra os detalhes quando precisar.</p></div></div>
+          {carregando ? <div className="empty-state"><strong>Carregando despesas...</strong></div> : despesas.length === 0 ? (
+            <div className="empty-state"><span className="empty-icon">D</span><strong>Nenhuma despesa registrada</strong><p>Cadastre a primeira despesa para começar a acompanhar as saídas.</p></div>
+          ) : (
+            <div className="sales-history-list">
+              <div className="sales-history-head" aria-hidden="true"><span>Despesa</span><span>Data</span><span>Categoria</span><span>Forma de pagamento</span><span>Valor</span><span></span></div>
+              {despesas.map((despesa) => (
+                <div className="sales-history-row" key={despesa.id}>
+                  <div data-label="Despesa"><strong>{despesa.descricao}</strong></div>
+                  <div data-label="Data"><strong>{new Date(`${despesa.dataDespesa}T00:00:00`).toLocaleDateString("pt-BR")}</strong></div>
+                  <div data-label="Categoria"><strong>{despesa.categoria}</strong></div>
+                  <div data-label="Forma de pagamento"><strong>{nomeFormaPagamentoDespesa(despesa.formaPagamento)}</strong></div>
+                  <div className="sales-history-total" data-label="Valor"><strong>{formatarMoeda(despesa.valor)}</strong></div>
+                  <div className="sales-history-action"><Link className="secondary-button compact-button" href={`/despesas/${despesa.id}`}>Ver detalhes</Link></div>
+                </div>
+              ))}
+            </div>
+          )}
+        </article>
+      </section>
+    </main>
+  );
+}
