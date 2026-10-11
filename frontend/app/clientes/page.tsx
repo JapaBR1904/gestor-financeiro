@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Sidebar } from "../../components/Sidebar";
-import { carregarClientes, Cliente } from "../../lib/clientes";
+import { carregarClientes, Cliente, formatarTelefone } from "../../lib/clientes";
 
 export default function ClientesPage() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -45,13 +45,13 @@ export default function ClientesPage() {
             <div className="empty-state"><span className="empty-icon">C</span><strong>Nenhum cliente cadastrado</strong><p>Cadastre o primeiro cliente para começar.</p></div>
           ) : (
             <div className="sales-history-list">
-              <div className="sales-history-head" aria-hidden="true"><span>Cliente</span><span>Telefone</span><span>E-mail</span><span>Status</span><span></span><span></span></div>
+              <div className="sales-history-head" aria-hidden="true"><span>Cliente</span><span>Telefone / WhatsApp</span><span>Status</span><span></span><span></span><span></span></div>
               {clientes.map((cliente) => (
                 <div className="sales-history-row" key={cliente.id}>
                   <div data-label="Cliente"><strong>{cliente.nome}</strong></div>
-                  <div data-label="Telefone"><strong>{cliente.telefone || "—"}</strong></div>
-                  <div data-label="E-mail"><strong>{cliente.email || "—"}</strong></div>
+                  <div data-label="Telefone / WhatsApp"><strong>{formatarTelefone(cliente.telefone) || "—"}</strong></div>
                   <div data-label="Status"><span className={`status-badge ${cliente.ativo ? "status-active" : "status-inactive"}`}>{cliente.ativo ? "Ativo" : "Inativo"}</span></div>
+                  <div></div>
                   <div></div>
                   <div className="sales-history-action"><Link className="secondary-button compact-button" href={`/clientes/${cliente.id}`}>Ver detalhes</Link></div>
                 </div>
