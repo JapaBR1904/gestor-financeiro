@@ -84,8 +84,9 @@ export default function VendasPage() {
           ) : (
             <div className="sales-history-list">
               <div className="sales-history-head" aria-hidden="true">
-                <span>Venda e data</span>
-                <span>Pagamento</span>
+                <span>Venda</span>
+                <span>Data</span>
+                <span>Forma de pagamento</span>
                 <span>Itens</span>
                 <span>Total</span>
                 <span></span>
@@ -97,11 +98,14 @@ export default function VendasPage() {
 
                 return (
                   <div className="sales-history-row" key={venda.id}>
-                    <div className="sales-history-primary">
+                    <div className="sales-history-primary" data-label="Venda">
                       <strong>Venda #{venda.id}</strong>
-                      <small>{dataVenda.toLocaleDateString("pt-BR")} às {dataVenda.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</small>
                     </div>
-                    <div data-label="Pagamento">
+                    <div data-label="Data">
+                      <strong>{dataVenda.toLocaleDateString("pt-BR")}</strong>
+                      <small>{dataVenda.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</small>
+                    </div>
+                    <div data-label="Forma de pagamento">
                       <strong>{nomeFormaPagamento(venda.formaPagamento)}</strong>
                     </div>
                     <div data-label="Itens">
