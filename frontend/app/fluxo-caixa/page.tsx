@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { carregarPlanoLocal, planoPermite, PlanoNexo } from "../../lib/saas";
+import { carregarConfiguracaoSaas, planoPermite, PlanoNexo } from "../../lib/saas";
 import { carregarRelatorioResumo, RelatorioResumo } from "../../lib/relatorios";
 import { formatarMoeda } from "../../lib/produtos";
 
@@ -26,8 +26,10 @@ export default function FluxoCaixaPage() {
   const [carregando, setCarregando] = useState(true);
 
   useEffect(() => {
-    setPlano(carregarPlanoLocal());
-    carregarRelatorioResumo().then(setDados).catch(() => setDados(vazio)).finally(() => setCarregando(false));
+    Promise.all([
+      carregarConfiguracaoSaas().then((config) => setPlano(config.plano)),
+      carregarRelatorioResumo().then(setDados).catch(() => setDados(vazio)),
+    ]).finally(() => setCarregando(false));
   }, []);
 
   const liberado = planoPermite(plano, "pro");
@@ -44,9 +46,9 @@ export default function FluxoCaixaPage() {
         <Link className="secondary-button compact-button" href="/">Voltar ao Nexo</Link>
       </section>
 
-      {!liberado ? (
+      {!carregando && !liberado ? (
         <section className="premium-lock-card"><span className="premium-lock-icon">↗</span><p className="eyebrow">Recurso Pro</p><h1>Fluxo de caixa avançado</h1><p>Transforme vendas e despesas já registradas em uma visão de entradas, saídas e saldo.</p><Link className="primary-button" href="/planos">Conhecer o Pro</Link></section>
-      ) : (
+      ) : liberado ? (
         <>
           <section className="premium-heading"><p className="eyebrow">Plano Pro</p><h1>Fluxo de caixa</h1><p>Uma leitura financeira baseada nos lançamentos que já existem no Nexo.</p></section>
           <section className="premium-kpi-grid">
@@ -60,7 +62,7 @@ export default function FluxoCaixaPage() {
             </div>
           </section>
         </>
-      )}
+      ) : null}
     </main>
   );
 }
