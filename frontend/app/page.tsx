@@ -20,6 +20,13 @@ const relatorioVazio: RelatorioResumo = {
   melhoresClientes: [],
 };
 
+const acoesRapidas = [
+  { href: "/vendas/nova", icone: "↗", titulo: "Nova venda", texto: "Registre produtos, cliente e forma de pagamento", tom: "action-sale" },
+  { href: "/despesas/nova", icone: "↓", titulo: "Nova despesa", texto: "Registre uma saída de dinheiro", tom: "action-expense" },
+  { href: "/produtos/novo", icone: "◇", titulo: "Novo produto", texto: "Cadastre um produto e monte a ficha de custo", tom: "action-product" },
+  { href: "/clientes/novo", icone: "+", titulo: "Novo cliente", texto: "Cadastre um cliente para vincular às vendas", tom: "action-client" },
+] as const;
+
 export default function HomePage() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [relatorio, setRelatorio] = useState<RelatorioResumo>(relatorioVazio);
@@ -90,18 +97,14 @@ export default function HomePage() {
             <div className="empty-state compact-empty-state"><strong>Carregando gráfico...</strong></div>
           ) : (
             <div className="dashboard-column-chart" aria-label="Gráfico financeiro do negócio">
-              <div className="dashboard-column-grid" aria-hidden="true">
-                <span></span><span></span><span></span><span></span>
-              </div>
+              <div className="dashboard-column-grid" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
               <div className="dashboard-columns">
                 {grafico.map((item) => {
                   const altura = Math.max(item.valor === 0 ? 3 : 10, (Math.abs(item.valor) / maiorValorGrafico) * 100);
                   return (
                     <div className="dashboard-column-item" key={item.nome}>
                       <strong className="dashboard-column-value">{formatarMoeda(item.valor)}</strong>
-                      <div className="dashboard-column-slot">
-                        <div className={`dashboard-column-bar ${item.classe}`} style={{ height: `${altura}%` }} />
-                      </div>
+                      <div className="dashboard-column-slot"><div className={`dashboard-column-bar ${item.classe}`} style={{ height: `${altura}%` }} /></div>
                       <span className="dashboard-column-name">{item.nome}</span>
                     </div>
                   );
@@ -112,13 +115,16 @@ export default function HomePage() {
         </article>
 
         <section className="dashboard-grid dashboard-lower-grid">
-          <article className="panel">
-            <div className="panel-header"><div><p className="eyebrow">Ações rápidas</p><h2>Movimente o negócio</h2></div></div>
-            <div className="quick-actions">
-              <Link className="quick-action" href="/vendas/nova"><strong>Nova venda</strong><span>Registre produtos, cliente e forma de pagamento</span></Link>
-              <Link className="quick-action" href="/despesas/nova"><strong>Nova despesa</strong><span>Registre uma saída de dinheiro do negócio</span></Link>
-              <Link className="quick-action" href="/produtos/novo"><strong>Novo produto</strong><span>Cadastre um produto e monte a ficha de custo</span></Link>
-              <Link className="quick-action" href="/clientes/novo"><strong>Novo cliente</strong><span>Cadastre um cliente para vincular às vendas</span></Link>
+          <article className="panel quick-actions-panel">
+            <div className="panel-header"><div><p className="eyebrow">Ações rápidas</p><h2>Movimente o Nexo</h2><p className="subtitle">Atalhos para o que você mais usa no dia a dia.</p></div></div>
+            <div className="quick-actions quick-actions-visual">
+              {acoesRapidas.map((acao) => (
+                <Link className={`quick-action quick-action-visual ${acao.tom}`} href={acao.href} key={acao.href}>
+                  <span className="quick-action-icon" aria-hidden="true">{acao.icone}</span>
+                  <span className="quick-action-copy"><strong>{acao.titulo}</strong><span>{acao.texto}</span></span>
+                  <span className="quick-action-arrow" aria-hidden="true">→</span>
+                </Link>
+              ))}
             </div>
           </article>
 
@@ -128,8 +134,9 @@ export default function HomePage() {
               <div className="empty-state"><span className="empty-icon">P</span><strong>Ainda não há vendas</strong><p>Os produtos mais vendidos aparecerão aqui.</p></div>
             ) : (
               <div className="dashboard-product-list">
-                {produtosDestaque.map((produto) => (
+                {produtosDestaque.map((produto, indice) => (
                   <div className="dashboard-product-row" key={produto.nome}>
+                    <span className="ranking-badge">{indice + 1}</span>
                     <div><strong>{produto.nome}</strong><small>{produto.quantidadeVendida} unidade{produto.quantidadeVendida === 1 ? "" : "s"} vendida{produto.quantidadeVendida === 1 ? "" : "s"}</small></div>
                     <div><span>{formatarMoeda(produto.faturamento)}</span><small>faturamento</small></div>
                   </div>
