@@ -43,23 +43,28 @@ export default function VendasPage() {
         </section>
 
         <article className="panel history-panel">
-          <div className="panel-header"><div><p className="eyebrow">Histórico</p><h2>Vendas registradas</h2><p className="subtitle">Cada registro reúne valor, pagamento e quantidade vendida.</p></div></div>
+          <div className="panel-header"><div><p className="eyebrow">Histórico</p><h2>Vendas registradas</h2><p className="subtitle">Veja valor, pagamento e quantidade vendida sem precisar abrir cada registro.</p></div></div>
 
           {carregando ? <div className="empty-state"><strong>Carregando vendas...</strong></div> : vendas.length === 0 ? (
             <div className="empty-state"><span className="empty-icon">V</span><strong>Nenhuma venda registrada</strong><p>Cadastre a primeira venda para começar a alimentar o financeiro.</p></div>
           ) : (
-            <div className="record-list">
+            <div className="record-list sale-record-list">
               {vendas.map((venda) => {
                 const quantidadeItens = venda.itens.reduce((total, item) => total + item.quantidade, 0);
                 const dataVenda = new Date(venda.criadoEm);
                 return (
-                  <Link className="record-card" href={`/vendas/${venda.id}`} key={venda.id}>
+                  <article className="record-card sale-record-card" key={venda.id}>
                     <span className="record-icon record-icon-sale" aria-hidden="true">↗</span>
-                    <div className="record-main"><strong>Venda #{venda.id}</strong><span>{dataVenda.toLocaleDateString("pt-BR")} · {quantidadeItens} item{quantidadeItens === 1 ? "" : "s"}</span></div>
+                    <div className="record-main">
+                      <strong>Venda #{venda.id}</strong>
+                      <span>{dataVenda.toLocaleDateString("pt-BR")} · {quantidadeItens} item{quantidadeItens === 1 ? "" : "s"}</span>
+                    </div>
                     <span className="record-badge">{nomeFormaPagamento(venda.formaPagamento)}</span>
                     <div className="record-value"><strong>{formatarMoeda(venda.totalVenda)}</strong><span>Total da venda</span></div>
-                    <span className="record-arrow" aria-hidden="true">→</span>
-                  </Link>
+                    <div className="record-action-zone">
+                      <Link className="record-details-button" href={`/vendas/${venda.id}`}>Ver detalhes <span aria-hidden="true">→</span></Link>
+                    </div>
+                  </article>
                 );
               })}
             </div>
