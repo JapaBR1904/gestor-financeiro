@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "./features.css";
 import "./auth.css";
+import "./auth-suggestions.css";
 
 export const metadata: Metadata = {
   title: "Nexo",
