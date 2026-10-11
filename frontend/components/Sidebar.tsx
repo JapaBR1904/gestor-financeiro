@@ -59,6 +59,14 @@ export function Sidebar({ ativo }: SidebarProps) {
         ))}
       </nav>
 
+      <div className="sidebar-watermark" aria-hidden="true">
+        <span className="sidebar-watermark-line line-one" />
+        <span className="sidebar-watermark-line line-two" />
+        <span className="sidebar-watermark-line line-three" />
+        <span className="sidebar-watermark-n">N</span>
+        <span className="sidebar-watermark-name">NEXO</span>
+      </div>
+
       <div className="sidebar-footer">
         <button className="menu-item logout-button" type="button" onClick={handleLogout} disabled={saindo}>
           <span className="menu-icon" aria-hidden="true">↪</span>
