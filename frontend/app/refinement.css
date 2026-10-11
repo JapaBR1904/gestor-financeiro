@@ -186,6 +186,34 @@
   color: #1d4ed8;
 }
 
+.menu {
+  position: relative;
+  overflow: hidden;
+}
+
+.menu::before {
+  content: "";
+  position: absolute;
+  z-index: 5;
+  top: -22%;
+  left: -8%;
+  width: 116%;
+  height: 46px;
+  pointer-events: none;
+  border-radius: 999px;
+  background: linear-gradient(180deg, transparent 0%, rgba(125,211,252,.06) 20%, rgba(147,197,253,.42) 50%, rgba(125,211,252,.08) 80%, transparent 100%);
+  filter: blur(8px);
+  opacity: 0;
+  animation: nexo-menu-boot-scan 1.4s cubic-bezier(.22,.8,.3,1) .12s 1 both;
+}
+
+@keyframes nexo-menu-boot-scan {
+  0% { transform: translateY(-20px) scaleX(.88); opacity: 0; }
+  12% { opacity: .9; }
+  72% { opacity: .72; }
+  100% { transform: translateY(360px) scaleX(1.02); opacity: 0; }
+}
+
 .sidebar::before {
   content: "";
   position: absolute;
@@ -198,7 +226,7 @@
   background: linear-gradient(105deg, transparent 0%, rgba(255,255,255,0.02) 38%, rgba(125,211,252,0.12) 50%, rgba(255,255,255,0.025) 62%, transparent 100%);
   filter: blur(7px);
   transform: rotate(8deg);
-  animation: nexo-sidebar-scan 9s ease-in-out infinite;
+  animation: nexo-sidebar-scan 9s ease-in-out 1.8s infinite;
 }
 
 @keyframes nexo-sidebar-scan {
@@ -277,6 +305,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .menu::before,
   .sidebar::before,
   .summary-card::before,
   .report-progress > span {
