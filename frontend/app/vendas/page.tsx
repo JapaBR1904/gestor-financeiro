@@ -69,7 +69,7 @@ export default function VendasPage() {
             <div>
               <p className="eyebrow">Histórico</p>
               <h2>Vendas registradas</h2>
-              <p className="subtitle">Clique em uma venda para ver os produtos e os detalhes do registro.</p>
+              <p className="subtitle">Consulte rapidamente cada venda e abra os detalhes quando precisar.</p>
             </div>
           </div>
 
@@ -82,12 +82,13 @@ export default function VendasPage() {
               <p>Cadastre a primeira venda para começar a alimentar o financeiro.</p>
             </div>
           ) : (
-            <div className="ingredient-detail-list">
-              <div className="ingredient-detail-head" aria-hidden="true">
+            <div className="sales-history-list">
+              <div className="sales-history-head" aria-hidden="true">
                 <span>Venda e data</span>
                 <span>Pagamento</span>
                 <span>Itens</span>
                 <span>Total</span>
+                <span></span>
               </div>
 
               {vendas.map((venda) => {
@@ -95,8 +96,8 @@ export default function VendasPage() {
                 const dataVenda = new Date(venda.criadoEm);
 
                 return (
-                  <Link className="ingredient-detail-row" href={`/vendas/${venda.id}`} key={venda.id}>
-                    <div>
+                  <div className="sales-history-row" key={venda.id}>
+                    <div className="sales-history-primary">
                       <strong>Venda #{venda.id}</strong>
                       <small>{dataVenda.toLocaleDateString("pt-BR")} às {dataVenda.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</small>
                     </div>
@@ -107,11 +108,15 @@ export default function VendasPage() {
                       <strong>{quantidadeItens}</strong>
                       <small>{quantidadeItens === 1 ? "item vendido" : "itens vendidos"}</small>
                     </div>
-                    <div data-label="Total">
+                    <div className="sales-history-total" data-label="Total">
                       <strong>{formatarMoeda(venda.totalVenda)}</strong>
-                      <small>Ver detalhes</small>
                     </div>
-                  </Link>
+                    <div className="sales-history-action">
+                      <Link className="secondary-button compact-button" href={`/vendas/${venda.id}`}>
+                        Ver detalhes
+                      </Link>
+                    </div>
+                  </div>
                 );
               })}
             </div>
