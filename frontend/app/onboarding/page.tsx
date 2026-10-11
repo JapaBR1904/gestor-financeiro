@@ -3,12 +3,9 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  concluirOnboarding,
   OBJETIVOS_POR_PERFIL,
   PerfilUso,
-  salvarObjetivos,
-  salvarPerfilUso,
-  salvarPlanoLocal,
+  salvarOnboardingNoBackend,
 } from "../../lib/saas";
 
 const opcoes: Array<{
@@ -46,12 +43,15 @@ export default function OnboardingPage() {
   const [perfil, setPerfil] = useState<PerfilUso | null>(null);
   const [objetivos, setObjetivos] = useState<string[]>([]);
   const [etapa, setEtapa] = useState<1 | 2 | 3>(1);
+  const [erro, setErro] = useState("");
+  const [salvando, setSalvando] = useState(false);
 
   const objetivosDisponiveis = useMemo(() => (perfil ? OBJETIVOS_POR_PERFIL[perfil] : []), [perfil]);
 
   function escolherPerfil(novoPerfil: PerfilUso) {
     setPerfil(novoPerfil);
     setObjetivos([]);
+    setErro("");
   }
 
   function alternarObjetivo(objetivo: string) {
@@ -60,12 +60,10 @@ export default function OnboardingPage() {
 
   function continuarPerfil() {
     if (!perfil) return;
-    salvarPerfilUso(perfil);
     setEtapa(2);
   }
 
   function continuarObjetivos() {
-    salvarObjetivos(objetivos);
     setEtapa(3);
   }
 
@@ -75,20 +73,31 @@ export default function OnboardingPage() {
     return "/";
   }
 
-  function entrarNoNexo() {
+  async function persistir(concluido: boolean) {
+    if (!perfil) return false;
+    setErro("");
+    setSalvando(true);
+    try {
+      await salvarOnboardingNoBackend(perfil, objetivos, concluido);
+      return true;
+    } catch (error) {
+      setErro(error instanceof Error ? error.message : "Não foi possível salvar suas preferências.");
+      return false;
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  async function entrarNoNexo() {
     if (!perfil) return;
-    salvarPerfilUso(perfil);
-    salvarObjetivos(objetivos);
-    salvarPlanoLocal("free");
-    concluirOnboarding();
+    if (!await persistir(true)) return;
     router.push(destinoInicial(perfil));
     router.refresh();
   }
 
-  function verPlanos() {
+  async function verPlanos() {
     if (!perfil) return;
-    salvarPerfilUso(perfil);
-    salvarObjetivos(objetivos);
+    if (!await persistir(false)) return;
     router.push("/planos?origem=onboarding");
   }
 
@@ -106,12 +115,7 @@ export default function OnboardingPage() {
 
       {etapa === 1 ? (
         <section className="onboarding-card">
-          <div className="saas-heading">
-            <p className="eyebrow">Bem-vindo ao Nexo</p>
-            <h1>Como você pretende usar o Nexo?</h1>
-            <p>Essa escolha prepara sua experiência inicial. Você pode alterar depois nas configurações.</p>
-          </div>
-
+          <div className="saas-heading"><p className="eyebrow">Bem-vindo ao Nexo</p><h1>Como você pretende usar o Nexo?</h1><p>Essa escolha prepara sua experiência inicial. Você pode alterar depois nas configurações.</p></div>
           <div className="use-case-grid">
             {opcoes.map((opcao) => (
               <button className={`use-case-card${perfil === opcao.id ? " selected" : ""}`} key={opcao.id} type="button" onClick={() => escolherPerfil(opcao.id)}>
@@ -121,55 +125,31 @@ export default function OnboardingPage() {
               </button>
             ))}
           </div>
-
           <div className="saas-actions"><button className="primary-button saas-primary" type="button" disabled={!perfil} onClick={continuarPerfil}>Continuar</button></div>
         </section>
       ) : null}
 
       {etapa === 2 ? (
         <section className="onboarding-card">
-          <div className="saas-heading">
-            <p className="eyebrow">Personalização</p>
-            <h1>O que você mais quer melhorar agora?</h1>
-            <p>Escolha quantos objetivos quiser. Isso vai ajudar o Nexo a destacar as informações mais úteis.</p>
-          </div>
-
+          <div className="saas-heading"><p className="eyebrow">Personalização</p><h1>O que você mais quer melhorar agora?</h1><p>Escolha quantos objetivos quiser. Isso vai ajudar o Nexo a destacar as informações mais úteis.</p></div>
           <div className="goal-choice-grid">
             {objetivosDisponiveis.map((objetivo) => (
               <button className={`goal-choice${objetivos.includes(objetivo) ? " selected" : ""}`} key={objetivo} type="button" onClick={() => alternarObjetivo(objetivo)}>
-                <span className="goal-choice-check">{objetivos.includes(objetivo) ? "✓" : "+"}</span>
-                <strong>{objetivo}</strong>
+                <span className="goal-choice-check">{objetivos.includes(objetivo) ? "✓" : "+"}</span><strong>{objetivo}</strong>
               </button>
             ))}
           </div>
-
-          <div className="saas-actions split-actions">
-            <button className="secondary-button" type="button" onClick={() => setEtapa(1)}>Voltar</button>
-            <button className="primary-button saas-primary" type="button" onClick={continuarObjetivos}>Continuar</button>
-          </div>
+          <div className="saas-actions split-actions"><button className="secondary-button" type="button" onClick={() => setEtapa(1)}>Voltar</button><button className="primary-button saas-primary" type="button" onClick={continuarObjetivos}>Continuar</button></div>
         </section>
       ) : null}
 
       {etapa === 3 ? (
         <section className="onboarding-card onboarding-plan-step">
-          <div className="saas-heading">
-            <p className="eyebrow">Tudo pronto</p>
-            <h1>Comece no Free e evolua quando precisar</h1>
-            <p>Você pode entrar agora sem pagar nada. Pro e Business já têm a experiência preparada para quando fizer sentido.</p>
-          </div>
-
-          <div className="onboarding-plan-preview">
-            <div className="plan-preview-main"><span className="plan-mini-label">Plano inicial</span><strong>Free</strong><p>Operação essencial para conhecer o Nexo e organizar suas primeiras informações.</p></div>
-            <div className="plan-preview-price"><strong>R$ 0</strong><span>/mês</span></div>
-          </div>
-
+          <div className="saas-heading"><p className="eyebrow">Tudo pronto</p><h1>Comece no Free e evolua quando precisar</h1><p>Você pode entrar agora sem pagar nada. Pro e Business já têm a experiência preparada para quando fizer sentido.</p></div>
+          <div className="onboarding-plan-preview"><div className="plan-preview-main"><span className="plan-mini-label">Plano inicial</span><strong>Free</strong><p>Operação essencial para conhecer o Nexo e organizar suas primeiras informações.</p></div><div className="plan-preview-price"><strong>R$ 0</strong><span>/mês</span></div></div>
           <div className="onboarding-benefits"><span>✓ Dashboard financeiro</span><span>✓ Vendas e despesas</span><span>✓ Produtos e clientes</span><span>✓ Relatórios essenciais</span></div>
-
-          <div className="saas-actions split-actions">
-            <button className="secondary-button" type="button" onClick={() => setEtapa(2)}>Voltar</button>
-            <button className="secondary-button" type="button" onClick={verPlanos}>Conhecer planos</button>
-            <button className="primary-button saas-primary" type="button" onClick={entrarNoNexo}>Entrar no Nexo</button>
-          </div>
+          {erro ? <p className="form-error-banner">{erro}</p> : null}
+          <div className="saas-actions split-actions"><button className="secondary-button" type="button" onClick={() => setEtapa(2)} disabled={salvando}>Voltar</button><button className="secondary-button" type="button" onClick={verPlanos} disabled={salvando}>Conhecer planos</button><button className="primary-button saas-primary" type="button" onClick={entrarNoNexo} disabled={salvando}>{salvando ? "Salvando..." : "Entrar no Nexo"}</button></div>
         </section>
       ) : null}
     </main>
