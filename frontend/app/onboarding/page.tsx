@@ -69,13 +69,19 @@ export default function OnboardingPage() {
     setEtapa(3);
   }
 
+  function destinoInicial(perfilEscolhido: PerfilUso) {
+    if (perfilEscolhido === "pessoal") return "/pessoal";
+    if (perfilEscolhido === "empresa") return "/empresa";
+    return "/";
+  }
+
   function entrarNoNexo() {
     if (!perfil) return;
     salvarPerfilUso(perfil);
     salvarObjetivos(objetivos);
     salvarPlanoLocal("free");
     concluirOnboarding();
-    router.push("/");
+    router.push(destinoInicial(perfil));
     router.refresh();
   }
 
