@@ -1,26 +1,27 @@
 export type Unidade = "kg" | "g" | "l" | "ml" | "un";
 
 export type IngredienteProduto = {
-  id: string;
+  id: string | number;
   nome: string;
   precoCompra: number;
   quantidadeCompra: number;
   unidadeCompra: Unidade;
   quantidadeUsada: number;
   unidadeUso: Unidade;
+  custoNoProduto?: number;
 };
 
 export type Produto = {
-  id: string;
+  id: string | number;
   nome: string;
   precoVenda: number;
   descricao: string;
   ingredientes: IngredienteProduto[];
   custoEstimado: number;
-  criadoEm: string;
+  criadoEm?: string;
 };
 
-const STORAGE_KEY = "nexo-produtos";
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
 
 function fatorParaBase(unidade: Unidade) {
   if (unidade === "kg" || unidade === "l") return 1000;
@@ -53,23 +54,66 @@ export function calcularCustoProduto(ingredientes: IngredienteProduto[]) {
   return ingredientes.reduce((total, ingrediente) => total + calcularCustoIngrediente(ingrediente), 0);
 }
 
-export function carregarProdutos(): Produto[] {
-  if (typeof window === "undefined") return [];
+async function lerResposta(response: Response) {
+  if (response.ok) return response.json();
 
-  const salvo = window.localStorage.getItem(STORAGE_KEY);
-  if (!salvo) return [];
-
+  let mensagem = `Erro ${response.status} ao acessar o backend.`;
   try {
-    const produtos = JSON.parse(salvo) as Produto[];
-    return Array.isArray(produtos) ? produtos : [];
+    const corpo = await response.json();
+    mensagem = corpo.message ?? corpo.mensagem ?? corpo.detail ?? mensagem;
   } catch {
-    return [];
+    // Mantém a mensagem padrão quando a resposta não for JSON.
   }
+  throw new Error(mensagem);
 }
 
-export function salvarProduto(produto: Produto) {
-  const atuais = carregarProdutos();
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify([produto, ...atuais]));
+async function obterOrganizacaoId(): Promise<number> {
+  const response = await fetch(`${API_URL}/api/organizacoes`, { cache: "no-store" });
+  const organizacoes = (await lerResposta(response)) as Array<{ id: number; nome: string }>;
+
+  if (organizacoes.length > 0) return organizacoes[0].id;
+
+  const criacao = await fetch(`${API_URL}/api/organizacoes`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nome: "Minha empresa" }),
+  });
+
+  const organizacao = (await lerResposta(criacao)) as { id: number; nome: string };
+  return organizacao.id;
+}
+
+export async function carregarProdutos(): Promise<Produto[]> {
+  const organizacaoId = await obterOrganizacaoId();
+  const response = await fetch(`${API_URL}/api/produtos?organizacaoId=${organizacaoId}`, {
+    cache: "no-store",
+  });
+  return (await lerResposta(response)) as Produto[];
+}
+
+export async function salvarProduto(produto: Produto): Promise<Produto> {
+  const organizacaoId = await obterOrganizacaoId();
+
+  const response = await fetch(`${API_URL}/api/produtos`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      organizacaoId,
+      nome: produto.nome,
+      descricao: produto.descricao,
+      precoVenda: produto.precoVenda,
+      ingredientes: produto.ingredientes.map((ingrediente) => ({
+        nome: ingrediente.nome,
+        precoCompra: ingrediente.precoCompra,
+        quantidadeCompra: ingrediente.quantidadeCompra,
+        unidadeCompra: ingrediente.unidadeCompra,
+        quantidadeUsada: ingrediente.quantidadeUsada,
+        unidadeUso: ingrediente.unidadeUso,
+      })),
+    }),
+  });
+
+  return (await lerResposta(response)) as Produto;
 }
 
 export function formatarMoeda(valor: number) {
