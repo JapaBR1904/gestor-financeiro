@@ -69,6 +69,14 @@ public class VendaService {
     }
 
     @Transactional(readOnly = true)
+    public VendaDetalhe buscar(Long organizacaoId, Long vendaId) {
+        organizacaoService.buscarPorId(organizacaoId);
+        Venda venda = vendaRepository.findByIdAndOrganizacaoId(vendaId, organizacaoId)
+                .orElseThrow(() -> new IllegalArgumentException("Venda não encontrada para esta organização."));
+        return montarDetalhe(venda);
+    }
+
+    @Transactional(readOnly = true)
     public VendaResumo resumo(Long organizacaoId) {
         List<VendaDetalhe> vendas = listar(organizacaoId);
         BigDecimal faturamento = vendas.stream().map(VendaDetalhe::totalVenda).reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, RoundingMode.HALF_UP);
