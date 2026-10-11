@@ -2,10 +2,8 @@ package br.com.nexo.saas;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,11 +14,9 @@ public class SaasService {
     private static final List<String> PLANOS = List.of("free", "pro", "business");
 
     private final JdbcTemplate jdbcTemplate;
-    private final ObjectMapper objectMapper;
 
-    public SaasService(JdbcTemplate jdbcTemplate, ObjectMapper objectMapper) {
+    public SaasService(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.objectMapper = objectMapper;
     }
 
     @Transactional
@@ -29,7 +25,6 @@ public class SaasService {
 
         Map<String, Object> dados = jdbcTemplate.queryForMap("""
                 SELECT c.perfil_uso,
-                       c.objetivos::text AS objetivos,
                        c.onboarding_concluido,
                        a.plano,
                        a.status
@@ -38,9 +33,15 @@ public class SaasService {
                 WHERE c.organizacao_id = ?
                 """, organizacaoId);
 
+        List<String> objetivos = jdbcTemplate.queryForList("""
+                SELECT jsonb_array_elements_text(objetivos) AS objetivo
+                FROM configuracoes_saas
+                WHERE organizacao_id = ?
+                """, String.class, organizacaoId);
+
         return new ConfiguracaoSaas(
                 (String) dados.get("perfil_uso"),
-                lerObjetivos((String) dados.get("objetivos")),
+                objetivos,
                 Boolean.TRUE.equals(dados.get("onboarding_concluido")),
                 (String) dados.get("plano"),
                 (String) dados.get("status")
@@ -49,15 +50,15 @@ public class SaasService {
 
     @Transactional
     public ConfiguracaoSaas salvarOnboarding(Long organizacaoId, String perfil, List<String> objetivos, boolean concluido) {
-        validarPerfil(perfil);
+        String perfilNormalizado = validarPerfil(perfil);
         garantirEstrutura(organizacaoId);
         String objetivosJson = escreverObjetivos(objetivos == null ? List.of() : objetivos);
 
         jdbcTemplate.update("""
                 UPDATE configuracoes_saas
-                SET perfil_uso = ?, objetivos = ?::jsonb, onboarding_concluido = ?, atualizado_em = NOW()
+                SET perfil_uso = ?, objetivos = CAST(? AS jsonb), onboarding_concluido = ?, atualizado_em = NOW()
                 WHERE organizacao_id = ?
-                """, perfil, objetivosJson, concluido, organizacaoId);
+                """, perfilNormalizado, objetivosJson, concluido, organizacaoId);
 
         return carregar(organizacaoId);
     }
@@ -93,32 +94,32 @@ public class SaasService {
                 """, organizacaoId);
     }
 
-    private void validarPerfil(String perfil) {
-        if (perfil == null || !PERFIS.contains(perfil.trim().toLowerCase())) {
+    private String validarPerfil(String perfil) {
+        String perfilNormalizado = perfil == null ? "" : perfil.trim().toLowerCase();
+        if (!PERFIS.contains(perfilNormalizado)) {
             throw new IllegalArgumentException("Perfil de uso inválido.");
         }
+        return perfilNormalizado;
     }
 
     private String escreverObjetivos(List<String> objetivos) {
-        try {
-            return objectMapper.writeValueAsString(objetivos.stream()
-                    .filter(item -> item != null && !item.isBlank())
-                    .map(String::trim)
-                    .distinct()
-                    .limit(12)
-                    .toList());
-        } catch (JsonProcessingException e) {
-            throw new IllegalArgumentException("Não foi possível salvar os objetivos.", e);
-        }
+        return objetivos.stream()
+                .filter(item -> item != null && !item.isBlank())
+                .map(String::trim)
+                .distinct()
+                .limit(12)
+                .map(this::comoStringJson)
+                .collect(Collectors.joining(",", "[", "]"));
     }
 
-    private List<String> lerObjetivos(String json) {
-        if (json == null || json.isBlank()) return List.of();
-        try {
-            return objectMapper.readValue(json, new TypeReference<List<String>>() {});
-        } catch (JsonProcessingException e) {
-            return List.of();
-        }
+    private String comoStringJson(String valor) {
+        String escapado = valor
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t");
+        return "\"" + escapado + "\"";
     }
 
     public record ConfiguracaoSaas(
