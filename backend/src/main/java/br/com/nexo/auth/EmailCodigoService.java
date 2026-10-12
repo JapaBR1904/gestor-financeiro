@@ -35,7 +35,7 @@ public class EmailCodigoService {
 
         try {
             MimeMessage mensagem = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mensagem, "UTF-8");
+            MimeMessageHelper helper = new MimeMessageHelper(mensagem, true, "UTF-8");
             helper.setFrom(remetente);
             helper.setTo(email);
             helper.setSubject("Seu código de acesso ao Nexo");
