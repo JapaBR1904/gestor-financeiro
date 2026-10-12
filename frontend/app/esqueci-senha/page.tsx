@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { solicitarCodigo } from "../../lib/auth";
+import { emailValido } from "../../lib/formatacao";
 import AuthCard from "../../components/AuthCard";
 
 export default function EsqueciSenhaPage() {
@@ -14,7 +15,10 @@ export default function EsqueciSenhaPage() {
   async function enviar(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (enviando) return;
-    setErro(""); setEnviando(true);
+    setErro("");
+    if (!email.trim()) return setErro("Informe seu e-mail.");
+    if (!emailValido(email)) return setErro("Informe um e-mail válido.");
+    setEnviando(true);
     try {
       await solicitarCodigo(email, "recuperacao_senha");
       router.push(`/recuperar-senha?${new URLSearchParams({ email: email.trim() })}`);
@@ -24,8 +28,8 @@ export default function EsqueciSenhaPage() {
   }
   return (
     <AuthCard titulo="Esqueceu sua senha?" descricao="Se existir uma conta com este e-mail, enviaremos um código de recuperação.">
-      <form className="auth-form" onSubmit={enviar} aria-busy={enviando}>
-        <label className="field"><span>E-mail</span><input type="email" autoComplete="email" required maxLength={180} value={email} onChange={(e) => setEmail(e.target.value)} /></label>
+      <form className="auth-form" onSubmit={enviar} noValidate aria-busy={enviando}>
+        <label className="field"><span>E-mail</span><input type="email" autoComplete="email" required maxLength={180} value={email} onChange={(e) => { setEmail(e.target.value); setErro(""); }} /></label>
         {erro ? <p className="form-error-banner" role="alert">{erro}</p> : null}
         <button className="primary-button auth-primary" type="submit" disabled={enviando}>{enviando ? "Solicitando..." : "Enviar código de recuperação"}</button>
       </form>

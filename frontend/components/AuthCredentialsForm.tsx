@@ -6,8 +6,9 @@ import { useRouter } from "next/navigation";
 import { cadastrar, login } from "../lib/auth";
 import { emailValido } from "../lib/formatacao";
 import { carregarConfiguracaoSaas } from "../lib/saas";
+import { validarSenha } from "../lib/politica-senha";
 import AuthCard from "./AuthCard";
-import PasswordFields, { validarSenha } from "./PasswordFields";
+import PasswordFields from "./PasswordFields";
 
 export default function AuthCredentialsForm({ cadastro = false }: { cadastro?: boolean }) {
   const router = useRouter();
@@ -22,12 +23,14 @@ export default function AuthCredentialsForm({ cadastro = false }: { cadastro?: b
     event.preventDefault();
     if (enviando) return;
     setErro("");
+    if (!email.trim()) return setErro("Informe seu e-mail.");
     if (!emailValido(email)) return setErro("Informe um e-mail válido.");
     if (cadastro) {
       if (!nome.trim()) return setErro("Informe seu nome.");
       const erroSenha = validarSenha(senha, confirmacao);
       if (erroSenha) return setErro(erroSenha);
     }
+    if (!senha.trim()) return setErro("Informe sua senha.");
     setEnviando(true);
     try {
       if (cadastro) {
@@ -50,10 +53,10 @@ export default function AuthCredentialsForm({ cadastro = false }: { cadastro?: b
   return (
     <AuthCard titulo={cadastro ? "Criar conta" : "Bem-vindo de volta"}
       descricao={cadastro ? "Comece com seus dados. Vamos confirmar seu e-mail antes de liberar o acesso." : "Entre para acompanhar seu negócio com clareza."}>
-      <form className="auth-form" onSubmit={enviar} aria-busy={enviando}>
-        {cadastro ? <label className="field"><span>Seu nome</span><input autoComplete="name" value={nome} onChange={(e) => setNome(e.target.value)} maxLength={160} required /></label> : null}
-        <label className="field"><span>E-mail</span><input type="email" autoComplete="email" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={180} required /></label>
-        <PasswordFields senha={senha} setSenha={setSenha} confirmacao={cadastro ? confirmacao : undefined} setConfirmacao={cadastro ? setConfirmacao : undefined} />
+      <form className="auth-form" onSubmit={enviar} noValidate aria-busy={enviando}>
+        {cadastro ? <label className="field"><span>Seu nome</span><input autoComplete="name" value={nome} onChange={(e) => { setNome(e.target.value); setErro(""); }} maxLength={160} required /></label> : null}
+        <label className="field"><span>E-mail</span><input type="email" autoComplete="email" inputMode="email" value={email} onChange={(e) => { setEmail(e.target.value); setErro(""); }} maxLength={180} required /></label>
+        <PasswordFields senha={senha} setSenha={(valor) => { setSenha(valor); setErro(""); }} confirmacao={cadastro ? confirmacao : undefined} setConfirmacao={cadastro ? (valor) => { setConfirmacao(valor); setErro(""); } : undefined} />
         {!cadastro ? <Link className="auth-back" href="/esqueci-senha">Esqueci minha senha</Link> : null}
         {erro ? <p className="form-error-banner" role="alert">{erro}</p> : null}
         <button className="primary-button auth-primary" disabled={enviando} type="submit">{enviando ? (cadastro ? "Criando conta..." : "Entrando...") : (cadastro ? "Criar conta" : "Entrar")}</button>

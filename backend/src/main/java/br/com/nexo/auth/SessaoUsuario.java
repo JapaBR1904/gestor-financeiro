@@ -57,7 +57,6 @@ public class SessaoUsuario {
         return revogadaEm == null && OffsetDateTime.now().isBefore(expiraEm);
     }
 
-    public void tocar() { ultimoAcessoEm = OffsetDateTime.now(); }
     public void revogar() { revogadaEm = OffsetDateTime.now(); }
     public Usuario getUsuario() { return usuario; }
 }

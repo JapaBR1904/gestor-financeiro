@@ -62,7 +62,7 @@ public class CodigoAutenticacao {
     @PrePersist
     void aoCriar() { criadoEm = OffsetDateTime.now(); }
 
-    public boolean expirou() { return OffsetDateTime.now().isAfter(expiraEm); }
+    public boolean expirou() { return !OffsetDateTime.now().isBefore(expiraEm); }
     public boolean usado() { return usadoEm != null; }
     public boolean excedeuTentativas() { return tentativas >= maxTentativas; }
     public void registrarTentativa() { tentativas++; }

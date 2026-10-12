@@ -22,6 +22,7 @@ public class AuthService {
     private static final SecureRandom RANDOM = new SecureRandom();
     private static final Duration COOLDOWN_CODIGO = Duration.ofSeconds(45);
     private static final int MAX_CODIGOS_POR_HORA = 6;
+    private static final String ERRO_LOGIN = "Não foi possível entrar. Confira e-mail e senha ou tente novamente mais tarde.";
     private static final String HASH_COMPARACAO = new BCryptPasswordEncoder(12).encode("comparacao-sem-conta");
 
     private final UsuarioRepository usuarioRepository;
@@ -48,10 +49,10 @@ public class AuthService {
     @Transactional
     public void cadastrar(String nome, String emailInformado, String senha, String confirmacao) {
         String email = normalizarEmail(emailInformado);
-        validarSenha(senha, confirmacao);
+        PoliticaSenha.validar(senha, confirmacao);
         String nomeFormatado = formatarNome(nome, "Informe seu nome para criar a conta.");
         if (usuarioRepository.existsByEmailIgnoreCase(email)) {
-            throw new IllegalArgumentException("Já existe uma conta com este e-mail. Entre ou recupere sua senha.");
+            throw new IllegalArgumentException("Não foi possível criar a conta. Confira os dados ou tente entrar ou recuperar seu acesso.");
         }
         Organizacao organizacao = organizacaoService.criar("Meu espaço");
         usuarioRepository.save(new Usuario(organizacao, nomeFormatado, email, encoder.encode(senha)));
@@ -88,7 +89,8 @@ public class AuthService {
             if (recuperacao) return;
             throw new IllegalArgumentException("Muitas solicitações de código. Tente novamente mais tarde.");
         }
-        if (anterior != null && !anterior.usado()) anterior.marcarUsado();
+        if (recuperacao) codigoRepository.invalidarRecuperacoes(email, agora);
+        else if (anterior != null && !anterior.usado()) anterior.marcarUsado();
         String codigo = String.format(Locale.ROOT, "%06d", RANDOM.nextInt(1_000_000));
         codigoRepository.save(new CodigoAutenticacao(email, encoder.encode(codigo), finalidade, agora.plusMinutes(10)));
         if (semEnvio) return;
@@ -113,20 +115,18 @@ public class AuthService {
     public ResultadoAutenticacao login(String emailInformado, String senha) {
         String email = normalizarEmail(emailInformado);
         if (senha == null || senha.isBlank() || senha.getBytes(StandardCharsets.UTF_8).length > 72) {
-            throw new IllegalArgumentException("E-mail ou senha inválidos.");
+            throw new IllegalArgumentException(ERRO_LOGIN);
         }
         Usuario usuario = usuarioRepository.buscarParaAutenticacao(email).orElse(null);
         if (usuario == null) {
             encoder.matches(senha, HASH_COMPARACAO);
-            throw new IllegalArgumentException("E-mail ou senha inválidos.");
+            throw new IllegalArgumentException(ERRO_LOGIN);
         }
-        if (usuario.loginBloqueado(OffsetDateTime.now())) {
-            throw new IllegalArgumentException("Muitas tentativas. Aguarde 15 minutos antes de tentar novamente.");
-        }
+        boolean bloqueado = usuario.loginBloqueado(OffsetDateTime.now());
         boolean correta = encoder.matches(senha, usuario.getSenhaHash() == null ? HASH_COMPARACAO : usuario.getSenhaHash());
-        if (!correta || usuario.getSenhaHash() == null || !usuario.isAtivo()) {
-            usuario.registrarFalhaLogin();
-            throw new IllegalArgumentException("E-mail ou senha inválidos.");
+        if (bloqueado || !correta || usuario.getSenhaHash() == null || !usuario.isAtivo()) {
+            if (!bloqueado) usuario.registrarFalhaLogin();
+            throw new IllegalArgumentException(ERRO_LOGIN);
         }
         if (!usuario.emailVerificado()) throw new IllegalArgumentException("Confirme seu e-mail antes de entrar.");
         usuario.limparTentativasLogin();
@@ -146,7 +146,7 @@ public class AuthService {
 
     @Transactional
     public void redefinirSenha(String prova, String senha, String confirmacao) {
-        validarSenha(senha, confirmacao);
+        PoliticaSenha.validar(senha, confirmacao);
         if (prova == null || !prova.matches("[A-Za-z0-9_-]{43}")) {
             throw new IllegalArgumentException("Recuperação inválida ou expirada. Solicite um novo código.");
         }
@@ -186,13 +186,6 @@ public class AuthService {
         return registro;
     }
 
-    private void validarSenha(String senha, String confirmacao) {
-        if (senha == null || senha.isBlank() || senha.length() < 8 || senha.getBytes(StandardCharsets.UTF_8).length > 72) {
-            throw new IllegalArgumentException("Use uma senha com pelo menos 8 caracteres e no máximo 72 bytes.");
-        }
-        if (!senha.equals(confirmacao)) throw new IllegalArgumentException("As senhas não coincidem.");
-    }
-
     private ResultadoAutenticacao criarSessao(Usuario usuario) {
         String token = gerarTokenSeguro();
         sessaoRepository.save(new SessaoUsuario(usuario, sha256(token), OffsetDateTime.now().plusDays(30)));
@@ -208,8 +201,10 @@ public class AuthService {
         if (!sessao.getUsuario().isAtivo() || !sessao.getUsuario().emailVerificado()) {
             throw new IllegalArgumentException("Sessão inválida. Entre novamente.");
         }
-        sessao.tocar();
-        sessaoRepository.save(sessao);
+        // Atualizar só o acesso, sem sobrescrever uma revogação concorrente.
+        if (sessaoRepository.registrarAcesso(sha256(token), OffsetDateTime.now()) == 0) {
+            throw new IllegalArgumentException("Sessão expirada. Entre novamente.");
+        }
         return montarUsuario(sessao.getUsuario());
     }
 

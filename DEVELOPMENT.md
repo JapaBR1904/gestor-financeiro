@@ -60,6 +60,10 @@ curl --fail http://localhost:8080/api/health/database
 
 A rota de saúde do banco retorna seu estado, sem exigir login. Não confunda uma porta aberta com um fluxo de autenticação funcional: crie uma conta sintética, confirme o e-mail e teste login/logout.
 
+## Política de senha
+
+Novas senhas, no cadastro ou na redefinição, exigem 16 caracteres, uma maiúscula, uma minúscula, um número e um especial. O limite permanece 72 bytes UTF-8. As senhas existentes continuam aceitas no login, sem mudança automática ou perda de acesso. Não há nova migração de banco. Regras, arquivos e testes da revisão: [docs/POLITICA_SENHA.md](docs/POLITICA_SENHA.md).
+
 ## Testes e build
 
 Backend:
@@ -75,6 +79,7 @@ Frontend:
 
 ```bash
 cd frontend
+npm test
 npm run lint
 npx --no-install tsc --noEmit
 npm run build

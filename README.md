@@ -14,9 +14,9 @@ Veja [DEVELOPMENT.md](DEVELOPMENT.md) para preparar o banco, configurar o e-mail
 - Confirmação do e-mail por código de seis dígitos, antes de iniciar a sessão.
 - Login com e-mail e senha, usando cookie HTTP-only.
 - Recuperação por código, seguida de prova temporária em cookie HTTP-only para definir outra senha.
-- Senhas com BCrypt, códigos com hash, limites de solicitações/tentativas e uso único.
+- Novas senhas com pelo menos 16 caracteres, maiúscula, minúscula, número e especial; BCrypt, códigos com hash, limites de solicitações/tentativas e uso único.
 - Redefinição da senha encerra as sessões anteriores. Contas antigas podem definir a primeira senha pela recuperação, preservando sua organização e seus dados.
 
-O resumo da implementação, endpoints e evidências de validação estão em [docs/AUTENTICACAO.md](docs/AUTENTICACAO.md).
+A política atual e a revisão dos fluxos estão em [docs/POLITICA_SENHA.md](docs/POLITICA_SENHA.md). O relatório da primeira etapa, incluindo migração e endpoints, está em [docs/AUTENTICACAO.md](docs/AUTENTICACAO.md).
 
 Nunca versione credenciais, arquivos `.env` reais ou backups de dados pessoais.

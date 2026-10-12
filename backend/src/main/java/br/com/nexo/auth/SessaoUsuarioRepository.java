@@ -13,5 +13,9 @@ public interface SessaoUsuarioRepository extends JpaRepository<SessaoUsuario, Lo
     @Query("update SessaoUsuario s set s.revogadaEm = :agora where s.usuario.id = :usuarioId and s.revogadaEm is null")
     void revogarDoUsuario(@Param("usuarioId") Long usuarioId, @Param("agora") OffsetDateTime agora);
 
+    @Modifying
+    @Query("update SessaoUsuario s set s.ultimoAcessoEm = :agora where s.tokenHash = :hash and s.revogadaEm is null and s.expiraEm > :agora")
+    int registrarAcesso(@Param("hash") String hash, @Param("agora") OffsetDateTime agora);
+
     Optional<SessaoUsuario> findByTokenHash(String tokenHash);
 }

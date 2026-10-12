@@ -6,6 +6,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,11 +30,12 @@ import static org.junit.jupiter.api.Assertions.*;
 @Import(AuthIntegrationTest.EmailConfig.class)
 @EnabledIfEnvironmentVariable(named = "NEXO_TEST_DB_URL", matches = ".+")
 class AuthIntegrationTest {
-    private static final String SENHA = "senha-de-teste-segura";
+    private static final String SENHA = "Senha-De-Teste123!";
     @Autowired AuthService auth;
     @Autowired UsuarioRepository usuarios;
     @Autowired JdbcTemplate jdbc;
     @Autowired EmailTeste emails;
+    @Autowired PlatformTransactionManager transacoes;
 
     @DynamicPropertySource
     static void banco(DynamicPropertyRegistry registry) {
@@ -114,10 +118,10 @@ class AuthIntegrationTest {
         String prova = auth.verificarRecuperacao(email, codigo);
         assertThrows(IllegalArgumentException.class, () -> auth.verificarRecuperacao(email, codigo));
         assertNotEquals(prova, jdbc.queryForObject("select prova_hash from codigos_autenticacao where email = ? and finalidade = 'recuperacao_senha'", String.class, email));
-        auth.redefinirSenha(prova, "senha-nova-segura", "senha-nova-segura");
+        auth.redefinirSenha(prova, "Senha-Nova-Teste456!", "Senha-Nova-Teste456!");
         assertThrows(IllegalArgumentException.class, () -> auth.autenticarSessao(token));
         assertThrows(IllegalArgumentException.class, () -> auth.login(email, SENHA));
-        assertEquals(email, auth.login(email, "senha-nova-segura").usuario().email());
+        assertEquals(email, auth.login(email, "Senha-Nova-Teste456!").usuario().email());
         assertThrows(IllegalArgumentException.class, () -> auth.redefinirSenha(prova, SENHA, SENHA));
     }
 
@@ -184,6 +188,92 @@ class AuthIntegrationTest {
         assertEquals(1, jdbc.queryForObject("select tentativas from codigos_autenticacao where email = ? and finalidade = 'recuperacao_senha'", Integer.class, email));
         jdbc.update("update codigos_autenticacao set expira_em = now() - interval '1 minute' where email = ?", email);
         assertThrows(IllegalArgumentException.class, () -> auth.verificarRecuperacao(email, codigo));
+    }
+
+    @Test
+    void reenvioInvalidaProvasAnterioresSemConsumirNovoCodigo() {
+        String email = contaVerificada();
+        auth.solicitarCodigo(email, "recuperacao_senha");
+        String antiga = auth.verificarRecuperacao(email, emails.codigo(email));
+        jdbc.update("update codigos_autenticacao set criado_em = now() - interval '46 seconds' where email = ? and finalidade = 'recuperacao_senha'", email);
+        auth.solicitarCodigo(email, "recuperacao_senha");
+        assertThrows(IllegalArgumentException.class, () -> auth.redefinirSenha(antiga, SENHA, SENHA));
+        String nova = auth.verificarRecuperacao(email, emails.codigo(email));
+        auth.redefinirSenha(nova, "Senha-Nova-Teste456!", "Senha-Nova-Teste456!");
+        assertEquals(email, auth.login(email, "Senha-Nova-Teste456!").usuario().email());
+    }
+
+    @Test
+    void reenvioDeVerificacaoConsomeRegistroAnterior() {
+        String email = cadastrar();
+        Long anterior = jdbc.queryForObject("select id from codigos_autenticacao where email = ?", Long.class, email);
+        assertThrows(IllegalArgumentException.class, () -> auth.solicitarCodigo(email, "verificacao_email"));
+        jdbc.update("update codigos_autenticacao set criado_em = now() - interval '46 seconds' where email = ?", email);
+        auth.solicitarCodigo(email, "verificacao_email");
+        assertTrue(jdbc.queryForObject("select usado_em is not null from codigos_autenticacao where id = ?", Boolean.class, anterior));
+        assertEquals(email, auth.verificarCodigo(email, emails.codigo(email), "verificacao_email").usuario().email());
+    }
+
+    @Test
+    void limitePorHoraMantemRecuperacaoNeutra() {
+        String email = contaVerificada();
+        for (int i = 0; i < 5; i++) {
+            auth.solicitarCodigo(email, "recuperacao_senha");
+            jdbc.update("update codigos_autenticacao set criado_em = now() - interval '46 seconds' where email = ? and finalidade = 'recuperacao_senha'", email);
+        }
+        assertEquals(6, jdbc.queryForObject("select count(*) from codigos_autenticacao where email = ?", Integer.class, email));
+        String ultimo = emails.codigo(email);
+        assertDoesNotThrow(() -> auth.solicitarCodigo(email, "recuperacao_senha"));
+        assertEquals(ultimo, emails.codigo(email));
+        assertEquals(6, jdbc.queryForObject("select count(*) from codigos_autenticacao where email = ?", Integer.class, email));
+    }
+
+    @Test
+    void senhaForaDaPoliticaNaoConsomeProvaNemAlteraConta() {
+        String email = contaVerificada();
+        auth.solicitarCodigo(email, "recuperacao_senha");
+        String prova = auth.verificarRecuperacao(email, emails.codigo(email));
+        for (String senha : new String[]{"Abcdefg1!", "abcdefghijklmn1!", "ABCDEFGHIJKLMN1!", "Abcdefghijklmno!", "Abcdefghijklmn12"}) {
+            assertThrows(IllegalArgumentException.class, () -> auth.redefinirSenha(prova, senha, senha));
+        }
+        assertEquals(email, auth.login(email, SENHA).usuario().email());
+        auth.redefinirSenha(prova, "Senha-Nova-Teste456!", "Senha-Nova-Teste456!");
+        assertEquals(email, auth.login(email, "Senha-Nova-Teste456!").usuario().email());
+    }
+
+    @Test
+    void loginMantemCompatibilidadeComSenhaAnteriorAPoliticaForte() {
+        String email = contaVerificada();
+        jdbc.update("update usuarios set senha_hash = ? where email = ?", new BCryptPasswordEncoder(12).encode("senha antiga 123"), email);
+        assertEquals(email, auth.login(email, "senha antiga 123").usuario().email());
+        assertThrows(IllegalArgumentException.class, () -> auth.cadastrar("Teste", emailNovo(), "senha antiga 123", "senha antiga 123"));
+    }
+
+    @Test
+    void acessoConcorrenteNaoRestauraSessaoRevogadaNaTrocaDeSenha() throws Exception {
+        String email = contaVerificada();
+        String token = auth.login(email, SENHA).token();
+        auth.solicitarCodigo(email, "recuperacao_senha");
+        String prova = auth.verificarRecuperacao(email, emails.codigo(email));
+        CountDownLatch acessoLido = new CountDownLatch(1);
+        CountDownLatch concluirAcesso = new CountDownLatch(1);
+        try (var executor = Executors.newFixedThreadPool(2)) {
+            var acesso = executor.submit(() -> new TransactionTemplate(transacoes).executeWithoutResult(status -> {
+                auth.autenticarSessao(token);
+                acessoLido.countDown();
+                try { assertTrue(concluirAcesso.await(10, TimeUnit.SECONDS)); }
+                catch (InterruptedException exception) { Thread.currentThread().interrupt(); throw new IllegalStateException(exception); }
+            }));
+            assertTrue(acessoLido.await(10, TimeUnit.SECONDS));
+            var troca = executor.submit(() -> auth.redefinirSenha(prova, "Senha-Nova-Teste456!", "Senha-Nova-Teste456!"));
+            try { troca.get(2, TimeUnit.SECONDS); }
+            catch (TimeoutException exception) { /* A atualização de acesso pode segurar o bloqueio da sessão até seu commit. */ }
+            finally { concluirAcesso.countDown(); }
+            acesso.get(10, TimeUnit.SECONDS);
+            troca.get(10, TimeUnit.SECONDS);
+        }
+        assertThrows(IllegalArgumentException.class, () -> auth.autenticarSessao(token));
+        assertEquals(email, auth.login(email, "Senha-Nova-Teste456!").usuario().email());
     }
 
     private void assertUmaVez(Callable<?> operacao) throws Exception {

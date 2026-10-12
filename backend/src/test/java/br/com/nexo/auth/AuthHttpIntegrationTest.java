@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class AuthHttpIntegrationTest {
     @LocalServerPort int porta;
     @Autowired AuthIntegrationTest.EmailTeste emails;
+    @Autowired org.springframework.jdbc.core.JdbcTemplate jdbc;
     private final HttpClient http = HttpClient.newHttpClient();
 
     @DynamicPropertySource
@@ -34,9 +35,9 @@ class AuthHttpIntegrationTest {
     @Test
     void fluxoHttpCompletoProtegeCookiesERevogaSessao() throws Exception {
         String email = "http-" + UUID.randomUUID() + "@example.com";
-        String dados = "{\"nome\":\"Pessoa Teste\",\"email\":\"%s\",\"senha\":\"senha-segura-teste\",\"confirmacaoSenha\":\"senha-segura-teste\"}".formatted(email);
+        String dados = "{\"nome\":\"Pessoa Teste\",\"email\":\"%s\",\"senha\":\"Senha-Segura-Teste123!\",\"confirmacaoSenha\":\"Senha-Segura-Teste123!\"}".formatted(email);
         assertEquals(200, post("/cadastro", dados, null).statusCode());
-        String login = "{\"email\":\"%s\",\"senha\":\"senha-segura-teste\"}".formatted(email);
+        String login = "{\"email\":\"%s\",\"senha\":\"Senha-Segura-Teste123!\"}".formatted(email);
         assertEquals(400, post("/login", login, null).statusCode());
         var verificacao = post("/verificar", "{\"email\":\"%s\",\"codigo\":\"%s\",\"finalidade\":\"verificacao_email\"}".formatted(email, emails.codigo(email)), null);
         assertEquals(200, verificacao.statusCode());
@@ -62,14 +63,14 @@ class AuthHttpIntegrationTest {
         assertTrue(provaHeader.contains("SameSite=Strict"));
         assertTrue(provaHeader.contains("Max-Age=600"));
         assertFalse(recuperacao.body().contains("prova"));
-        String novasSenhas = "{\"senha\":\"outra-senha-segura\",\"confirmacaoSenha\":\"outra-senha-segura\"}";
+        String novasSenhas = "{\"senha\":\"Outra-Senha-Teste456!\",\"confirmacaoSenha\":\"Outra-Senha-Teste456!\"}";
         assertEquals(400, post("/recuperacao/redefinir", novasSenhas, null).statusCode());
         var redefinicao = post("/recuperacao/redefinir", novasSenhas, prova);
         assertEquals(200, redefinicao.statusCode());
         assertEquals(2, redefinicao.headers().allValues("Set-Cookie").size());
         assertEquals(401, get("/me", sessao).statusCode());
         assertEquals(400, post("/recuperacao/redefinir", novasSenhas, prova).statusCode());
-        var novoLogin = post("/login", login.replace("senha-segura-teste", "outra-senha-segura"), null);
+        var novoLogin = post("/login", login.replace("Senha-Segura-Teste123!", "Outra-Senha-Teste456!"), null);
         assertEquals(200, novoLogin.statusCode());
         String novaSessao = cookie(novoLogin, "nexo_session");
         assertEquals(200, post("/logout", "{}", novaSessao).statusCode());
@@ -83,6 +84,39 @@ class AuthHttpIntegrationTest {
                 .POST(HttpRequest.BodyPublishers.ofString("{\"email\":\"teste@example.com\",\"senha\":\"senha-segura\"}")).build();
         assertEquals(403, http.send(request, HttpResponse.BodyHandlers.ofString()).statusCode());
         assertEquals(400, post("/codigo", "{\"email\":\"teste@example.com\",\"finalidade\":\"login\"}", null).statusCode());
+    }
+
+    @Test
+    void politicaForteEConfirmacaoSaoObrigatoriasNaApi() throws Exception {
+        for (String senha : new String[]{"Abcdefg1!", "abcdefghijklmn1!", "ABCDEFGHIJKLMN1!", "Abcdefghijklmno!", "Abcdefghijklmn12"}) {
+            String email = "politica-" + UUID.randomUUID() + "@example.com";
+            var resposta = post("/cadastro", "{\"nome\":\"Teste\",\"email\":\"%s\",\"senha\":\"%s\",\"confirmacaoSenha\":\"%s\"}".formatted(email, senha, senha), null);
+            assertEquals(400, resposta.statusCode());
+            assertFalse(resposta.body().contains(senha));
+            assertFalse(emails.codigos.containsKey(email));
+        }
+        assertEquals(400, post("/cadastro", "{\"nome\":\"Teste\",\"email\":\"politica@example.com\",\"senha\":\"Senha-Segura-Teste123!\",\"confirmacaoSenha\":\"Outra-Senha-Teste456!\"}", null).statusCode());
+        assertEquals(400, post("/login", "{\"email\":\"\",\"senha\":\"\"}", null).statusCode());
+    }
+
+    @Test
+    void recuperacaoNaoDiferenciaContaInativaELoginNaoRevelaContaBloqueada() throws Exception {
+        String email = "neutra-" + UUID.randomUUID() + "@example.com";
+        String cadastro = "{\"nome\":\"Teste\",\"email\":\"%s\",\"senha\":\"Senha-Segura-Teste123!\",\"confirmacaoSenha\":\"Senha-Segura-Teste123!\"}".formatted(email);
+        assertEquals(200, post("/cadastro", cadastro, null).statusCode());
+        jdbc.update("update usuarios set ativo = false where email = ?", email);
+        var inativa = post("/recuperacao", "{\"email\":\"%s\"}".formatted(email), null);
+        var ausente = post("/recuperacao", "{\"email\":\"ausente-%s@example.com\"}".formatted(UUID.randomUUID()), null);
+        assertEquals(ausente.statusCode(), inativa.statusCode());
+        assertEquals(ausente.body(), inativa.body());
+        String login = "{\"email\":\"%s\",\"senha\":\"Senha-Segura-Teste123!\"}";
+        var falhaInativa = post("/login", login.formatted(email), null);
+        var falhaAusente = post("/login", login.formatted("ausente@example.com"), null);
+        jdbc.update("update usuarios set ativo = true, tentativas_login = 10, login_janela_em = now() where email = ?", email);
+        var bloqueada = post("/login", login.formatted(email), null);
+        assertEquals(falhaAusente.statusCode(), falhaInativa.statusCode());
+        assertEquals(falhaAusente.body(), falhaInativa.body());
+        assertEquals(falhaAusente.body(), bloqueada.body());
     }
 
     private URI uri(String caminho) { return URI.create("http://localhost:" + porta + "/api/auth" + caminho); }
