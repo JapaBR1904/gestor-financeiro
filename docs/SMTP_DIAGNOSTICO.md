@@ -114,6 +114,7 @@ Novos testes:
 | Verificação executada | Resultado |
 | --- | --- |
 | `-Dtest=DiagnosticoSmtpTest,DiagnosticoSmtpProcessoTest test` | 23 passaram na primeira suíte de diagnóstico |
+| Reexecução dos dois testes de diagnóstico, após completar as fixtures com auth/TLS próprios, com `MAIL_SMTP_AUTH`, `MAIL_STARTTLS` e `MAIL_STARTTLS_REQUIRED` externos em `true` | 24 passaram; testes locais não herdam as flags SMTP do terminal |
 | `verify`, PostgreSQL exclusivo de teste e `NEXO_E2E=true` | 113 JUnit passaram, incluindo 24 novos casos de diagnóstico e todos os anteriores |
 | Testes de navegador existentes coordenados pelo backend | 7 passaram |
 | Build/repackage do JAR | Passou; manifesto mantém `Start-Class: br.com.nexo.NexoApplication` |

@@ -24,7 +24,8 @@ class DiagnosticoSmtpTest {
         return new ApplicationContextRunner().withUserConfiguration(DiagnosticoSmtpAplicacao.Configuracao.class)
                 .withInitializer(context -> context.getEnvironment().getPropertySources().addLast(propriedades))
                 .withPropertyValues("spring.profiles.active=test", "MAIL_ENABLED=true", "MAIL_HOST=localhost", "MAIL_PORT=" + smtp.porta(),
-                        "MAIL_USERNAME=", "MAIL_PASSWORD=", "MAIL_FROM=remetente-fixture@example.com", "NEXO_SMTP_DIAGNOSTIC_TO=destino-fixture@example.com");
+                        "MAIL_USERNAME=", "MAIL_PASSWORD=", "MAIL_SMTP_AUTH=false", "MAIL_STARTTLS=false", "MAIL_STARTTLS_REQUIRED=false",
+                        "MAIL_FROM=remetente-fixture@example.com", "NEXO_SMTP_DIAGNOSTIC_TO=destino-fixture@example.com");
     }
 
     @ParameterizedTest @CsvSource({"dev,true", "test,true", "default,false", "prod,false", "production,false", "'dev,prod',false", "'test,production',false"})
