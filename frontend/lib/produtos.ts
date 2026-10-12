@@ -1,3 +1,5 @@
+import { apiFetch } from "./api";
+
 export type Unidade = "kg" | "g" | "l" | "ml" | "un";
 
 export type IngredienteProduto = {
@@ -23,8 +25,6 @@ export type Produto = {
   criadoEm?: string;
 };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
-
 function fatorParaBase(unidade: Unidade) {
   if (unidade === "kg" || unidade === "l") return 1000;
   return 1;
@@ -42,13 +42,10 @@ export function calcularCustoIngrediente(ingrediente: IngredienteProduto) {
     ingrediente.quantidadeCompra <= 0 ||
     ingrediente.quantidadeUsada <= 0 ||
     familia(ingrediente.unidadeCompra) !== familia(ingrediente.unidadeUso)
-  ) {
-    return 0;
-  }
+  ) return 0;
 
   const compraBase = ingrediente.quantidadeCompra * fatorParaBase(ingrediente.unidadeCompra);
   const usoBase = ingrediente.quantidadeUsada * fatorParaBase(ingrediente.unidadeUso);
-
   return ingrediente.precoCompra * (usoBase / compraBase);
 }
 
@@ -56,64 +53,23 @@ export function calcularCustoProduto(ingredientes: IngredienteProduto[]) {
   return ingredientes.reduce((total, ingrediente) => total + calcularCustoIngrediente(ingrediente), 0);
 }
 
-async function lerResposta(response: Response) {
-  if (response.ok) return response.json();
-
-  let mensagem = `Erro ${response.status} ao acessar o backend.`;
-  try {
-    const corpo = await response.json();
-    mensagem = corpo.message ?? corpo.mensagem ?? corpo.detail ?? mensagem;
-  } catch {
-    // Mantém a mensagem padrão quando a resposta não for JSON.
-  }
-  throw new Error(mensagem);
-}
-
-async function obterOrganizacaoId(): Promise<number> {
-  const response = await fetch(`${API_URL}/api/organizacoes`, { cache: "no-store" });
-  const organizacoes = (await lerResposta(response)) as Array<{ id: number; nome: string }>;
-
-  if (organizacoes.length > 0) return organizacoes[0].id;
-
-  const criacao = await fetch(`${API_URL}/api/organizacoes`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ nome: "Minha empresa" }),
-  });
-
-  const organizacao = (await lerResposta(criacao)) as { id: number; nome: string };
-  return organizacao.id;
-}
-
 export async function carregarProdutos(): Promise<Produto[]> {
-  const organizacaoId = await obterOrganizacaoId();
-  const response = await fetch(`${API_URL}/api/produtos?organizacaoId=${organizacaoId}`, {
-    cache: "no-store",
-  });
-  return (await lerResposta(response)) as Produto[];
+  return apiFetch<Produto[]>("/api/produtos");
 }
 
 export async function carregarProduto(produtoId: string | number): Promise<Produto> {
-  const organizacaoId = await obterOrganizacaoId();
-  const response = await fetch(`${API_URL}/api/produtos/${produtoId}?organizacaoId=${organizacaoId}`, {
-    cache: "no-store",
-  });
-  return (await lerResposta(response)) as Produto;
+  return apiFetch<Produto>(`/api/produtos/${produtoId}`);
 }
 
 export async function alterarStatusProduto(produtoId: string | number, ativo: boolean): Promise<Produto> {
-  const organizacaoId = await obterOrganizacaoId();
-  const response = await fetch(`${API_URL}/api/produtos/${produtoId}/status`, {
+  return apiFetch<Produto>(`/api/produtos/${produtoId}/status`, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ organizacaoId, ativo }),
+    body: JSON.stringify({ ativo }),
   });
-  return (await lerResposta(response)) as Produto;
 }
 
-function corpoProduto(produto: Produto, organizacaoId: number) {
+function corpoProduto(produto: Produto) {
   return {
-    organizacaoId,
     nome: produto.nome,
     descricao: produto.descricao,
     precoVenda: produto.precoVenda,
@@ -129,32 +85,19 @@ function corpoProduto(produto: Produto, organizacaoId: number) {
 }
 
 export async function salvarProduto(produto: Produto): Promise<Produto> {
-  const organizacaoId = await obterOrganizacaoId();
-
-  const response = await fetch(`${API_URL}/api/produtos`, {
+  return apiFetch<Produto>("/api/produtos", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(corpoProduto(produto, organizacaoId)),
+    body: JSON.stringify(corpoProduto(produto)),
   });
-
-  return (await lerResposta(response)) as Produto;
 }
 
 export async function atualizarProduto(produtoId: string | number, produto: Produto): Promise<Produto> {
-  const organizacaoId = await obterOrganizacaoId();
-
-  const response = await fetch(`${API_URL}/api/produtos/${produtoId}`, {
+  return apiFetch<Produto>(`/api/produtos/${produtoId}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(corpoProduto(produto, organizacaoId)),
+    body: JSON.stringify(corpoProduto(produto)),
   });
-
-  return (await lerResposta(response)) as Produto;
 }
 
 export function formatarMoeda(valor: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(valor);
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(valor);
 }
