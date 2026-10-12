@@ -16,9 +16,9 @@ public class IaService {
     private final JdbcTemplate jdbcTemplate;
     private final RestClient restClient;
 
-    public IaService(JdbcTemplate jdbcTemplate, RestClient.Builder restClientBuilder) {
+    public IaService(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.restClient = restClientBuilder.build();
+        this.restClient = RestClient.create();
     }
 
     public RespostaIa perguntar(Long organizacaoId, String pergunta) {
