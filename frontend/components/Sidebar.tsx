@@ -62,6 +62,7 @@ export function Sidebar({ ativo }: SidebarProps) {
 
         {planoPermite(plano, "pro") ? (
           <>
+            <Link className="menu-item" href="/ia"><span className="menu-icon" aria-hidden="true">✦</span><span>Nexo IA</span></Link>
             <Link className="menu-item" href="/metas"><span className="menu-icon" aria-hidden="true">M</span><span>Metas Pro</span></Link>
             <Link className="menu-item" href="/fluxo-caixa"><span className="menu-icon" aria-hidden="true">F</span><span>Fluxo de caixa</span></Link>
           </>
