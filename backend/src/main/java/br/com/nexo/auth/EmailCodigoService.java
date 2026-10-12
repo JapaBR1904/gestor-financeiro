@@ -1,10 +1,12 @@
 package br.com.nexo.auth;
 
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -31,11 +33,41 @@ public class EmailCodigoService {
             return;
         }
 
-        SimpleMailMessage mensagem = new SimpleMailMessage();
-        mensagem.setFrom(remetente);
-        mensagem.setTo(email);
-        mensagem.setSubject("Seu código de acesso ao Nexo");
-        mensagem.setText("Seu código de acesso é: " + codigo + "\n\nEle expira em 10 minutos. Se você não solicitou este código, ignore esta mensagem.");
-        mailSender.send(mensagem);
+        try {
+            MimeMessage mensagem = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mensagem, "UTF-8");
+            helper.setFrom(remetente);
+            helper.setTo(email);
+            helper.setSubject("Seu código de acesso ao Nexo");
+            helper.setText(texto(codigo), html(codigo));
+            mailSender.send(mensagem);
+        } catch (MessagingException exception) {
+            throw new IllegalStateException("Não foi possível enviar o código por e-mail agora.", exception);
+        }
+    }
+
+    private String texto(String codigo) {
+        return "Seu código de acesso ao Nexo é: " + codigo
+                + "\n\nEle expira em 10 minutos e só pode ser usado uma vez."
+                + "\nSe você não solicitou este código, ignore esta mensagem.";
+    }
+
+    private String html(String codigo) {
+        return """
+                <!doctype html>
+                <html lang="pt-BR">
+                  <body style="margin:0;background:#f4f7fb;font-family:Arial,sans-serif;color:#172033">
+                    <div style="max-width:560px;margin:32px auto;padding:0 16px">
+                      <div style="background:#ffffff;border:1px solid #e5eaf2;border-radius:18px;padding:32px">
+                        <div style="font-size:22px;font-weight:800;margin-bottom:18px">Nexo</div>
+                        <h1 style="font-size:24px;margin:0 0 10px">Seu código de acesso</h1>
+                        <p style="color:#64748b;line-height:1.6">Use o código abaixo para continuar. Ele expira em 10 minutos e só pode ser usado uma vez.</p>
+                        <div style="font-size:34px;font-weight:800;letter-spacing:8px;text-align:center;background:#f1f5ff;border-radius:14px;padding:18px;margin:24px 0">%s</div>
+                        <p style="color:#64748b;font-size:13px;line-height:1.6">Se você não solicitou este código, ignore esta mensagem. Nunca compartilhe este código com outra pessoa.</p>
+                      </div>
+                    </div>
+                  </body>
+                </html>
+                """.formatted(codigo);
     }
 }
