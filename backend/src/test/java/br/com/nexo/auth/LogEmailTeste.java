@@ -12,11 +12,15 @@ import org.slf4j.LoggerFactory;
 import static org.junit.jupiter.api.Assertions.*;
 
 final class LogEmailTeste extends AppenderBase<ILoggingEvent> implements AutoCloseable {
-    private final Logger logger = (Logger) LoggerFactory.getLogger(EmailCodigoService.class);
-    private final Level anterior = logger.getLevel();
+    private final Logger logger;
+    private final Level anterior;
     private final List<ILoggingEvent> eventos = new CopyOnWriteArrayList<>();
     private final LinkedBlockingQueue<ILoggingEvent> sinais = new LinkedBlockingQueue<>();
-    LogEmailTeste() { logger.setLevel(Level.DEBUG); start(); logger.addAppender(this); }
+    LogEmailTeste() { this(EmailCodigoService.class); }
+    LogEmailTeste(Class<?> tipo) {
+        logger = (Logger) LoggerFactory.getLogger(tipo); anterior = logger.getLevel();
+        logger.setLevel(Level.DEBUG); start(); logger.addAppender(this);
+    }
     @Override protected void append(ILoggingEvent evento) { eventos.add(evento); sinais.add(evento); }
     boolean contem(String texto) { return eventos.stream().anyMatch(e -> e.getFormattedMessage().contains(texto)); }
     void aguardar(String texto) throws InterruptedException {
