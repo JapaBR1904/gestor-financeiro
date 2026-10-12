@@ -138,13 +138,11 @@ export default function NovoProdutoPage() {
     setSalvando(true);
     try {
       await salvarProduto({
-        id: `produto-${Date.now()}`,
         nome: nome.trim(),
         precoVenda,
         descricao: descricao.trim(),
         ingredientes: ingredientesValidos,
         custoEstimado,
-        criadoEm: new Date().toISOString(),
       });
 
       router.push("/produtos");

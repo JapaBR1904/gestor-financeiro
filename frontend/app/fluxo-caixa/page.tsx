@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { apiFetch } from "../../lib/api";
 import { useEffect, useMemo, useState } from "react";
 import { carregarConfiguracaoSaas, planoPermite, PlanoNexo } from "../../lib/saas";
-import { carregarRelatorioResumo, RelatorioResumo } from "../../lib/relatorios";
+import { RelatorioResumo } from "../../lib/relatorios";
 import { formatarMoeda } from "../../lib/produtos";
 
 const vazio: RelatorioResumo = {
@@ -25,11 +26,13 @@ export default function FluxoCaixaPage() {
   const [dados, setDados] = useState<RelatorioResumo>(vazio);
   const [carregando, setCarregando] = useState(true);
 
+  const [erro, setErro] = useState("");
   useEffect(() => {
-    Promise.all([
-      carregarConfiguracaoSaas().then((config) => setPlano(config.plano)),
-      carregarRelatorioResumo().then(setDados).catch(() => setDados(vazio)),
-    ]).finally(() => setCarregando(false));
+    carregarConfiguracaoSaas().then(async config => {
+      setPlano(config.plano);
+      if (planoPermite(config.plano, "pro")) setDados(await apiFetch<RelatorioResumo>("/api/relatorios/fluxo-caixa"));
+    }).catch(error => setErro(error instanceof Error ? error.message : "Não foi possível carregar o fluxo de caixa."))
+      .finally(() => setCarregando(false));
   }, []);
 
   const liberado = planoPermite(plano, "pro");
@@ -46,8 +49,10 @@ export default function FluxoCaixaPage() {
         <Link className="secondary-button compact-button" href="/">Voltar ao Nexo</Link>
       </section>
 
+      {erro ? <p className="form-error-banner" role="alert">{erro}</p> : null}
+      {carregando ? <p role="status">Carregando fluxo de caixa...</p> : null}
       {!carregando && !liberado ? (
-        <section className="premium-lock-card"><span className="premium-lock-icon">↗</span><p className="eyebrow">Recurso Pro</p><h1>Fluxo de caixa avançado</h1><p>Transforme vendas e despesas já registradas em uma visão de entradas, saídas e saldo.</p><Link className="primary-button" href="/planos">Conhecer o Pro</Link></section>
+        <section className="premium-lock-card"><span className="premium-lock-icon">↗</span><p className="eyebrow">Recurso Pro</p><h1>Fluxo de caixa avançado</h1><p>Transforme vendas e despesas já registradas em uma visão de entradas, saídas e saldo.</p><Link className="primary-button" href="/planos">Ver planos</Link></section>
       ) : liberado ? (
         <>
           <section className="premium-heading"><p className="eyebrow">Plano Pro</p><h1>Fluxo de caixa</h1><p>Uma leitura financeira baseada nos lançamentos que já existem no Nexo.</p></section>

@@ -11,10 +11,19 @@ import org.springframework.web.bind.annotation.RestController;
 public class RelatorioController {
     private final RelatorioService relatorioService;
     private final SessaoContexto sessaoContexto;
+    private final br.com.nexo.saas.AcessoPlanoService acessoPlano;
 
-    public RelatorioController(RelatorioService relatorioService, SessaoContexto sessaoContexto) {
+    public RelatorioController(RelatorioService relatorioService, SessaoContexto sessaoContexto, br.com.nexo.saas.AcessoPlanoService acessoPlano) {
         this.relatorioService = relatorioService;
         this.sessaoContexto = sessaoContexto;
+        this.acessoPlano = acessoPlano;
+    }
+
+    @GetMapping("/fluxo-caixa")
+    public RelatorioService.RelatorioResumo fluxoCaixa(@CookieValue(name = SessaoContexto.COOKIE, required = false) String token) {
+        Long organizacaoId = sessaoContexto.organizacaoId(token);
+        acessoPlano.exigir(organizacaoId, br.com.nexo.saas.RecursoPlano.FLUXO_CAIXA);
+        return relatorioService.gerar(organizacaoId);
     }
 
     @GetMapping("/resumo")

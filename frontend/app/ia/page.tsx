@@ -59,7 +59,7 @@ export default function IaPage() {
           <p className="eyebrow">Recurso Pro</p>
           <h1>Nexo IA</h1>
           <p>Uma ajudante operacional para cálculos, planejamento, custos e decisões do dia a dia.</p>
-          <Link className="primary-button" href="/planos">Conhecer o Pro</Link>
+          <Link className="primary-button" href="/planos">Ver planos</Link>
         </section>
       ) : liberado ? (
         <>

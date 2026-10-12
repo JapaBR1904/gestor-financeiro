@@ -114,7 +114,7 @@ export default function MetasPage() {
       </section>
 
       {!carregandoPlano && !liberado ? (
-        <section className="premium-lock-card"><span className="premium-lock-icon">◇</span><p className="eyebrow">Recurso Pro</p><h1>Metas e comparativos</h1><p>Defina objetivos financeiros e comerciais e acompanhe a evolução ao longo do mês.</p><Link className="primary-button" href="/planos">Conhecer o Pro</Link></section>
+        <section className="premium-lock-card"><span className="premium-lock-icon">◇</span><p className="eyebrow">Recurso Pro</p><h1>Metas e comparativos</h1><p>Defina objetivos financeiros e comerciais e acompanhe a evolução ao longo do mês.</p><Link className="primary-button" href="/planos">Ver planos</Link></section>
       ) : liberado ? (
         <>
           <section className="premium-heading pro-heading-row">

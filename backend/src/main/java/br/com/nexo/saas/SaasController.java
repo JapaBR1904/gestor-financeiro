@@ -18,10 +18,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class SaasController {
     private final SaasService saasService;
     private final SessaoContexto sessaoContexto;
+    private final AcessoPlanoService acessoPlano;
+    private final AssinaturaRepository assinaturas;
 
-    public SaasController(SaasService saasService, SessaoContexto sessaoContexto) {
+    public SaasController(SaasService saasService, SessaoContexto sessaoContexto, AcessoPlanoService acessoPlano, AssinaturaRepository assinaturas) {
         this.saasService = saasService;
         this.sessaoContexto = sessaoContexto;
+        this.acessoPlano = acessoPlano;
+        this.assinaturas = assinaturas;
     }
 
     @GetMapping
@@ -40,6 +44,13 @@ public class SaasController {
                 request.objetivos(),
                 request.onboardingConcluido()
         );
+    }
+
+    @GetMapping("/equipe")
+    public List<AssinaturaRepository.Membro> equipe(@CookieValue(name = SessaoContexto.COOKIE, required = false) String token) {
+        Long organizacaoId = sessaoContexto.organizacaoId(token);
+        acessoPlano.exigir(organizacaoId, RecursoPlano.EQUIPE);
+        return assinaturas.membros(organizacaoId);
     }
 
     @PutMapping("/plano")

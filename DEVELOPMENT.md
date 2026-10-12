@@ -19,6 +19,7 @@ Nomes usados pelo backend:
 
 - Banco: `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`.
 - Segurança: `NEXO_ALLOWED_ORIGINS`, `COOKIE_SECURE`.
+- Assinatura simulada, opcional: `SPRING_PROFILES_ACTIVE=dev` e `PAGAMENTO_SIMULADO_ENABLED=true`. Os perfis `prod` e `production` impedem sua ativação mesmo se a flag estiver habilitada.
 - E-mail: `MAIL_ENABLED`, `MAIL_FROM`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_SMTP_AUTH`, `MAIL_STARTTLS`, `MAIL_STARTTLS_REQUIRED`.
 
 Consulte `.env.example` para as opções locais, sem inserir credenciais no Git. Em produção, use HTTPS, `COOKIE_SECURE` habilitado e TLS obrigatório conforme o provedor SMTP. Não use o SMTP de teste em produção. Nenhuma variável nova é obrigatória para o fluxo de senha.
@@ -73,7 +74,7 @@ cd backend
 mvn verify
 ```
 
-Para executar **também os testes de integração**, configure `NEXO_TEST_DB_URL`, `NEXO_TEST_DB_USERNAME` e `NEXO_TEST_DB_PASSWORD` para um PostgreSQL exclusivo de teste antes desse comando. Os scripts `02` a `09` e os privilégios precisam estar aplicados. Sem essa configuração, os testes de integração são ignorados e somente o teste independente de banco é executado.
+Para executar **também os testes de integração**, configure `NEXO_TEST_DB_URL`, `NEXO_TEST_DB_USERNAME` e `NEXO_TEST_DB_PASSWORD` para um PostgreSQL exclusivo de teste antes desse comando. Os scripts `02` a `10` e os privilégios precisam estar aplicados. Sem essa configuração, os testes de integração são ignorados e somente o teste independente de banco é executado.
 
 Frontend:
 
@@ -85,13 +86,18 @@ npx --no-install tsc --noEmit
 npm run build
 ```
 
-Para validar somente as páginas de autenticação enquanto o problema anterior de `/planos` estiver pendente:
+O build completo inclui autenticação, planos e checkout. O problema anterior de `/planos` foi corrigido com `Suspense`. Os relatórios anteriores preservam os resultados históricos; os resultados desta etapa estão em [docs/ASSINATURAS.md](docs/ASSINATURAS.md).
+
+Para a jornada de assinatura no navegador com backend e banco reais, instale o Chromium do Playwright e execute na pasta `backend`, com as variáveis do banco de teste já configuradas:
 
 ```bash
-npm run build -- --debug-build-paths 'app/login/page.tsx,app/cadastro/page.tsx,app/verificar-codigo/page.tsx,app/esqueci-senha/page.tsx,app/recuperar-senha/page.tsx,app/redefinir-senha/page.tsx'
+cd ../frontend
+npx playwright install chromium
+cd ../backend
+NEXO_E2E=true mvn -Dtest=AssinaturaBrowserTest test
 ```
 
-Isso é uma validação parcial e não substitui o build completo para publicação. As limitações anteriores e os resultados executados estão em [docs/AUTENTICACAO.md](docs/AUTENTICACAO.md).
+Esse teste inicia Spring em porta aleatória, cria somente contas sintéticas já verificadas e executa `npm run test:e2e`. Não envia e-mails. O Playwright inicia o frontend se necessário. Pode usar um Chromium instalado via `NEXO_BROWSER_EXECUTABLE=/caminho/do/chromium`. Sem `NEXO_E2E=true`, a jornada de navegador fica explicitamente ignorada; os demais testes de integração continuam disponíveis.
 
 ## Limites de segurança
 

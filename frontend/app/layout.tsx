@@ -8,6 +8,7 @@ import "./tables.css";
 import "./refinement.css";
 import "./signature.css";
 import "./saas.css";
+import "./checkout.css";
 import "./saas-extra.css";
 import "./pro.css";
 import "./ia.css";

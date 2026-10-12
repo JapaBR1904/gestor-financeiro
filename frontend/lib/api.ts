@@ -3,17 +3,18 @@ export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080
 export async function lerResposta<T>(response: Response): Promise<T> {
   if (response.ok) {
     if (response.status === 204) return undefined as T;
-    return response.json() as Promise<T>;
+    try { return await response.json() as T; }
+    catch { throw new Error("O servidor retornou uma resposta inesperada. Tente novamente."); }
   }
 
-  let mensagem = `Erro ${response.status} ao acessar o backend.`;
+  let mensagem = response.status >= 500 ? "O servidor está indisponível no momento. Tente novamente em instantes." : "Não foi possível concluir. Confira os dados e tente novamente.";
   try {
     const corpo = await response.json();
-    mensagem = corpo.message ?? corpo.mensagem ?? corpo.detail ?? mensagem;
+    if (response.status < 500) mensagem = corpo.mensagem ?? mensagem;
   } catch {}
 
   if (response.status === 401 && typeof window !== "undefined" && window.location.pathname !== "/login") {
-    window.location.assign("/login");
+    window.location.replace(new URL("/login", window.location.origin).toString());
   }
 
   throw new Error(mensagem);
@@ -23,12 +24,14 @@ export async function apiFetch<T>(caminho: string, init: RequestInit = {}): Prom
   const headers = new Headers(init.headers);
   if (init.body && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
 
-  const response = await fetch(`${API_URL}${caminho}`, {
-    ...init,
-    headers,
-    credentials: "include",
-    cache: init.cache ?? "no-store",
-  });
-
+  let response: Response;
+  try {
+    response = await fetch(`${API_URL}${caminho}`, {
+      ...init,
+      headers,
+      credentials: "include",
+      cache: init.cache ?? "no-store",
+    });
+  } catch { throw new Error("Não foi possível conectar ao servidor. Confira sua conexão e tente novamente."); }
   return lerResposta<T>(response);
 }

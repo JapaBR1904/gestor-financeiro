@@ -68,7 +68,9 @@ export async function alterarStatusProduto(produtoId: string | number, ativo: bo
   });
 }
 
-function corpoProduto(produto: Produto) {
+export type NovoProduto = Omit<Produto, "id" | "criadoEm">;
+
+function corpoProduto(produto: NovoProduto) {
   return {
     nome: produto.nome,
     descricao: produto.descricao,
@@ -84,7 +86,7 @@ function corpoProduto(produto: Produto) {
   };
 }
 
-export async function salvarProduto(produto: Produto): Promise<Produto> {
+export async function salvarProduto(produto: NovoProduto): Promise<Produto> {
   return apiFetch<Produto>("/api/produtos", {
     method: "POST",
     body: JSON.stringify(corpoProduto(produto)),

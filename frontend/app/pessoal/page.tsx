@@ -2,15 +2,16 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { carregarObjetivos, carregarPlanoLocal, nomePlano, PlanoNexo } from "../../lib/saas";
+import { carregarConfiguracaoSaas, nomePlano, PlanoNexo } from "../../lib/saas";
 
 export default function PessoalPage() {
   const [objetivos, setObjetivos] = useState<string[]>([]);
   const [plano, setPlano] = useState<PlanoNexo>("free");
 
+  const [erro, setErro] = useState("");
   useEffect(() => {
-    setObjetivos(carregarObjetivos());
-    setPlano(carregarPlanoLocal());
+    carregarConfiguracaoSaas().then(config => { setObjetivos(config.objetivos); setPlano(config.plano); })
+      .catch(() => setErro("Não foi possível carregar sua configuração. Tente novamente."));
   }, []);
 
   return (
@@ -20,6 +21,7 @@ export default function PessoalPage() {
         <div className="personal-top-actions"><span className="plan-mini-label">Plano {nomePlano(plano)}</span><Link className="secondary-button compact-button" href="/conta">Conta</Link></div>
       </section>
 
+      {erro ? <p className="form-error-banner" role="alert">{erro}</p> : null}
       <section className="personal-hero">
         <div><p className="eyebrow">Seu dinheiro, com clareza</p><h1>Uma visão simples da sua vida financeira</h1><p>Aqui o Nexo deixa de parecer uma ferramenta de empresa e prioriza saldo, gastos, metas e organização pessoal.</p></div>
         <button className="primary-button" type="button" disabled>+ Novo lançamento</button>

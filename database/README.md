@@ -4,7 +4,7 @@ Os scripts desta pasta pertencem à aplicação Spring/Next. Eles foram preserva
 
 ## Banco novo
 
-Crie o usuário `nexo_app` com senha definida de forma segura no seu PostgreSQL. Como administrador, execute `01_criar_banco.sql` conectado ao banco `postgres`. Depois, conectado ao banco `nexo`, execute os scripts `02` a `09` em ordem, usando `psql -v ON_ERROR_STOP=1 -f caminho/do/script.sql` ou o Query Tool do pgAdmin.
+Crie o usuário `nexo_app` com senha definida de forma segura no seu PostgreSQL. Como administrador, execute `01_criar_banco.sql` conectado ao banco `postgres`. Depois, conectado ao banco `nexo`, execute os scripts `02` a `10` em ordem, usando `psql -v ON_ERROR_STOP=1 -f caminho/do/script.sql` ou o Query Tool do pgAdmin.
 
 Depois dos scripts, conceda os privilégios de desenvolvimento ao usuário da aplicação:
 
@@ -29,6 +29,8 @@ A migração `09` adiciona:
 Ela invalida os códigos do fluxo anterior (`cadastro`/`login`) sem apagar o histórico. As contas existentes continuam verificadas como antes; usuários sem senha usam **Esqueci minha senha** para defini-la. Nenhuma organização, sessão ou informação financeira é excluída pela migração. A migração pode ser reaplicada e não recria o banco.
 
 ## Banco dos testes
+
+A assinatura simulada exige também `10_assinaturas_simuladas.sql`, aplicada depois da `09`, no banco existente. Ela adiciona a versão da assinatura, expande os status permitidos e cria checkouts e histórico de alterações por organização. Não muda planos existentes nem exclui informações. A reaplicação preserva registros existentes. Os detalhes estão em [../docs/ASSINATURAS.md](../docs/ASSINATURAS.md).
 
 Os testes de integração precisam de um **banco PostgreSQL exclusivo de teste**, preparado com os mesmos scripts e permissões. Eles criam contas sintéticas e alteram seus dados para testar expiração, inatividade e bloqueios. Não aponte os testes para produção.
 

@@ -86,7 +86,7 @@ export default function RelatoriosPage() {
                     {itensVisiveis(relatorio.formasPagamento, "recebimentos").map((item) => (
                       <div className="report-row" key={item.formaPagamento}>
                         <span className="report-dot" />
-                        <div className="report-row-main"><strong>{nomeFormaPagamento(item.formaPagamento as any)}</strong><span className="report-progress"><span style={{ width: `${(item.total / limites.recebimentos) * 100}%` }} /></span></div>
+                        <div className="report-row-main"><strong>{nomeFormaPagamento(item.formaPagamento as Parameters<typeof nomeFormaPagamento>[0])}</strong><span className="report-progress"><span style={{ width: `${(item.total / limites.recebimentos) * 100}%` }} /></span></div>
                         <strong>{formatarMoeda(item.total)}</strong>
                       </div>
                     ))}

@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { carregarPlanoLocal, nomePlano, planoPermite, PlanoNexo } from "../../lib/saas";
+import { carregarConfiguracaoSaas, nomePlano, planoPermite, PlanoNexo } from "../../lib/saas";
 
 export default function EmpresaPage() {
   const [plano, setPlano] = useState<PlanoNexo>("free");
-  useEffect(() => setPlano(carregarPlanoLocal()), []);
+  const [erro, setErro] = useState("");
+  useEffect(() => { carregarConfiguracaoSaas().then(config => setPlano(config.plano)).catch(() => setErro("Não foi possível carregar o plano. Tente novamente.")); }, []);
   const business = planoPermite(plano, "business");
 
   return (
@@ -16,6 +17,7 @@ export default function EmpresaPage() {
         <div className="personal-top-actions"><span className="plan-mini-label">Plano {nomePlano(plano)}</span><Link className="secondary-button compact-button" href="/conta">Conta</Link></div>
       </section>
 
+      {erro ? <p className="form-error-banner" role="alert">{erro}</p> : null}
       <section className="executive-hero">
         <div><p className="eyebrow">Gestão para equipes</p><h1>Uma visão mais executiva da operação</h1><p>Indicadores, responsabilidades e equipe organizados para quem precisa enxergar além do dia a dia.</p></div>
         <Link className="primary-button" href={business ? "/equipe" : "/planos"}>{business ? "Gerenciar equipe" : "Conhecer Business"}</Link>
@@ -35,7 +37,7 @@ export default function EmpresaPage() {
         <Link className="executive-action" href="/equipe"><span>◇</span><div><strong>Equipe</strong><p>Papéis, permissões e usuários.</p></div><b>→</b></Link>
       </section>
 
-      {!business ? <section className="executive-upgrade-card"><div><p className="eyebrow">Business</p><h2>A experiência empresarial já está desenhada</h2><p>Ative o modo Business no protótipo para visualizar equipe e permissões. A assinatura real será ligada ao banco e ao pagamento na próxima etapa.</p></div><Link className="primary-button" href="/planos">Ver planos</Link></section> : null}
+      {!business ? <section className="executive-upgrade-card"><div><p className="eyebrow">Business</p><h2>A experiência empresarial já está desenhada</h2><p>Compare os planos para liberar a área de equipe. Nesta etapa, a troca usa checkout simulado e fica salva na organização.</p></div><Link className="primary-button" href="/planos">Ver planos</Link></section> : null}
     </main>
   );
 }

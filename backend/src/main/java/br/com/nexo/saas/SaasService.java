@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import br.com.nexo.config.AcessoNegadoException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,18 +12,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class SaasService {
     private static final List<String> PERFIS = List.of("pessoal", "negocio", "empresa");
-    private static final List<String> PLANOS = List.of("free", "pro", "business");
 
     private final JdbcTemplate jdbcTemplate;
-    private final boolean trocaPlanoPrototipo;
+    private final AssinaturaRepository assinaturas;
+    private final PoliticaAssinatura politica;
 
-    public SaasService(
-            JdbcTemplate jdbcTemplate,
-            @Value("${nexo.saas.prototype-plan-switch:true}") boolean trocaPlanoPrototipo
-    ) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.trocaPlanoPrototipo = trocaPlanoPrototipo;
-    }
+
+    public SaasService(JdbcTemplate jdbcTemplate, AssinaturaRepository assinaturas, PoliticaAssinatura politica) { this.jdbcTemplate = jdbcTemplate; this.assinaturas = assinaturas; this.politica = politica; }
 
     @Transactional
     public ConfiguracaoSaas carregar(Long organizacaoId) {
@@ -50,7 +44,7 @@ public class SaasService {
                 (String) dados.get("perfil_uso"),
                 objetivos,
                 Boolean.TRUE.equals(dados.get("onboarding_concluido")),
-                (String) dados.get("plano"),
+                politica.planoEfetivo(assinaturas.carregar(organizacaoId, false)).id(),
                 (String) dados.get("status")
         );
     }
@@ -70,23 +64,8 @@ public class SaasService {
         return carregar(organizacaoId);
     }
 
-    @Transactional
     public ConfiguracaoSaas alterarPlano(Long organizacaoId, String plano) {
-        if (!trocaPlanoPrototipo) {
-            throw new AcessoNegadoException("A troca direta de plano está desativada. O plano só pode ser alterado pelo fluxo de assinatura.");
-        }
-
-        String planoNormalizado = plano == null ? "" : plano.trim().toLowerCase();
-        if (!PLANOS.contains(planoNormalizado)) throw new IllegalArgumentException("Plano inválido.");
-
-        garantirEstrutura(organizacaoId);
-        jdbcTemplate.update("""
-                UPDATE assinaturas
-                SET plano = ?, status = 'prototipo', atualizado_em = NOW()
-                WHERE organizacao_id = ?
-                """, planoNormalizado, organizacaoId);
-
-        return carregar(organizacaoId);
+        throw new AcessoNegadoException("Use o checkout autorizado para alterar sua assinatura.");
     }
 
     private void garantirEstrutura(Long organizacaoId) {
