@@ -1,5 +1,6 @@
 package br.com.nexo.saas;
 
+import br.com.nexo.config.AcessoNegadoException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +20,7 @@ public class AcessoPlanoService {
                 """, String.class, organizacaoId);
 
         if (nivel(plano) < nivel(recurso.planoMinimo())) {
-            throw new SecurityException("Este recurso exige o plano " + nomePlano(recurso.planoMinimo()) + ".");
+            throw new AcessoNegadoException("Este recurso exige o plano " + nomePlano(recurso.planoMinimo()) + ".");
         }
     }
 
@@ -27,7 +28,7 @@ public class AcessoPlanoService {
         try {
             exigir(organizacaoId, recurso);
             return true;
-        } catch (SecurityException exception) {
+        } catch (AcessoNegadoException exception) {
             return false;
         }
     }
