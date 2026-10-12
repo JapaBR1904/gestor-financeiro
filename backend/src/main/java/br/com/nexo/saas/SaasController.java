@@ -2,9 +2,10 @@ package br.com.nexo.saas;
 
 import java.util.List;
 
-import br.com.nexo.auth.AuthService;
+import br.com.nexo.auth.SessaoContexto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -15,28 +16,26 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/saas")
 public class SaasController {
-    private static final String COOKIE = "nexo_session";
-
     private final SaasService saasService;
-    private final AuthService authService;
+    private final SessaoContexto sessaoContexto;
 
-    public SaasController(SaasService saasService, AuthService authService) {
+    public SaasController(SaasService saasService, SessaoContexto sessaoContexto) {
         this.saasService = saasService;
-        this.authService = authService;
+        this.sessaoContexto = sessaoContexto;
     }
 
     @GetMapping
-    public SaasService.ConfiguracaoSaas carregar(@CookieValue(name = COOKIE, required = false) String token) {
-        return saasService.carregar(organizacaoId(token));
+    public SaasService.ConfiguracaoSaas carregar(@CookieValue(name = SessaoContexto.COOKIE, required = false) String token) {
+        return saasService.carregar(sessaoContexto.organizacaoId(token));
     }
 
     @PutMapping("/onboarding")
     public SaasService.ConfiguracaoSaas salvarOnboarding(
-            @CookieValue(name = COOKIE, required = false) String token,
+            @CookieValue(name = SessaoContexto.COOKIE, required = false) String token,
             @Valid @RequestBody OnboardingRequest request
     ) {
         return saasService.salvarOnboarding(
-                organizacaoId(token),
+                sessaoContexto.organizacaoId(token),
                 request.perfilUso(),
                 request.objetivos(),
                 request.onboardingConcluido()
@@ -45,23 +44,17 @@ public class SaasController {
 
     @PutMapping("/plano")
     public SaasService.ConfiguracaoSaas alterarPlano(
-            @CookieValue(name = COOKIE, required = false) String token,
+            @CookieValue(name = SessaoContexto.COOKIE, required = false) String token,
             @Valid @RequestBody PlanoRequest request
     ) {
-        return saasService.alterarPlano(organizacaoId(token), request.plano());
-    }
-
-    private Long organizacaoId(String token) {
-        return authService.autenticarSessao(token).organizacaoId();
+        return saasService.alterarPlano(sessaoContexto.organizacaoId(token), request.plano());
     }
 
     public record OnboardingRequest(
             @NotBlank(message = "Escolha como pretende usar o Nexo.") String perfilUso,
-            List<String> objetivos,
+            @Size(max = 12, message = "Escolha no máximo 12 objetivos.") List<@Size(max = 120, message = "Objetivo muito longo.") String> objetivos,
             boolean onboardingConcluido
     ) {}
 
-    public record PlanoRequest(
-            @NotBlank(message = "Informe o plano.") String plano
-    ) {}
+    public record PlanoRequest(@NotBlank(message = "Informe o plano.") String plano) {}
 }
