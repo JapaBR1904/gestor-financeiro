@@ -6,6 +6,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
+import br.com.nexo.saas.AcessoPlanoService;
+import br.com.nexo.saas.RecursoPlano;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,14 +17,16 @@ public class MetaService {
     private static final List<String> UNIDADES = List.of("moeda", "percentual", "quantidade");
 
     private final JdbcTemplate jdbcTemplate;
+    private final AcessoPlanoService acessoPlanoService;
 
-    public MetaService(JdbcTemplate jdbcTemplate) {
+    public MetaService(JdbcTemplate jdbcTemplate, AcessoPlanoService acessoPlanoService) {
         this.jdbcTemplate = jdbcTemplate;
+        this.acessoPlanoService = acessoPlanoService;
     }
 
     @Transactional(readOnly = true)
     public List<MetaResumo> listar(Long organizacaoId) {
-        garantirPlanoPro(organizacaoId);
+        acessoPlanoService.exigir(organizacaoId, RecursoPlano.METAS);
         return jdbcTemplate.query("""
                 SELECT id, titulo, unidade, valor_meta, valor_atual, prazo, status
                 FROM metas
@@ -41,7 +45,7 @@ public class MetaService {
 
     @Transactional
     public MetaResumo criar(Long organizacaoId, String titulo, String unidade, BigDecimal valorMeta, BigDecimal valorAtual, LocalDate prazo) {
-        garantirPlanoPro(organizacaoId);
+        acessoPlanoService.exigir(organizacaoId, RecursoPlano.METAS);
         String tituloNormalizado = validarTitulo(titulo);
         String unidadeNormalizada = validarUnidade(unidade);
         BigDecimal meta = validarValorMeta(valorMeta);
@@ -58,7 +62,7 @@ public class MetaService {
 
     @Transactional
     public MetaResumo atualizarProgresso(Long organizacaoId, Long metaId, BigDecimal valorAtual) {
-        garantirPlanoPro(organizacaoId);
+        acessoPlanoService.exigir(organizacaoId, RecursoPlano.METAS);
         BigDecimal atual = validarValorAtual(valorAtual);
 
         int alteradas = jdbcTemplate.update("""
@@ -75,7 +79,7 @@ public class MetaService {
 
     @Transactional
     public void arquivar(Long organizacaoId, Long metaId) {
-        garantirPlanoPro(organizacaoId);
+        acessoPlanoService.exigir(organizacaoId, RecursoPlano.METAS);
         int alteradas = jdbcTemplate.update("""
                 UPDATE metas
                 SET status = 'arquivada', atualizado_em = NOW()
@@ -101,18 +105,6 @@ public class MetaService {
                 prazo == null ? null : prazo.toLocalDate(),
                 (String) dados.get("status")
         );
-    }
-
-    private void garantirPlanoPro(Long organizacaoId) {
-        String plano = jdbcTemplate.queryForObject("""
-                SELECT plano
-                FROM assinaturas
-                WHERE organizacao_id = ?
-                """, String.class, organizacaoId);
-
-        if (!"pro".equals(plano) && !"business".equals(plano)) {
-            throw new IllegalArgumentException("Este recurso exige o plano Pro ou Business.");
-        }
     }
 
     private String validarTitulo(String titulo) {
@@ -143,13 +135,5 @@ public class MetaService {
         return atual;
     }
 
-    public record MetaResumo(
-            Long id,
-            String titulo,
-            String unidade,
-            BigDecimal valorMeta,
-            BigDecimal valorAtual,
-            LocalDate prazo,
-            String status
-    ) {}
+    public record MetaResumo(Long id, String titulo, String unidade, BigDecimal valorMeta, BigDecimal valorAtual, LocalDate prazo, String status) {}
 }
