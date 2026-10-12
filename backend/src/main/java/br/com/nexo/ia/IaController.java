@@ -1,6 +1,6 @@
 package br.com.nexo.ia;
 
-import br.com.nexo.auth.AuthService;
+import br.com.nexo.auth.SessaoContexto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -13,23 +13,20 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/ia")
 public class IaController {
-    private static final String COOKIE = "nexo_session";
-
     private final IaService iaService;
-    private final AuthService authService;
+    private final SessaoContexto sessaoContexto;
 
-    public IaController(IaService iaService, AuthService authService) {
+    public IaController(IaService iaService, SessaoContexto sessaoContexto) {
         this.iaService = iaService;
-        this.authService = authService;
+        this.sessaoContexto = sessaoContexto;
     }
 
     @PostMapping("/perguntar")
     public IaService.RespostaIa perguntar(
-            @CookieValue(name = COOKIE, required = false) String token,
+            @CookieValue(name = SessaoContexto.COOKIE, required = false) String token,
             @Valid @RequestBody PerguntaRequest request
     ) {
-        Long organizacaoId = authService.autenticarSessao(token).organizacaoId();
-        return iaService.perguntar(organizacaoId, request.pergunta());
+        return iaService.perguntar(sessaoContexto.organizacaoId(token), request.pergunta());
     }
 
     public record PerguntaRequest(
