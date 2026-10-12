@@ -11,6 +11,11 @@ export async function lerResposta<T>(response: Response): Promise<T> {
     const corpo = await response.json();
     mensagem = corpo.message ?? corpo.mensagem ?? corpo.detail ?? mensagem;
   } catch {}
+
+  if (response.status === 401 && typeof window !== "undefined" && window.location.pathname !== "/login") {
+    window.location.assign("/login");
+  }
+
   throw new Error(mensagem);
 }
 
