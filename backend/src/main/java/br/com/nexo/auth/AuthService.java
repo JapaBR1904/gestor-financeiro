@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.Base64;
 import java.util.Locale;
@@ -19,13 +20,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthService {
     private static final Pattern EMAIL = Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$", Pattern.CASE_INSENSITIVE);
     private static final SecureRandom RANDOM = new SecureRandom();
+    private static final Duration COOLDOWN_CODIGO = Duration.ofSeconds(45);
+    private static final int MAX_CODIGOS_POR_HORA = 6;
 
     private final UsuarioRepository usuarioRepository;
     private final CodigoAutenticacaoRepository codigoRepository;
     private final SessaoUsuarioRepository sessaoRepository;
     private final OrganizacaoService organizacaoService;
     private final EmailCodigoService emailCodigoService;
-    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
     public AuthService(
             UsuarioRepository usuarioRepository,
@@ -54,12 +57,25 @@ public class AuthService {
             throw new IllegalArgumentException("Não encontramos uma conta com este e-mail. Use a opção Criar conta.");
         }
 
+        OffsetDateTime agora = OffsetDateTime.now();
+        codigoRepository.findFirstByEmailIgnoreCaseAndFinalidadeOrderByCriadoEmDesc(email, finalidade)
+                .filter(anterior -> anterior.getCriadoEm().isAfter(agora.minus(COOLDOWN_CODIGO)))
+                .ifPresent(anterior -> {
+                    long segundos = Math.max(1, COOLDOWN_CODIGO.minus(Duration.between(anterior.getCriadoEm(), agora)).toSeconds());
+                    throw new IllegalArgumentException("Aguarde " + segundos + " segundos antes de solicitar outro código.");
+                });
+
+        long enviadosNaHora = codigoRepository.countByEmailIgnoreCaseAndCriadoEmAfter(email, agora.minusHours(1));
+        if (enviadosNaHora >= MAX_CODIGOS_POR_HORA) {
+            throw new IllegalArgumentException("Muitas solicitações de código. Tente novamente mais tarde.");
+        }
+
         String codigo = String.format("%06d", RANDOM.nextInt(1_000_000));
         CodigoAutenticacao registro = new CodigoAutenticacao(
                 email,
                 encoder.encode(codigo),
                 finalidade,
-                OffsetDateTime.now().plusMinutes(10)
+                agora.plusMinutes(10)
         );
         codigoRepository.save(registro);
         emailCodigoService.enviarCodigo(email, codigo);
@@ -146,6 +162,7 @@ public class AuthService {
     private String formatarNome(String valor, String mensagem) {
         String texto = valor == null ? "" : valor.trim().replaceAll("\\s+", " ");
         if (texto.isBlank()) throw new IllegalArgumentException(mensagem);
+        if (texto.length() > 160) throw new IllegalArgumentException("O nome é muito longo.");
         String[] palavras = texto.toLowerCase(Locale.forLanguageTag("pt-BR")).split(" ");
         StringBuilder resultado = new StringBuilder();
         for (String palavra : palavras) {
