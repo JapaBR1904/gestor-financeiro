@@ -1,0 +1,26 @@
+package br.com.nexo.auth;
+
+import org.springframework.stereotype.Component;
+
+@Component
+public class SessaoContexto {
+    public static final String COOKIE = "nexo_session";
+
+    private final AuthService authService;
+
+    public SessaoContexto(AuthService authService) {
+        this.authService = authService;
+    }
+
+    public AuthService.UsuarioAutenticado usuario(String token) {
+        try {
+            return authService.autenticarSessao(token);
+        } catch (IllegalArgumentException exception) {
+            throw new SecurityException(exception.getMessage());
+        }
+    }
+
+    public Long organizacaoId(String token) {
+        return usuario(token).organizacaoId();
+    }
+}
