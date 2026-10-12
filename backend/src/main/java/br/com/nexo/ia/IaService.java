@@ -3,7 +3,8 @@ package br.com.nexo.ia;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.jdbc.core.JdbcTemplate;
+import br.com.nexo.saas.AcessoPlanoService;
+import br.com.nexo.saas.RecursoPlano;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
@@ -13,20 +14,20 @@ public class IaService {
     private static final String MODELO = "gemini-3.8-flash";
     private static final String URL = "https://generativelanguage.googleapis.com/v1beta/interactions";
 
-    private final JdbcTemplate jdbcTemplate;
+    private final AcessoPlanoService acessoPlanoService;
     private final RestClient restClient;
 
-    public IaService(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public IaService(AcessoPlanoService acessoPlanoService) {
+        this.acessoPlanoService = acessoPlanoService;
         this.restClient = RestClient.create();
     }
 
     public RespostaIa perguntar(Long organizacaoId, String pergunta) {
-        garantirPlanoPro(organizacaoId);
+        acessoPlanoService.exigir(organizacaoId, RecursoPlano.IA_BASICA);
 
         String chave = System.getenv("GEMINI_API_KEY");
         if (chave == null || chave.isBlank()) {
-            throw new IllegalStateException("A variável GEMINI_API_KEY não está configurada no servidor.");
+            throw new IllegalStateException("A inteligência do Nexo não está configurada no servidor.");
         }
 
         String texto = normalizarPergunta(pergunta);
@@ -42,10 +43,7 @@ public class IaService {
                 Solicitação do usuário:
                 """ + texto;
 
-        Map<String, Object> corpo = Map.of(
-                "model", MODELO,
-                "input", instrucao
-        );
+        Map<String, Object> corpo = Map.of("model", MODELO, "input", instrucao);
 
         try {
             @SuppressWarnings("unchecked")
@@ -58,32 +56,16 @@ public class IaService {
                     .body(Map.class);
 
             String respostaTexto = extrairTexto(resposta);
-            if (respostaTexto.isBlank()) {
-                throw new IllegalStateException("A IA respondeu sem conteúdo. Tente novamente.");
-            }
-
-            return new RespostaIa(respostaTexto, MODELO);
+            if (respostaTexto.isBlank()) throw new IllegalStateException("A IA respondeu sem conteúdo. Tente novamente.");
+            return new RespostaIa(respostaTexto, "nexo-ia");
         } catch (RestClientResponseException e) {
-            String detalhe = e.getResponseBodyAsString();
             if (e.getStatusCode().value() == 429) {
-                throw new IllegalStateException("O limite gratuito da IA foi atingido. Tente novamente mais tarde.");
+                throw new IllegalStateException("O limite temporário da inteligência foi atingido. Tente novamente mais tarde.");
             }
             if (e.getStatusCode().value() == 401 || e.getStatusCode().value() == 403) {
-                throw new IllegalStateException("A chave do Gemini não foi aceita. Confira a GEMINI_API_KEY no servidor.");
+                throw new IllegalStateException("A inteligência do Nexo não está disponível agora.");
             }
-            throw new IllegalStateException("Não foi possível consultar a IA agora. Código " + e.getStatusCode().value() + ". " + resumirDetalhe(detalhe));
-        }
-    }
-
-    private void garantirPlanoPro(Long organizacaoId) {
-        String plano = jdbcTemplate.queryForObject("""
-                SELECT plano
-                FROM assinaturas
-                WHERE organizacao_id = ?
-                """, String.class, organizacaoId);
-
-        if (!"pro".equals(plano) && !"business".equals(plano)) {
-            throw new IllegalArgumentException("Este recurso exige o plano Pro ou Business.");
+            throw new IllegalStateException("Não foi possível consultar a inteligência do Nexo agora.");
         }
     }
 
@@ -96,17 +78,14 @@ public class IaService {
 
     private String extrairTexto(Map<String, Object> resposta) {
         if (resposta == null) return "";
-
         Object outputText = resposta.get("output_text");
         if (outputText instanceof String texto && !texto.isBlank()) return texto.trim();
-
         Object steps = resposta.get("steps");
         if (!(steps instanceof List<?> lista)) return "";
 
         StringBuilder resultado = new StringBuilder();
         for (Object item : lista) {
-            if (!(item instanceof Map<?, ?> step)) continue;
-            if (!"model_output".equals(step.get("type"))) continue;
+            if (!(item instanceof Map<?, ?> step) || !"model_output".equals(step.get("type"))) continue;
             Object content = step.get("content");
             if (!(content instanceof List<?> blocos)) continue;
             for (Object blocoItem : blocos) {
@@ -119,12 +98,6 @@ public class IaService {
             }
         }
         return resultado.toString();
-    }
-
-    private String resumirDetalhe(String detalhe) {
-        if (detalhe == null || detalhe.isBlank()) return "";
-        String limpo = detalhe.replaceAll("\\s+", " ").trim();
-        return limpo.length() > 240 ? limpo.substring(0, 240) + "…" : limpo;
     }
 
     public record RespostaIa(String resposta, String modelo) {}
