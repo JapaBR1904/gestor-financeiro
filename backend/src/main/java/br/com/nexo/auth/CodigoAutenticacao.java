@@ -63,4 +63,5 @@ public class CodigoAutenticacao {
     public String getEmail() { return email; }
     public String getCodigoHash() { return codigoHash; }
     public String getFinalidade() { return finalidade; }
+    public OffsetDateTime getCriadoEm() { return criadoEm; }
 }
