@@ -10,6 +10,7 @@ import "./signature.css";
 import "./saas.css";
 import "./saas-extra.css";
 import "./pro.css";
+import "./ia.css";
 
 export const metadata: Metadata = {
   title: "Nexo",
