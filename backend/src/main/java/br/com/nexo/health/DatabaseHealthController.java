@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/health/database")
 public class DatabaseHealthController {
-
     private final JdbcTemplate jdbcTemplate;
 
     public DatabaseHealthController(JdbcTemplate jdbcTemplate) {
@@ -18,14 +17,8 @@ public class DatabaseHealthController {
     }
 
     @GetMapping
-    public Map<String, Object> database() {
-        return jdbcTemplate.queryForObject(
-                "SELECT current_database() AS banco, current_user AS usuario",
-                (resultado, linha) -> Map.of(
-                        "status", "ok",
-                        "banco", resultado.getString("banco"),
-                        "usuario", resultado.getString("usuario")
-                )
-        );
+    public Map<String, String> database() {
+        Integer resultado = jdbcTemplate.queryForObject("SELECT 1", Integer.class);
+        return Map.of("status", resultado != null && resultado == 1 ? "ok" : "indisponivel");
     }
 }
