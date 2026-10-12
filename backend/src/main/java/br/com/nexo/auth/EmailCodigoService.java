@@ -5,6 +5,7 @@ import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -41,7 +42,8 @@ public class EmailCodigoService {
             helper.setSubject("Seu código de acesso ao Nexo");
             helper.setText(texto(codigo), html(codigo));
             mailSender.send(mensagem);
-        } catch (MessagingException exception) {
+        } catch (MessagingException | MailException exception) {
+            log.error("Falha ao enviar código de autenticação por e-mail: {}", exception.getMessage(), exception);
             throw new IllegalStateException("Não foi possível enviar o código por e-mail agora.", exception);
         }
     }
