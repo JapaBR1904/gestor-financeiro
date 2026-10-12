@@ -12,10 +12,34 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
+    @ExceptionHandler(AutenticacaoException.class)
+    public ResponseEntity<Map<String, Object>> tratarAutenticacao(AutenticacaoException exception) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                "erro", "nao_autenticado",
+                "mensagem", exception.getMessage()
+        ));
+    }
+
+    @ExceptionHandler(AcessoNegadoException.class)
+    public ResponseEntity<Map<String, Object>> tratarAcesso(AcessoNegadoException exception) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                "erro", "acesso_negado",
+                "mensagem", exception.getMessage()
+        ));
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> tratarRegra(IllegalArgumentException exception) {
         return ResponseEntity.badRequest().body(Map.of(
                 "erro", "dados_invalidos",
+                "mensagem", exception.getMessage()
+        ));
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Map<String, Object>> tratarEstado(IllegalStateException exception) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(Map.of(
+                "erro", "servico_indisponivel",
                 "mensagem", exception.getMessage()
         ));
     }
@@ -34,5 +58,13 @@ public class ApiExceptionHandler {
         corpo.put("campos", campos);
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(corpo);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, Object>> tratarInesperado(Exception exception) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                "erro", "erro_interno",
+                "mensagem", "Não foi possível concluir a operação agora."
+        ));
     }
 }
