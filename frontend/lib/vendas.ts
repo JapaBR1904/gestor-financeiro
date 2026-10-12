@@ -1,3 +1,5 @@
+import { apiFetch } from "./api";
+
 export type FormaPagamento = "pix" | "dinheiro" | "debito" | "credito" | "outro";
 
 export type VendaItem = {
@@ -32,60 +34,28 @@ export type ResumoVendas = {
   lucro: number;
 };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
-
-async function lerResposta(response: Response) {
-  if (response.ok) return response.json();
-  let mensagem = `Erro ${response.status} ao acessar o backend.`;
-  try {
-    const corpo = await response.json();
-    mensagem = corpo.message ?? corpo.mensagem ?? corpo.detail ?? mensagem;
-  } catch {}
-  throw new Error(mensagem);
-}
-
-async function obterOrganizacaoId(): Promise<number> {
-  const response = await fetch(`${API_URL}/api/organizacoes`, { cache: "no-store" });
-  const organizacoes = (await lerResposta(response)) as Array<{ id: number }>;
-  if (organizacoes.length > 0) return organizacoes[0].id;
-  const criacao = await fetch(`${API_URL}/api/organizacoes`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ nome: "Minha empresa" }),
-  });
-  const organizacao = (await lerResposta(criacao)) as { id: number };
-  return organizacao.id;
-}
-
 export async function carregarVendas(): Promise<Venda[]> {
-  const organizacaoId = await obterOrganizacaoId();
-  return (await lerResposta(await fetch(`${API_URL}/api/vendas?organizacaoId=${organizacaoId}`, { cache: "no-store" }))) as Venda[];
+  return apiFetch<Venda[]>("/api/vendas");
 }
 
 export async function carregarVenda(vendaId: string | number): Promise<Venda> {
-  const organizacaoId = await obterOrganizacaoId();
-  return (await lerResposta(await fetch(`${API_URL}/api/vendas/${vendaId}?organizacaoId=${organizacaoId}`, { cache: "no-store" }))) as Venda;
+  return apiFetch<Venda>(`/api/vendas/${vendaId}`);
 }
 
 export async function carregarResumoVendas(): Promise<ResumoVendas> {
-  const organizacaoId = await obterOrganizacaoId();
-  return (await lerResposta(await fetch(`${API_URL}/api/vendas/resumo?organizacaoId=${organizacaoId}`, { cache: "no-store" }))) as ResumoVendas;
+  return apiFetch<ResumoVendas>("/api/vendas/resumo");
 }
 
 export async function salvarVenda(dados: { clienteId?: number | string | null; formaPagamento: FormaPagamento; observacao?: string; itens: Array<{ produtoId: number | string; quantidade: number }> }): Promise<Venda> {
-  const organizacaoId = await obterOrganizacaoId();
-  const response = await fetch(`${API_URL}/api/vendas`, {
+  return apiFetch<Venda>("/api/vendas", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      organizacaoId,
       clienteId: dados.clienteId ? Number(dados.clienteId) : null,
       formaPagamento: dados.formaPagamento,
       observacao: dados.observacao ?? "",
       itens: dados.itens.map((item) => ({ produtoId: Number(item.produtoId), quantidade: item.quantidade })),
     }),
   });
-  return (await lerResposta(response)) as Venda;
 }
 
 export function nomeFormaPagamento(forma: FormaPagamento) {
