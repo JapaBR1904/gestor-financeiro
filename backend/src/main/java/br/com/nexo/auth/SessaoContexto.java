@@ -1,5 +1,6 @@
 package br.com.nexo.auth;
 
+import br.com.nexo.config.AutenticacaoException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -16,7 +17,7 @@ public class SessaoContexto {
         try {
             return authService.autenticarSessao(token);
         } catch (IllegalArgumentException exception) {
-            throw new SecurityException(exception.getMessage());
+            throw new AutenticacaoException(exception.getMessage());
         }
     }
 
