@@ -31,7 +31,7 @@ import static br.com.nexo.saas.ProvedorPagamento.Cenario.*;
 import static br.com.nexo.saas.ProvedorPagamento.Metodo.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = {"nexo.pagamento.simulado.enabled=true", "nexo.saas.prototype-plan-switch=true"})
+        properties = {"nexo.email.provider=disabled", "nexo.pagamento.simulado.enabled=true", "nexo.saas.prototype-plan-switch=true"})
 @ActiveProfiles("test")
 @EnabledIfEnvironmentVariable(named = "NEXO_TEST_DB_URL", matches = ".+")
 class AssinaturaIntegrationTest {

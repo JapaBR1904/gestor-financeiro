@@ -17,7 +17,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "nexo.pagamento.simulado.enabled=true")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"nexo.pagamento.simulado.enabled=true", "nexo.email.provider=disabled"})
 @ActiveProfiles("test")
 @EnabledIfEnvironmentVariable(named = "NEXO_TEST_DB_URL", matches = ".+")
 @EnabledIfEnvironmentVariable(named = "NEXO_E2E", matches = "true")

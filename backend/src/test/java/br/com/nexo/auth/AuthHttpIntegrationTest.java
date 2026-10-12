@@ -17,7 +17,7 @@ import org.springframework.test.context.DynamicPropertySource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "nexo.email.provider=disabled")
 @Import(AuthIntegrationTest.EmailConfig.class)
 @EnabledIfEnvironmentVariable(named = "NEXO_TEST_DB_URL", matches = ".+")
 class AuthHttpIntegrationTest {

@@ -1,5 +1,8 @@
 package br.com.nexo.auth;
 
+import br.com.nexo.email.SmtpEmailProvider;
+import br.com.nexo.email.EmailDesabilitadoProvider;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -19,7 +22,7 @@ class EmailCodigoServiceTest {
         var daemon = new java.util.concurrent.atomic.AtomicReference<Boolean>();
         var sender = sender();
         doAnswer(inv -> { daemon.set(Thread.currentThread().isDaemon()); terminou.countDown(); return null; }).when(sender).send(any(MimeMessage.class));
-        var service = new EmailCodigoService(sender, true, "teste@example.com");
+        var service = new EmailCodigoService(new SmtpEmailProvider(sender, "teste@example.com"));
         var request = new Thread(() -> registrar(service, "pessoa@example.com").afterCommit());
         request.setDaemon(true);
         try {
@@ -30,7 +33,7 @@ class EmailCodigoServiceTest {
     @Test void registraPosCommitMasNaoEnviaAntesDoCallback() throws Exception {
         var sender = sender();
         try (var logs = new LogEmailTeste()) {
-            var service = new EmailCodigoService(sender, true, "teste@example.com");
+            var service = new EmailCodigoService(new SmtpEmailProvider(sender, "teste@example.com"));
             try {
                 var callback = registrar(service, "pessoa@example.com");
                 assertTrue(logs.contem("etapa=pos_commit_registrado"));
@@ -47,7 +50,7 @@ class EmailCodigoServiceTest {
     }
     @Test void rejeitaEnvioSemTransacaoReal() {
         var sender = sender();
-        var service = new EmailCodigoService(sender, true, "teste@example.com");
+        var service = new EmailCodigoService(new SmtpEmailProvider(sender, "teste@example.com"));
         try {
             assertThrows(IllegalStateException.class, () -> service.enviarRecuperacao("pessoa@example.com", "123456"));
             TransactionSynchronizationManager.initSynchronization();
@@ -59,7 +62,7 @@ class EmailCodigoServiceTest {
     @Test void rollbackRegistradoNaoExecutaTarefa() {
         var sender = sender();
         try (var logs = new LogEmailTeste()) {
-            var service = new EmailCodigoService(sender, true, "teste@example.com");
+            var service = new EmailCodigoService(new SmtpEmailProvider(sender, "teste@example.com"));
             try {
                 registrar(service, "pessoa@example.com").afterCompletion(TransactionSynchronization.STATUS_ROLLED_BACK);
                 assertTrue(logs.contem("etapa=transacao_nao_confirmada"));
@@ -73,7 +76,7 @@ class EmailCodigoServiceTest {
         String dados = "pessoa@example.com 123456 senha-fixture token-fixture chave-fixture";
         doThrow(new MailSendException(dados, new java.net.SocketTimeoutException(dados))).when(sender).send(any(MimeMessage.class));
         try (var logs = new LogEmailTeste()) {
-            var service = new EmailCodigoService(sender, true, "teste@example.com");
+            var service = new EmailCodigoService(new SmtpEmailProvider(sender, "teste@example.com"));
             try {
                 assertDoesNotThrow(() -> registrar(service, "pessoa@example.com").afterCommit());
                 logs.aguardar("etapa=falha_tarefa");
@@ -86,7 +89,7 @@ class EmailCodigoServiceTest {
         var sender = sender();
         when(sender.createMimeMessage()).thenThrow(new NullPointerException("123456 token-fixture chave-fixture"));
         try (var logs = new LogEmailTeste()) {
-            var service = new EmailCodigoService(sender, true, "teste@example.com");
+            var service = new EmailCodigoService(new SmtpEmailProvider(sender, "teste@example.com"));
             try {
                 registrar(service, "pessoa@example.com").afterCommit();
                 logs.aguardar("etapa=falha_tarefa");
@@ -98,7 +101,7 @@ class EmailCodigoServiceTest {
     @Test void mailDesabilitadoTemDiagnosticoExplicitoENaoChamaSender() throws Exception {
         var sender = sender();
         try (var logs = new LogEmailTeste()) {
-            var service = new EmailCodigoService(sender, false, "teste@example.com");
+            var service = new EmailCodigoService(new EmailDesabilitadoProvider());
             try {
                 registrar(service, "pessoa@example.com").afterCommit();
                 logs.aguardar("etapa=falha_tarefa");
@@ -110,7 +113,7 @@ class EmailCodigoServiceTest {
     @Test void executorEncerradoRegistraRejeicaoSemPropagarParaHttp() {
         var sender = sender();
         try (var logs = new LogEmailTeste()) {
-            var service = new EmailCodigoService(sender, true, "teste@example.com");
+            var service = new EmailCodigoService(new SmtpEmailProvider(sender, "teste@example.com"));
             service.encerrar();
             assertDoesNotThrow(() -> registrar(service, "pessoa@example.com").afterCommit());
             assertTrue(logs.contem("etapa=fila_rejeitada encerrando=true"));
@@ -121,7 +124,7 @@ class EmailCodigoServiceTest {
         var iniciou = new CountDownLatch(1); var liberar = new CountDownLatch(1);
         var sender = sender();
         doAnswer(inv -> { iniciou.countDown(); assertTrue(liberar.await(5, TimeUnit.SECONDS)); return null; }).when(sender).send(any(MimeMessage.class));
-        var service = new EmailCodigoService(sender, true, "teste@example.com");
+        var service = new EmailCodigoService(new SmtpEmailProvider(sender, "teste@example.com"));
         var encerrou = new CountDownLatch(1);
         registrar(service, "pessoa@example.com").afterCommit();
         assertTrue(iniciou.await(5, TimeUnit.SECONDS));
@@ -145,7 +148,7 @@ class EmailCodigoServiceTest {
             else segundo.countDown();
             return null;
         }).when(sender).send(any(MimeMessage.class));
-        var service = new EmailCodigoService(sender, true, "teste@example.com");
+        var service = new EmailCodigoService(new SmtpEmailProvider(sender, "teste@example.com"));
         try {
             registrar(service, "primeiro@example.com").afterCommit();
             assertTrue(primeiro.await(5, TimeUnit.SECONDS));

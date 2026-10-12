@@ -26,7 +26,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+@SpringBootTest(properties = "nexo.email.provider=disabled")
 @Import(AuthIntegrationTest.EmailConfig.class)
 @EnabledIfEnvironmentVariable(named = "NEXO_TEST_DB_URL", matches = ".+")
 class AuthIntegrationTest {
@@ -310,7 +310,7 @@ class AuthIntegrationTest {
     }
     static class EmailTeste extends EmailCodigoService {
         final Map<String, String> codigos = new ConcurrentHashMap<>();
-        EmailTeste() { super(null, true, "teste@example.com"); }
+        EmailTeste() { super(mensagem -> null); }
         @Override public void enviarCodigo(String email, String codigo, String finalidade) { codigos.put(email, codigo); }
         @Override public void enviarRecuperacao(String email, String codigo) { codigos.put(email, codigo); }
         String codigo(String email) { return codigos.get(email); }

@@ -50,6 +50,7 @@ class RecuperacaoEnvioIntegrationTest {
     @LocalServerPort int porta;
     @DynamicPropertySource static void configurar(DynamicPropertyRegistry registry) {
         AuthIntegrationTest.banco(registry);
+        registry.add("nexo.email.provider", () -> "smtp");
         registry.add("nexo.mail.enabled", () -> true);
         registry.add("nexo.mail.from", () -> "teste@example.com");
         registry.add("spring.mail.host", () -> "localhost");

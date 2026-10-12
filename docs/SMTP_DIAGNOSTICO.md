@@ -1,5 +1,7 @@
 # Diagnóstico SMTP isolado — Nexo
 
+> Transporte atual recomendado: API do Resend; veja [RESEND.md](RESEND.md). Este documento preserva o histórico da etapa SMTP. As variáveis `MAIL_*` só enviam pela aplicação com `NEXO_EMAIL_PROVIDER=smtp`; o diagnóstico SMTP isolado continua disponível como legado interno dev/test.
+
 ## Objetivo e limites
 
 O usuário confirmou que a recuperação registra todas as etapas até `smtp_aceitou`, com `MAIL_ENABLED=true`, credenciais/IP/remetente verificados e conexão/autenticação do Brevo funcionando. Isso afasta uma interrupção antes da chamada ao sender na tentativa observada. Entretanto, o retorno de `send()` não comprova entrega na caixa de entrada nem exibição no painel escolhido.

@@ -7,7 +7,7 @@ Use o checkout existente da branch `nexo-next-spring`. Cada tarefa na nuvem já 
 - Node.js 20.9 ou superior, compatível com Next.js 16;
 - JDK 21 completo, incluindo `javac`, e Maven;
 - PostgreSQL preparado conforme [database/README.md](database/README.md);
-- serviço SMTP para entregar os códigos. Para desenvolvimento, use um capturador SMTP local; para produção, preserve as configurações seguras do serviço existente.
+- API do Resend para entregar os códigos; SMTP é uma opção temporária de compatibilidade. Os testes usam servidores HTTP/SMTP locais e não precisam de credenciais externas.
 
 Confira `java -version`, `javac -version` e `mvn -version`: os três devem usar o JDK 21. Não desative verificações de TLS para baixar dependências.
 
@@ -20,9 +20,10 @@ Nomes usados pelo backend:
 - Banco: `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`.
 - Segurança: `NEXO_ALLOWED_ORIGINS`, `COOKIE_SECURE`.
 - Assinatura simulada, opcional: `SPRING_PROFILES_ACTIVE=dev` e `PAGAMENTO_SIMULADO_ENABLED=true`. Os perfis `prod` e `production` impedem sua ativação mesmo se a flag estiver habilitada.
-- E-mail: `MAIL_ENABLED`, `MAIL_FROM`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_SMTP_AUTH`, `MAIL_STARTTLS`, `MAIL_STARTTLS_REQUIRED`.
+- E-mail recomendado: `NEXO_EMAIL_PROVIDER=resend`, `RESEND_ENABLED`, `RESEND_API_KEY`, `RESEND_FROM`, `RESEND_REPLY_TO`. Veja [docs/RESEND.md](docs/RESEND.md), incluindo o diagnóstico isolado em PowerShell.
+- SMTP legado, somente `NEXO_EMAIL_PROVIDER=smtp`: `MAIL_ENABLED`, `MAIL_FROM`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_SMTP_AUTH`, `MAIL_STARTTLS`, `MAIL_STARTTLS_REQUIRED`.
 
-Consulte `.env.example` para as opções locais, sem inserir credenciais no Git. Em produção, use HTTPS, `COOKIE_SECURE` habilitado e TLS obrigatório conforme o provedor SMTP. Não use o SMTP de teste em produção. Nenhuma variável nova é obrigatória para o fluxo de senha.
+Consulte `.env.example` para as opções locais, sem inserir credenciais no Git. Em produção, use HTTPS, `COOKIE_SECURE` habilitado, API key de envio e remetente de domínio verificado. `onboarding@resend.dev` só é permitido nos perfis dev/test, sem prod/production. O envio começa desabilitado e exige configuração explícita.
 
 Para desenvolvimento local em Bash, a senha do banco pode ser lida sem aparecer no histórico:
 
@@ -31,7 +32,7 @@ read -rs -p 'Senha do PostgreSQL: ' DB_PASSWORD
 export DB_PASSWORD
 ```
 
-Configure também as variáveis do SMTP no mesmo processo. `MAIL_ENABLED` deve estar habilitado: quando desabilitado, o cadastro informa indisponibilidade; códigos não são escritos nos logs. A recuperação sempre mantém a resposta neutra, inclusive em falhas de envio, e registra apenas um aviso sem dados sensíveis.
+Configure o provider e suas variáveis no mesmo processo. Para Resend, habilite `RESEND_ENABLED` e defina chave/remetente; não são utilizadas as variáveis SMTP. Com o transporte desabilitado, o cadastro informa indisponibilidade. A recuperação mantém a resposta neutra mesmo em falha de envio, com logs seguros e sem códigos ou credenciais.
 
 No frontend, `NEXT_PUBLIC_API_URL` define a origem da API. Se necessário, configure-a em `frontend/.env.local` (ignorado pelo Git). O padrão local é a API na porta 8080. Use o mesmo hostname no frontend e backend (por exemplo, ambos `localhost`) para que os cookies funcionem. A origem do frontend precisa constar em `NEXO_ALLOWED_ORIGINS`.
 
@@ -105,8 +106,8 @@ O backend limita códigos a seis solicitações por e-mail/hora, intervalo de 45
 
 O limite por conexão é local à instância e não confia em cabeçalhos de proxy arbitrários. Em uma implantação com proxy reverso ou múltiplas instâncias, configure também rate limit no gateway com identificação confiável do cliente. Os limites persistidos por conta e código continuam no PostgreSQL.
 
-E-mails de recuperação são enviados após o commit, por uma fila limitada em memória, para não revelar a existência da conta pelo tempo de resposta do SMTP. O executor aceita até 100 tarefas pendentes e dois envios simultâneos, com timeouts de conexão/leitura/escrita e encerramento controlado. A fila não é durável: interrupção abrupta ou saturação pode impedir a entrega. O usuário pode solicitar outro código respeitando os limites; monitore os erros de envio e rejeição. Não é feito login automático após trocar a senha.
+E-mails de recuperação são enviados após o commit, por uma fila limitada em memória, para não revelar a existência da conta pelo tempo de resposta do provedor. O executor aceita até 100 tarefas pendentes e dois envios simultâneos, com timeout de conexão de 5 segundos e total de 10 segundos no Resend, e encerramento controlado. A fila não é durável: interrupção abrupta ou saturação pode impedir a entrega. O usuário pode solicitar outro código respeitando os limites; monitore os erros de envio e rejeição. Não é feito login automático após trocar a senha.
 
-O diagnóstico seguro do despacho está em [docs/RECUPERACAO_ENVIO.md](docs/RECUPERACAO_ENVIO.md). Para observar as etapas no backend local, preserve suas variáveis atuais e acrescente o argumento `--logging.level.br.com.nexo.auth.EmailCodigoService=DEBUG`. Isso registra etapas, contagens e classes de falha, sem endereço, código, senha ou credencial. Não habilite o debug do protocolo JavaMail para esse diagnóstico.
+O diagnóstico seguro do despacho está em [docs/RECUPERACAO_ENVIO.md](docs/RECUPERACAO_ENVIO.md). Para observar as etapas no backend local, preserve suas variáveis atuais e acrescente o argumento `--logging.level.br.com.nexo.auth.EmailCodigoService=DEBUG`. Acrescente também `--logging.level.br.com.nexo.email=DEBUG` para observar o transporte. Isso registra etapas, contagens e classes de falha, sem endereço, código, senha ou credencial. Não habilite o debug do protocolo JavaMail para esse diagnóstico.
 
-Para isolar envio SMTP de banco, autenticação e executor, use o comando separado dev/test descrito em [docs/SMTP_DIAGNOSTICO.md](docs/SMTP_DIAGNOSTICO.md). Ele lê o mesmo sender/configuração Spring e exige `NEXO_SMTP_DIAGNOSTIC_TO`; não é endpoint nem envio automático ao iniciar a aplicação normal. O relatório inclui o comando exato para Windows PowerShell e a comparação de envelope com From.
+O diagnóstico recomendado do Resend está em [docs/RESEND.md](docs/RESEND.md). O SMTP e seu diagnóstico permanecem como legado temporário. Para isolar envio SMTP de banco, autenticação e executor, use o comando separado dev/test descrito em [docs/SMTP_DIAGNOSTICO.md](docs/SMTP_DIAGNOSTICO.md). Ele lê o mesmo sender/configuração Spring e exige `NEXO_SMTP_DIAGNOSTIC_TO`; não é endpoint nem envio automático ao iniciar a aplicação normal. O relatório inclui o comando exato para Windows PowerShell e a comparação de envelope com From.

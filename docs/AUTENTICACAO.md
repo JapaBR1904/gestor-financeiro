@@ -1,5 +1,7 @@
 # Autenticação — relatório da primeira etapa
 
+> Transporte atual recomendado: API do Resend; veja [RESEND.md](RESEND.md). Este documento preserva o histórico da etapa SMTP. As variáveis `MAIL_*` só enviam pela aplicação com `NEXO_EMAIL_PROVIDER=smtp`; o diagnóstico SMTP isolado continua disponível como legado interno dev/test.
+
 Este relatório registra a primeira etapa (commit `4f524be70f31944345e20dd3d28ba28b146206b8`). A política atual e os testes da revisão seguinte estão em [POLITICA_SENHA.md](POLITICA_SENHA.md).
 
 Implementação feita na branch `nexo-next-spring`, seguindo o `AGENTS.md`. A arquitetura continua Next.js/Spring Boot/PostgreSQL. O texto abaixo descreve o estado na entrega original, antes do push autorizado posteriormente. Nenhum ambiente foi publicado.

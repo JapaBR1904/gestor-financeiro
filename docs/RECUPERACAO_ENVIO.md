@@ -1,5 +1,7 @@
 # Diagnóstico e correção do despacho de recuperação
 
+> Transporte atual recomendado: API do Resend; veja [RESEND.md](RESEND.md). Este documento preserva o histórico da etapa SMTP. As variáveis `MAIL_*` só enviam pela aplicação com `NEXO_EMAIL_PROVIDER=smtp`; o diagnóstico SMTP isolado continua disponível como legado interno dev/test.
+
 ## O que foi comprovado
 
 A investigação usou a branch `nexo-next-spring`, inicialmente no commit `388ce912967e6e3707d62e2311b8055eada58f1d`, o mesmo informado pelo usuário. O usuário também confirmou `MAIL_ENABLED=true`, conta ativa/verificada, cooldown e limite por hora disponíveis, conexão/auth/TLS/remetente do Brevo já validados. Nenhuma credencial real foi solicitada, usada ou modificada nesta tarefa.

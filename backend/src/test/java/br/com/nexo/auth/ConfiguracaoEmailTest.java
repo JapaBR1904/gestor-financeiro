@@ -1,5 +1,8 @@
 package br.com.nexo.auth;
 
+import br.com.nexo.email.SmtpEmailProvider;
+import br.com.nexo.email.EmailDesabilitadoProvider;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.mail.autoconfigure.MailSenderAutoConfiguration;
@@ -37,7 +40,7 @@ class ConfiguracaoEmailTest {
                             "spring.mail.properties.mail.smtp.timeout=150")
                     .run(context -> {
                         var sender = context.getBean(JavaMailSenderImpl.class);
-                        var service = new EmailCodigoService(sender, true, "teste@example.com");
+                        var service = new EmailCodigoService(new SmtpEmailProvider(sender, "teste@example.com"));
                         try {
                             assertDoesNotThrow(() -> EmailCodigoServiceTest.registrar(service, "pessoa@example.com").afterCommit());
                             logs.aguardar("etapa=falha_tarefa");
