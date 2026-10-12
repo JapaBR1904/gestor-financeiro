@@ -56,6 +56,10 @@ public class Despesa {
 
     public Despesa(Organizacao organizacao, String descricao, BigDecimal valor, String categoria, LocalDate dataDespesa, String formaPagamento, String observacao) {
         this.organizacao = organizacao;
+        atualizar(descricao, valor, categoria, dataDespesa, formaPagamento, observacao);
+    }
+
+    public void atualizar(String descricao, BigDecimal valor, String categoria, LocalDate dataDespesa, String formaPagamento, String observacao) {
         this.descricao = descricao;
         this.valor = valor;
         this.categoria = categoria;
