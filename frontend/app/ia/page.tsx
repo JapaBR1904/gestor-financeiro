@@ -69,7 +69,7 @@ export default function IaPage() {
               <h1>Nexo IA</h1>
               <p>Use a inteligência como apoio para cálculos e decisões. Quando faltar algum dado, ela vai pedir exatamente o que precisa.</p>
             </div>
-            <span className="ia-status"><i /> Gemini conectado</span>
+            <span className="ia-status"><i /> Nexo IA pronta</span>
           </section>
 
           <section className="ia-grid">
