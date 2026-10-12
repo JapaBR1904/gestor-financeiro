@@ -3,6 +3,7 @@ package br.com.nexo.auth;
 import java.time.OffsetDateTime;
 
 import br.com.nexo.organizacao.Organizacao;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -32,6 +33,16 @@ public class Usuario {
     @Column(nullable = false, length = 180)
     private String email;
 
+    @JsonIgnore
+    @Column(name = "senha_hash", length = 255)
+    private String senhaHash;
+
+    @Column(name = "tentativas_login", nullable = false)
+    private int tentativasLogin;
+
+    @Column(name = "login_janela_em")
+    private OffsetDateTime loginJanelaEm;
+
     @Column(nullable = false, length = 30)
     private String papel = "proprietario";
 
@@ -49,11 +60,11 @@ public class Usuario {
 
     protected Usuario() {}
 
-    public Usuario(Organizacao organizacao, String nome, String email) {
+    public Usuario(Organizacao organizacao, String nome, String email, String senhaHash) {
         this.organizacao = organizacao;
         this.nome = nome;
         this.email = email;
-        this.emailVerificadoEm = OffsetDateTime.now();
+        this.senhaHash = senhaHash;
     }
 
     @PrePersist
@@ -64,6 +75,23 @@ public class Usuario {
 
     @PreUpdate
     void aoAtualizar() { atualizadoEm = OffsetDateTime.now(); }
+
+    @JsonIgnore
+    public String getSenhaHash() { return senhaHash; }
+    public void definirSenha(String hash) { senhaHash = hash; limparTentativasLogin(); }
+    public boolean emailVerificado() { return emailVerificadoEm != null; }
+    public void verificarEmail() { emailVerificadoEm = OffsetDateTime.now(); }
+
+    public boolean loginBloqueado(OffsetDateTime agora) {
+        if (loginJanelaEm == null || !agora.isBefore(loginJanelaEm.plusMinutes(15))) {
+            loginJanelaEm = agora;
+            tentativasLogin = 0;
+        }
+        return tentativasLogin >= 10;
+    }
+
+    public void registrarFalhaLogin() { tentativasLogin++; }
+    public void limparTentativasLogin() { tentativasLogin = 0; loginJanelaEm = null; }
 
     public Long getId() { return id; }
     public Organizacao getOrganizacao() { return organizacao; }

@@ -22,6 +22,7 @@ public class AuthService {
     private static final SecureRandom RANDOM = new SecureRandom();
     private static final Duration COOLDOWN_CODIGO = Duration.ofSeconds(45);
     private static final int MAX_CODIGOS_POR_HORA = 6;
+    private static final String HASH_COMPARACAO = new BCryptPasswordEncoder(12).encode("comparacao-sem-conta");
 
     private final UsuarioRepository usuarioRepository;
     private final CodigoAutenticacaoRepository codigoRepository;
@@ -45,79 +46,154 @@ public class AuthService {
     }
 
     @Transactional
-    public void solicitarCodigo(String emailInformado, String finalidadeInformada) {
+    public void cadastrar(String nome, String emailInformado, String senha, String confirmacao) {
         String email = normalizarEmail(emailInformado);
-        String finalidade = normalizarFinalidade(finalidadeInformada);
-
-        boolean existe = usuarioRepository.existsByEmailIgnoreCase(email);
-        if ("cadastro".equals(finalidade) && existe) {
-            throw new IllegalArgumentException("Já existe uma conta com este e-mail. Use a opção Entrar.");
+        validarSenha(senha, confirmacao);
+        String nomeFormatado = formatarNome(nome, "Informe seu nome para criar a conta.");
+        if (usuarioRepository.existsByEmailIgnoreCase(email)) {
+            throw new IllegalArgumentException("Já existe uma conta com este e-mail. Entre ou recupere sua senha.");
         }
-        if ("login".equals(finalidade) && !existe) {
-            throw new IllegalArgumentException("Não encontramos uma conta com este e-mail. Use a opção Criar conta.");
-        }
-
-        OffsetDateTime agora = OffsetDateTime.now();
-        codigoRepository.findFirstByEmailIgnoreCaseAndFinalidadeOrderByCriadoEmDesc(email, finalidade)
-                .filter(anterior -> anterior.getCriadoEm().isAfter(agora.minus(COOLDOWN_CODIGO)))
-                .ifPresent(anterior -> {
-                    long segundos = Math.max(1, COOLDOWN_CODIGO.minus(Duration.between(anterior.getCriadoEm(), agora)).toSeconds());
-                    throw new IllegalArgumentException("Aguarde " + segundos + " segundos antes de solicitar outro código.");
-                });
-
-        long enviadosNaHora = codigoRepository.countByEmailIgnoreCaseAndCriadoEmAfter(email, agora.minusHours(1));
-        if (enviadosNaHora >= MAX_CODIGOS_POR_HORA) {
-            throw new IllegalArgumentException("Muitas solicitações de código. Tente novamente mais tarde.");
-        }
-
-        String codigo = String.format("%06d", RANDOM.nextInt(1_000_000));
-        CodigoAutenticacao registro = new CodigoAutenticacao(
-                email,
-                encoder.encode(codigo),
-                finalidade,
-                agora.plusMinutes(10)
-        );
-        codigoRepository.save(registro);
-        emailCodigoService.enviarCodigo(email, codigo);
+        Organizacao organizacao = organizacaoService.criar("Meu espaço");
+        usuarioRepository.save(new Usuario(organizacao, nomeFormatado, email, encoder.encode(senha)));
+        enviarCodigo(email, "verificacao_email", false);
     }
 
     @Transactional
-    public ResultadoAutenticacao verificarCodigo(String emailInformado, String codigoInformado, String finalidadeInformada, String nome, String organizacaoNome) {
+    public void solicitarCodigo(String emailInformado, String finalidadeInformada) {
         String email = normalizarEmail(emailInformado);
         String finalidade = normalizarFinalidade(finalidadeInformada);
+        Usuario usuario = usuarioRepository.buscarParaAutenticacao(email).orElse(null);
+        if ("recuperacao_senha".equals(finalidade)) {
+            // A resposta e os limites são iguais mesmo quando a conta não existe.
+            enviarCodigo(email, finalidade, usuario == null || !usuario.isAtivo());
+            return;
+        }
+        if (usuario == null || !usuario.isAtivo() || usuario.emailVerificado()) {
+            throw new IllegalArgumentException("Não foi possível enviar a verificação. Confira os dados ou entre na sua conta.");
+        }
+        enviarCodigo(email, finalidade, false);
+    }
+
+    private void enviarCodigo(String email, String finalidade, boolean semEnvio) {
+        OffsetDateTime agora = OffsetDateTime.now();
+        boolean recuperacao = "recuperacao_senha".equals(finalidade);
+        CodigoAutenticacao anterior = codigoRepository
+                .findFirstByEmailIgnoreCaseAndFinalidadeOrderByCriadoEmDesc(email, finalidade).orElse(null);
+        if (anterior != null && anterior.getCriadoEm().isAfter(agora.minus(COOLDOWN_CODIGO))) {
+            if (recuperacao) return;
+            long segundos = Math.max(1, COOLDOWN_CODIGO.minus(Duration.between(anterior.getCriadoEm(), agora)).toSeconds());
+            throw new IllegalArgumentException("Aguarde " + segundos + " segundos antes de solicitar outro código.");
+        }
+        if (codigoRepository.countByEmailIgnoreCaseAndCriadoEmAfter(email, agora.minusHours(1)) >= MAX_CODIGOS_POR_HORA) {
+            if (recuperacao) return;
+            throw new IllegalArgumentException("Muitas solicitações de código. Tente novamente mais tarde.");
+        }
+        if (anterior != null && !anterior.usado()) anterior.marcarUsado();
+        String codigo = String.format(Locale.ROOT, "%06d", RANDOM.nextInt(1_000_000));
+        codigoRepository.save(new CodigoAutenticacao(email, encoder.encode(codigo), finalidade, agora.plusMinutes(10)));
+        if (semEnvio) return;
+        if (recuperacao) emailCodigoService.enviarRecuperacao(email, codigo);
+        else emailCodigoService.enviarCodigo(email, codigo, finalidade);
+    }
+
+    @Transactional(noRollbackFor = IllegalArgumentException.class)
+    public ResultadoAutenticacao verificarCodigo(String emailInformado, String codigo, String finalidadeInformada) {
+        String email = normalizarEmail(emailInformado);
+        String finalidade = normalizarFinalidade(finalidadeInformada);
+        if (!"verificacao_email".equals(finalidade)) throw new IllegalArgumentException("Finalidade de verificação inválida.");
+        Usuario usuario = usuarioRepository.buscarParaAutenticacao(email)
+                .orElseThrow(() -> new IllegalArgumentException("Solicite uma nova verificação."));
+        if (!usuario.isAtivo()) throw new IllegalArgumentException("Esta conta está inativa.");
+        validarCodigo(email, codigo, finalidade);
+        usuario.verificarEmail();
+        return criarSessao(usuario);
+    }
+
+    @Transactional(noRollbackFor = IllegalArgumentException.class)
+    public ResultadoAutenticacao login(String emailInformado, String senha) {
+        String email = normalizarEmail(emailInformado);
+        if (senha == null || senha.isBlank() || senha.getBytes(StandardCharsets.UTF_8).length > 72) {
+            throw new IllegalArgumentException("E-mail ou senha inválidos.");
+        }
+        Usuario usuario = usuarioRepository.buscarParaAutenticacao(email).orElse(null);
+        if (usuario == null) {
+            encoder.matches(senha, HASH_COMPARACAO);
+            throw new IllegalArgumentException("E-mail ou senha inválidos.");
+        }
+        if (usuario.loginBloqueado(OffsetDateTime.now())) {
+            throw new IllegalArgumentException("Muitas tentativas. Aguarde 15 minutos antes de tentar novamente.");
+        }
+        boolean correta = encoder.matches(senha, usuario.getSenhaHash() == null ? HASH_COMPARACAO : usuario.getSenhaHash());
+        if (!correta || usuario.getSenhaHash() == null || !usuario.isAtivo()) {
+            usuario.registrarFalhaLogin();
+            throw new IllegalArgumentException("E-mail ou senha inválidos.");
+        }
+        if (!usuario.emailVerificado()) throw new IllegalArgumentException("Confirme seu e-mail antes de entrar.");
+        usuario.limparTentativasLogin();
+        return criarSessao(usuario);
+    }
+
+    @Transactional(noRollbackFor = IllegalArgumentException.class)
+    public String verificarRecuperacao(String emailInformado, String codigo) {
+        String email = normalizarEmail(emailInformado);
+        Usuario usuario = usuarioRepository.buscarParaAutenticacao(email).orElse(null);
+        CodigoAutenticacao registro = validarCodigo(email, codigo, "recuperacao_senha");
+        if (usuario == null || !usuario.isAtivo()) throw new IllegalArgumentException("Código inválido.");
+        String prova = gerarTokenSeguro();
+        registro.emitirProva(sha256(prova));
+        return prova;
+    }
+
+    @Transactional
+    public void redefinirSenha(String prova, String senha, String confirmacao) {
+        validarSenha(senha, confirmacao);
+        if (prova == null || !prova.matches("[A-Za-z0-9_-]{43}")) {
+            throw new IllegalArgumentException("Recuperação inválida ou expirada. Solicite um novo código.");
+        }
+        String hash = sha256(prova);
+        String email = codigoRepository.buscarEmailDaProva(hash)
+                .orElseThrow(() -> new IllegalArgumentException("Recuperação inválida ou expirada. Solicite um novo código."));
+        // Manter a mesma ordem de bloqueios dos demais fluxos: usuário, depois código.
+        Usuario usuario = usuarioRepository.buscarParaAutenticacao(email)
+                .orElseThrow(() -> new IllegalArgumentException("Recuperação inválida ou expirada."));
+        CodigoAutenticacao registro = codigoRepository.findLockedByProvaHash(hash)
+                .orElseThrow(() -> new IllegalArgumentException("Recuperação inválida ou expirada."));
+        if (!registro.provaValida() || !usuario.isAtivo()) {
+            throw new IllegalArgumentException("Recuperação inválida ou expirada. Solicite um novo código.");
+        }
+        registro.consumirProva();
+        usuario.definirSenha(encoder.encode(senha));
+        usuario.verificarEmail();
+        codigoRepository.saveAndFlush(registro);
+        codigoRepository.invalidarRecuperacoes(usuario.getEmail(), OffsetDateTime.now());
+        sessaoRepository.revogarDoUsuario(usuario.getId(), OffsetDateTime.now());
+    }
+
+    private CodigoAutenticacao validarCodigo(String email, String codigoInformado, String finalidade) {
         String codigo = codigoInformado == null ? "" : codigoInformado.trim();
         if (!codigo.matches("\\d{6}")) throw new IllegalArgumentException("Informe o código de 6 dígitos.");
-
         CodigoAutenticacao registro = codigoRepository
                 .findFirstByEmailIgnoreCaseAndFinalidadeOrderByCriadoEmDesc(email, finalidade)
-                .orElseThrow(() -> new IllegalArgumentException("Solicite um novo código de acesso."));
-
+                .orElseThrow(() -> new IllegalArgumentException("Código inválido. Solicite um novo código."));
         if (registro.usado()) throw new IllegalArgumentException("Este código já foi utilizado. Solicite um novo.");
         if (registro.expirou()) throw new IllegalArgumentException("Este código expirou. Solicite um novo.");
         if (registro.excedeuTentativas()) throw new IllegalArgumentException("Limite de tentativas atingido. Solicite um novo código.");
-
         registro.registrarTentativa();
         if (!encoder.matches(codigo, registro.getCodigoHash())) {
-            codigoRepository.save(registro);
             throw new IllegalArgumentException("Código inválido.");
         }
         registro.marcarUsado();
-        codigoRepository.save(registro);
+        return registro;
+    }
 
-        Usuario usuario;
-        if ("cadastro".equals(finalidade)) {
-            if (usuarioRepository.existsByEmailIgnoreCase(email)) {
-                throw new IllegalArgumentException("Já existe uma conta com este e-mail.");
-            }
-            String nomeFormatado = formatarNome(nome, "Informe seu nome para criar a conta.");
-            Organizacao organizacao = organizacaoService.criar("Meu espaço");
-            usuario = usuarioRepository.save(new Usuario(organizacao, nomeFormatado, email));
-        } else {
-            usuario = usuarioRepository.findByEmailIgnoreCase(email)
-                    .orElseThrow(() -> new IllegalArgumentException("Conta não encontrada."));
-            if (!usuario.isAtivo()) throw new IllegalArgumentException("Esta conta está inativa.");
+    private void validarSenha(String senha, String confirmacao) {
+        if (senha == null || senha.isBlank() || senha.length() < 8 || senha.getBytes(StandardCharsets.UTF_8).length > 72) {
+            throw new IllegalArgumentException("Use uma senha com pelo menos 8 caracteres e no máximo 72 bytes.");
         }
+        if (!senha.equals(confirmacao)) throw new IllegalArgumentException("As senhas não coincidem.");
+    }
 
+    private ResultadoAutenticacao criarSessao(Usuario usuario) {
         String token = gerarTokenSeguro();
         sessaoRepository.save(new SessaoUsuario(usuario, sha256(token), OffsetDateTime.now().plusDays(30)));
         return new ResultadoAutenticacao(token, montarUsuario(usuario));
@@ -129,6 +205,9 @@ public class AuthService {
         SessaoUsuario sessao = sessaoRepository.findByTokenHash(sha256(token))
                 .orElseThrow(() -> new IllegalArgumentException("Sessão inválida."));
         if (!sessao.valida()) throw new IllegalArgumentException("Sessão expirada. Entre novamente.");
+        if (!sessao.getUsuario().isAtivo() || !sessao.getUsuario().emailVerificado()) {
+            throw new IllegalArgumentException("Sessão inválida. Entre novamente.");
+        }
         sessao.tocar();
         sessaoRepository.save(sessao);
         return montarUsuario(sessao.getUsuario());
@@ -155,7 +234,8 @@ public class AuthService {
 
     private String normalizarFinalidade(String valor) {
         String finalidade = valor == null ? "" : valor.trim().toLowerCase(Locale.ROOT);
-        if (!finalidade.equals("cadastro") && !finalidade.equals("login")) throw new IllegalArgumentException("Finalidade de autenticação inválida.");
+        if (finalidade.equals("cadastro")) finalidade = "verificacao_email";
+        if (!finalidade.equals("verificacao_email") && !finalidade.equals("recuperacao_senha")) throw new IllegalArgumentException("Finalidade de autenticação inválida.");
         return finalidade;
     }
 

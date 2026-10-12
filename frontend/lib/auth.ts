@@ -1,4 +1,4 @@
-export type FinalidadeAuth = "cadastro" | "login";
+export type FinalidadeAuth = "verificacao_email" | "recuperacao_senha";
 
 export type UsuarioAutenticado = {
   id: number;
@@ -11,60 +11,62 @@ export type UsuarioAutenticado = {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
 
-async function lerResposta(response: Response) {
-  if (response.ok) {
-    if (response.status === 204) return null;
-    return response.json();
+async function requisicao<T>(caminho: string, dados?: unknown): Promise<T> {
+  let response: Response;
+  try {
+    response = await fetch(`${API_URL}/api/auth${caminho}`, {
+      method: dados === undefined ? "GET" : "POST",
+      credentials: "include",
+      cache: "no-store",
+      headers: dados === undefined ? undefined : { "Content-Type": "application/json" },
+      body: dados === undefined ? undefined : JSON.stringify(dados),
+    });
+  } catch {
+    throw new Error("Não foi possível conectar ao servidor. Confira sua conexão e tente novamente.");
   }
-
-  let mensagem = `Erro ${response.status} ao acessar o backend.`;
+  if (response.ok) {
+    if (response.status === 204) return undefined as T;
+    try { return await response.json() as T; }
+    catch { throw new Error("Não foi possível ler a resposta do servidor. Tente novamente em instantes."); }
+  }
+  let mensagem = response.status >= 500
+    ? "O servidor está indisponível no momento. Tente novamente em instantes."
+    : "Não foi possível concluir. Confira os dados e tente novamente.";
   try {
     const corpo = await response.json();
-    mensagem = corpo.message ?? corpo.mensagem ?? corpo.detail ?? mensagem;
+    if (response.status < 500) mensagem = Object.values(corpo.campos ?? {})[0] as string || corpo.mensagem || mensagem;
   } catch {}
   throw new Error(mensagem);
 }
 
-export async function solicitarCodigo(email: string, finalidade: FinalidadeAuth) {
-  return lerResposta(await fetch(`${API_URL}/api/auth/codigo`, {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email: email.trim(), finalidade }),
-  }));
+export function cadastrar(dados: { nome: string; email: string; senha: string; confirmacaoSenha: string }) {
+  return requisicao("/cadastro", { ...dados, email: dados.email.trim(), nome: dados.nome.trim() });
 }
 
-export async function verificarCodigo(dados: {
-  email: string;
-  codigo: string;
-  finalidade: FinalidadeAuth;
-  nome?: string;
-  organizacaoNome?: string;
-}): Promise<UsuarioAutenticado> {
-  return lerResposta(await fetch(`${API_URL}/api/auth/verificar`, {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      email: dados.email.trim(),
-      codigo: dados.codigo.trim(),
-      finalidade: dados.finalidade,
-      nome: dados.nome?.trim() || null,
-      organizacaoNome: dados.organizacaoNome?.trim() || null,
-    }),
-  })) as Promise<UsuarioAutenticado>;
+export function login(email: string, senha: string): Promise<UsuarioAutenticado> {
+  return requisicao("/login", { email: email.trim(), senha });
 }
 
-export async function carregarUsuarioAtual(): Promise<UsuarioAutenticado> {
-  return lerResposta(await fetch(`${API_URL}/api/auth/me`, {
-    credentials: "include",
-    cache: "no-store",
-  })) as Promise<UsuarioAutenticado>;
+export function solicitarCodigo(email: string, finalidade: FinalidadeAuth) {
+  return finalidade === "recuperacao_senha"
+    ? requisicao("/recuperacao", { email: email.trim() })
+    : requisicao("/codigo", { email: email.trim(), finalidade });
 }
 
-export async function logout() {
-  return lerResposta(await fetch(`${API_URL}/api/auth/logout`, {
-    method: "POST",
-    credentials: "include",
-  }));
+export function verificarCodigo(dados: { email: string; codigo: string; finalidade: FinalidadeAuth }): Promise<UsuarioAutenticado> {
+  return requisicao("/verificar", dados);
 }
+
+export function verificarRecuperacao(email: string, codigo: string) {
+  return requisicao("/recuperacao/verificar", { email, codigo });
+}
+
+export function redefinirSenha(senha: string, confirmacaoSenha: string) {
+  return requisicao("/recuperacao/redefinir", { senha, confirmacaoSenha });
+}
+
+export function carregarUsuarioAtual(): Promise<UsuarioAutenticado> {
+  return requisicao("/me");
+}
+
+export function logout() { return requisicao("/logout", {}); }

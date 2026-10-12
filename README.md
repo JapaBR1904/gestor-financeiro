@@ -1,39 +1,22 @@
-# Gestor Financeiro
+# Nexo
 
-Sistema web para ajudar no controle financeiro e operacional de uma pequena produção e venda de bolos.
+Gestão financeira e operacional para pequenos negócios, com isolamento por organização.
 
-## Objetivo
+A aplicação desta branch usa **Next.js + React + TypeScript** em `frontend/`, **Java 21 + Spring Boot** em `backend/` e **PostgreSQL**. A versão PHP permanece no histórico e na branch principal; seu esqueleto sem uso foi removido desta branch.
 
-Centralizar informações como vendas, despesas, produtos, clientes e relatórios em um único sistema simples e bonito.
+## Desenvolvimento
 
-## Tecnologias
+Veja [DEVELOPMENT.md](DEVELOPMENT.md) para preparar o banco, configurar o e-mail e executar os dois serviços. Os scripts SQL são incrementais e ficam em [database/](database/README.md).
 
-- HTML
-- CSS
-- JavaScript
-- PHP
-- MySQL
-- PDO
+## Autenticação
 
-## Estrutura inicial
+- Cadastro com nome, e-mail, senha e confirmação.
+- Confirmação do e-mail por código de seis dígitos, antes de iniciar a sessão.
+- Login com e-mail e senha, usando cookie HTTP-only.
+- Recuperação por código, seguida de prova temporária em cookie HTTP-only para definir outra senha.
+- Senhas com BCrypt, códigos com hash, limites de solicitações/tentativas e uso único.
+- Redefinição da senha encerra as sessões anteriores. Contas antigas podem definir a primeira senha pela recuperação, preservando sua organização e seus dados.
 
-- `public/` arquivos acessíveis pelo navegador
-- `controllers/` regras de controle entre telas e dados
-- `models/` acesso e manipulação dos dados
-- `views/` páginas e componentes visuais
-- `config/` configurações do sistema
-- `database/` scripts do banco de dados
+O resumo da implementação, endpoints e evidências de validação estão em [docs/AUTENTICACAO.md](docs/AUTENTICACAO.md).
 
-## Funcionalidades planejadas
-
-- Dashboard
-- Cadastro de produtos
-- Registro de vendas e pedidos
-- Registro de despesas
-- Cadastro de clientes
-- Relatórios de faturamento e lucro
-- Controle básico de estoque no futuro
-
-## Segurança
-
-Nunca salvar senhas, chaves ou credenciais reais no GitHub. Dados privados devem ficar em um arquivo `.env`, que não será enviado ao repositório.
+Nunca versione credenciais, arquivos `.env` reais ou backups de dados pessoais.

@@ -41,6 +41,15 @@ public class CodigoAutenticacao {
     @Column(name = "criado_em", nullable = false)
     private OffsetDateTime criadoEm;
 
+    @Column(name = "prova_hash", length = 64, unique = true)
+    private String provaHash;
+
+    @Column(name = "prova_expira_em")
+    private OffsetDateTime provaExpiraEm;
+
+    @Column(name = "prova_usada_em")
+    private OffsetDateTime provaUsadaEm;
+
     protected CodigoAutenticacao() {}
 
     public CodigoAutenticacao(String email, String codigoHash, String finalidade, OffsetDateTime expiraEm) {
@@ -58,6 +67,16 @@ public class CodigoAutenticacao {
     public boolean excedeuTentativas() { return tentativas >= maxTentativas; }
     public void registrarTentativa() { tentativas++; }
     public void marcarUsado() { usadoEm = OffsetDateTime.now(); }
+
+    public void emitirProva(String hash) {
+        provaHash = hash;
+        provaExpiraEm = OffsetDateTime.now().plusMinutes(10);
+    }
+    public boolean provaValida() {
+        return "recuperacao_senha".equals(finalidade) && usado() && provaHash != null
+                && provaUsadaEm == null && OffsetDateTime.now().isBefore(provaExpiraEm);
+    }
+    public void consumirProva() { provaUsadaEm = OffsetDateTime.now(); }
 
     public Long getId() { return id; }
     public String getEmail() { return email; }

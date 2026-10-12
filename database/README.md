@@ -1,16 +1,35 @@
-# Database
+# Banco PostgreSQL
 
-Esta pasta guarda os scripts PostgreSQL do Nexo. Não coloque backups com dados pessoais, financeiros reais ou credenciais aqui.
+Os scripts desta pasta pertencem à aplicação Spring/Next. Eles foram preservados na limpeza do legado. Não armazene backups reais ou credenciais aqui.
 
-## Ordem para preparar o banco local
+## Banco novo
 
-1. Abra o pgAdmin e conecte ao PostgreSQL.
-2. No Query Tool do banco `postgres`, execute `01_criar_banco.sql`.
-3. Atualize a lista de bancos e abra o banco `nexo`.
-4. No Query Tool do banco `nexo`, execute `02_estrutura_produtos.sql`.
+Crie o usuário `nexo_app` com senha definida de forma segura no seu PostgreSQL. Como administrador, execute `01_criar_banco.sql` conectado ao banco `postgres`. Depois, conectado ao banco `nexo`, execute os scripts `02` a `09` em ordem, usando `psql -v ON_ERROR_STOP=1 -f caminho/do/script.sql` ou o Query Tool do pgAdmin.
 
-O segundo script cria a base multiempresa inicial e as tabelas de produtos, ingredientes e ficha de custo. O backend ainda não depende dessas tabelas nesta etapa, então você pode continuar rodando o Spring Boot mesmo antes de executar os scripts.
+Depois dos scripts, conceda os privilégios de desenvolvimento ao usuário da aplicação:
 
-## Importante
+```sql
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO nexo_app;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO nexo_app;
+```
 
-As credenciais de conexão do PostgreSQL não devem ser salvas no GitHub. Quando a integração com o Spring Boot for ativada, usuário, senha e URL serão configurados por variáveis de ambiente.
+Esses privilégios também cobrem as tabelas iniciais de organização e produtos, que não tinham `GRANT` nos scripts antigos. O backend usa `ddl-auto=validate`: ele não cria nem altera tabelas automaticamente.
+
+## Banco existente
+
+Faça backup pelo procedimento da sua equipe e execute somente as migrações ainda não aplicadas. Para a nova autenticação, aplique `09_autenticacao_senha.sql` depois da estrutura `02` a `08`.
+
+A migração `09` adiciona:
+
+- `usuarios.senha_hash`, opcional para preservar contas antigas;
+- `usuarios.tentativas_login` e `usuarios.login_janela_em`;
+- `codigos_autenticacao.prova_hash`, `prova_expira_em` e `prova_usada_em`;
+- índice único do hash da prova e finalidades `verificacao_email` e `recuperacao_senha`.
+
+Ela invalida os códigos do fluxo anterior (`cadastro`/`login`) sem apagar o histórico. As contas existentes continuam verificadas como antes; usuários sem senha usam **Esqueci minha senha** para defini-la. Nenhuma organização, sessão ou informação financeira é excluída pela migração. A migração pode ser reaplicada e não recria o banco.
+
+## Banco dos testes
+
+Os testes de integração precisam de um **banco PostgreSQL exclusivo de teste**, preparado com os mesmos scripts e permissões. Eles criam contas sintéticas e alteram seus dados para testar expiração, inatividade e bloqueios. Não aponte os testes para produção.
+
+Configure `NEXO_TEST_DB_URL`, `NEXO_TEST_DB_USERNAME` e `NEXO_TEST_DB_PASSWORD` no processo do Maven. Sem `NEXO_TEST_DB_URL`, esses testes são explicitamente ignorados; isso não valida a integração.
