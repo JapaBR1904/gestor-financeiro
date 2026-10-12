@@ -23,10 +23,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
     private static final String COOKIE = "nexo_session";
     private final AuthService authService;
+    private final SessaoContexto sessaoContexto;
     private final boolean cookieSecure;
 
-    public AuthController(AuthService authService, @Value("${nexo.cookie.secure:false}") boolean cookieSecure) {
+    public AuthController(
+            AuthService authService,
+            SessaoContexto sessaoContexto,
+            @Value("${nexo.cookie.secure:false}") boolean cookieSecure
+    ) {
         this.authService = authService;
+        this.sessaoContexto = sessaoContexto;
         this.cookieSecure = cookieSecure;
     }
 
@@ -54,7 +60,7 @@ public class AuthController {
 
     @GetMapping("/me")
     public AuthService.UsuarioAutenticado me(@CookieValue(name = COOKIE, required = false) String token) {
-        return authService.autenticarSessao(token);
+        return sessaoContexto.usuario(token);
     }
 
     @PostMapping("/logout")
