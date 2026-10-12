@@ -23,25 +23,46 @@ public class DespesaService {
 
     @Transactional
     public DespesaDetalhe criar(NovaDespesa dados) {
-        if (dados == null || dados.organizacaoId() == null) throw new IllegalArgumentException("A organização é obrigatória.");
+        DadosValidados validados = validarDados(dados);
         Organizacao organizacao = organizacaoService.buscarPorId(dados.organizacaoId());
-
-        String descricao = textoObrigatorio(dados.descricao(), "A descrição é obrigatória.");
-        String categoria = textoObrigatorio(dados.categoria(), "A categoria é obrigatória.");
-        BigDecimal valor = validarValor(dados.valor());
-        LocalDate dataDespesa = dados.dataDespesa() == null ? LocalDate.now() : dados.dataDespesa();
-        String formaPagamento = normalizarFormaPagamento(dados.formaPagamento());
 
         Despesa despesa = despesaRepository.save(new Despesa(
                 organizacao,
-                descricao,
-                valor,
-                categoria,
-                dataDespesa,
-                formaPagamento,
-                normalizarTexto(dados.observacao())
+                validados.descricao(),
+                validados.valor(),
+                validados.categoria(),
+                validados.dataDespesa(),
+                validados.formaPagamento(),
+                validados.observacao()
         ));
         return montarDetalhe(despesa);
+    }
+
+    @Transactional
+    public DespesaDetalhe atualizar(Long organizacaoId, Long despesaId, NovaDespesa dados) {
+        if (dados == null || organizacaoId == null) throw new IllegalArgumentException("Dados da despesa são obrigatórios.");
+        DadosValidados validados = validarDados(new NovaDespesa(
+                organizacaoId, dados.descricao(), dados.valor(), dados.categoria(), dados.dataDespesa(), dados.formaPagamento(), dados.observacao()
+        ));
+
+        Despesa despesa = despesaRepository.findByIdAndOrganizacaoId(despesaId, organizacaoId)
+                .orElseThrow(() -> new IllegalArgumentException("Despesa não encontrada para esta organização."));
+        despesa.atualizar(
+                validados.descricao(),
+                validados.valor(),
+                validados.categoria(),
+                validados.dataDespesa(),
+                validados.formaPagamento(),
+                validados.observacao()
+        );
+        return montarDetalhe(despesaRepository.save(despesa));
+    }
+
+    @Transactional
+    public void excluir(Long organizacaoId, Long despesaId) {
+        Despesa despesa = despesaRepository.findByIdAndOrganizacaoId(despesaId, organizacaoId)
+                .orElseThrow(() -> new IllegalArgumentException("Despesa não encontrada para esta organização."));
+        despesaRepository.delete(despesa);
     }
 
     @Transactional(readOnly = true)
@@ -63,6 +84,17 @@ public class DespesaService {
         List<DespesaDetalhe> despesas = listar(organizacaoId);
         BigDecimal total = despesas.stream().map(DespesaDetalhe::valor).reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, RoundingMode.HALF_UP);
         return new DespesaResumo(despesas.size(), total);
+    }
+
+    private DadosValidados validarDados(NovaDespesa dados) {
+        if (dados == null || dados.organizacaoId() == null) throw new IllegalArgumentException("A organização é obrigatória.");
+        String descricao = textoObrigatorio(dados.descricao(), "A descrição é obrigatória.", 180);
+        String categoria = textoObrigatorio(dados.categoria(), "A categoria é obrigatória.", 80);
+        BigDecimal valor = validarValor(dados.valor());
+        LocalDate dataDespesa = dados.dataDespesa() == null ? LocalDate.now() : dados.dataDespesa();
+        String formaPagamento = normalizarFormaPagamento(dados.formaPagamento());
+        String observacao = normalizarTexto(dados.observacao(), 2000);
+        return new DadosValidados(descricao, valor, categoria, dataDespesa, formaPagamento, observacao);
     }
 
     private DespesaDetalhe montarDetalhe(Despesa despesa) {
@@ -92,15 +124,21 @@ public class DespesaService {
         return normalizada;
     }
 
-    private String textoObrigatorio(String valor, String mensagem) {
+    private String textoObrigatorio(String valor, String mensagem, int maximo) {
         if (valor == null || valor.trim().isBlank()) throw new IllegalArgumentException(mensagem);
-        return valor.trim();
+        String limpo = valor.trim().replaceAll("\\s+", " ");
+        if (limpo.length() > maximo) throw new IllegalArgumentException("Texto excede o limite permitido.");
+        return limpo;
     }
 
-    private String normalizarTexto(String valor) {
-        return valor == null || valor.trim().isBlank() ? null : valor.trim();
+    private String normalizarTexto(String valor, int maximo) {
+        if (valor == null || valor.trim().isBlank()) return null;
+        String limpo = valor.trim();
+        if (limpo.length() > maximo) throw new IllegalArgumentException("Observação excede o limite permitido.");
+        return limpo;
     }
 
+    private record DadosValidados(String descricao, BigDecimal valor, String categoria, LocalDate dataDespesa, String formaPagamento, String observacao) {}
     public record NovaDespesa(Long organizacaoId, String descricao, BigDecimal valor, String categoria, LocalDate dataDespesa, String formaPagamento, String observacao) {}
     public record DespesaDetalhe(Long id, String descricao, BigDecimal valor, String categoria, LocalDate dataDespesa, String formaPagamento, String observacao, OffsetDateTime criadoEm, OffsetDateTime atualizadoEm) {}
     public record DespesaResumo(int quantidadeDespesas, BigDecimal totalDespesas) {}
