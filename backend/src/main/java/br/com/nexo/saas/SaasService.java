@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import br.com.nexo.config.AcessoNegadoException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,9 +16,14 @@ public class SaasService {
     private static final List<String> PLANOS = List.of("free", "pro", "business");
 
     private final JdbcTemplate jdbcTemplate;
+    private final boolean trocaPlanoPrototipo;
 
-    public SaasService(JdbcTemplate jdbcTemplate) {
+    public SaasService(
+            JdbcTemplate jdbcTemplate,
+            @Value("${nexo.saas.prototype-plan-switch:true}") boolean trocaPlanoPrototipo
+    ) {
         this.jdbcTemplate = jdbcTemplate;
+        this.trocaPlanoPrototipo = trocaPlanoPrototipo;
     }
 
     @Transactional
@@ -65,10 +72,12 @@ public class SaasService {
 
     @Transactional
     public ConfiguracaoSaas alterarPlano(Long organizacaoId, String plano) {
-        String planoNormalizado = plano == null ? "" : plano.trim().toLowerCase();
-        if (!PLANOS.contains(planoNormalizado)) {
-            throw new IllegalArgumentException("Plano inválido.");
+        if (!trocaPlanoPrototipo) {
+            throw new AcessoNegadoException("A troca direta de plano está desativada. O plano só pode ser alterado pelo fluxo de assinatura.");
         }
+
+        String planoNormalizado = plano == null ? "" : plano.trim().toLowerCase();
+        if (!PLANOS.contains(planoNormalizado)) throw new IllegalArgumentException("Plano inválido.");
 
         garantirEstrutura(organizacaoId);
         jdbcTemplate.update("""
@@ -96,9 +105,7 @@ public class SaasService {
 
     private String validarPerfil(String perfil) {
         String perfilNormalizado = perfil == null ? "" : perfil.trim().toLowerCase();
-        if (!PERFIS.contains(perfilNormalizado)) {
-            throw new IllegalArgumentException("Perfil de uso inválido.");
-        }
+        if (!PERFIS.contains(perfilNormalizado)) throw new IllegalArgumentException("Perfil de uso inválido.");
         return perfilNormalizado;
     }
 
@@ -106,6 +113,7 @@ public class SaasService {
         return objetivos.stream()
                 .filter(item -> item != null && !item.isBlank())
                 .map(String::trim)
+                .filter(item -> item.length() <= 120)
                 .distinct()
                 .limit(12)
                 .map(this::comoStringJson)
