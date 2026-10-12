@@ -126,7 +126,7 @@ Para selecionar SMTP temporariamente, use `NEXO_EMAIL_PROVIDER=smtp`, `MAIL_ENAB
 
 [SMTP_DIAGNOSTICO.md](SMTP_DIAGNOSTICO.md) permanece como comando legado interno dev/test; não é o diagnóstico recomendado para a migração. Os relatórios [RECUPERACAO_ENVIO.md](RECUPERACAO_ENVIO.md) e [AUTENTICACAO.md](AUTENTICACAO.md) preservam resultados históricos. Nenhuma credencial ou conta Brevo foi alterada ou removida do ambiente.
 
-## Validação desta etapa
+## Validação da migração inicial
 
 Os testes usam HTTP/SMTP fake em loopback e PostgreSQL exclusivo de testes. Não dependem de internet, chave real ou inbox. O diagnóstico externo é exclusivamente manual e não foi executado nesta máquina, que não possui `RESEND_API_KEY`/remetente/destino configurados.
 
@@ -188,3 +188,38 @@ Não se simulou inbox externa como prova de entrega real. A sintaxe Java/Propert
 | Criado | `backend/src/test/java/br/com/nexo/email/ResendEmailProviderTest.java` |
 | Criado | `backend/src/test/java/br/com/nexo/email/ResendHttpTeste.java` |
 | Criado | `docs/RESEND.md` |
+
+## Correção da regressão com variáveis externas
+
+Regressão reproduzida no commit `127361bc2282dee044850ed2223405aed4ad7c38`: `ConfiguracaoResendTest.providerDisabledIgnoraResendMesmoQuandoHabilitado` falhava com `NEXO_EMAIL_PROVIDER=resend`, `RESEND_ENABLED=true`, chave e remetente carregados no processo. O teste original apresentou uma falha em 19 casos; foram usados somente valores fictícios, sem credenciais reais.
+
+A causa confirmada foi a precedência dos nomes de propriedades. O fixture fornecia `NEXO_EMAIL_PROVIDER=disabled` em um MapPropertySource de teste, enquanto a factory consultava `nexo.email.provider`. A fonte de ambiente do Spring também resolve esse nome pontuado pelo alias `NEXO_EMAIL_PROVIDER`. Como o ambiente precedia o application.properties carregado no final do contexto, a factory recebia `resend` do terminal. Ao resolver a chave pelo placeholder do arquivo, encontrava a chave vazia do fixture e falhava. O switch já selecionava o provider antes de ler suas opções; a reprodução não demonstrou validação antecipada quando o provider efetivo era disabled.
+
+A factory agora separa `criarSmtp` e `criarResend`, chamados exclusivamente pelo ramo correspondente do switch. Disabled não consulta configuração Resend nem SMTP. SMTP não consulta configuração Resend. Resend desabilitado retorna EmailDesabilitadoProvider; quando habilitado, mantém integralmente as validações existentes de chave, FROM, reply-to e perfis. Provider inválido continua impedindo inicialização. ResendEmailProvider, autenticação, recuperação, credenciais e defaults não foram alterados.
+
+Os fixtures de ConfiguracaoResendTest passaram a definir explicitamente `nexo.email.provider`, `nexo.resend.*`, `nexo.mail.*` e as opções SMTP usadas nos testes. Cada contexto simula ainda um ambiente externo com Resend habilitado, garantindo a reprodução do conflito mesmo numa máquina sem essas variáveis. Casos separados substituem somente a fonte de ambiente do contexto de teste por uma fonte controlada para verificar o vínculo real das variáveis de disabled, SMTP e Resend. Nenhuma variável do processo ou credencial do usuário é alterada.
+
+Os 19 casos existentes foram mantidos e foram acrescentados 11: disabled/SMTP em dev/prod sem consultar qualquer propriedade Resend; ambos com Resend habilitado e chave vazia/inválida; e seleção dos três providers por variáveis de ambiente controladas. Ao testar SMTP, somente o sender legado é criado; nenhum teste usa SMTP externo ou API Resend real.
+
+Arquivos desta correção:
+
+- `backend/src/main/java/br/com/nexo/email/ConfiguracaoEmail.java`;
+- `backend/src/test/java/br/com/nexo/email/ConfiguracaoResendTest.java`;
+- `docs/RESEND.md`.
+
+Validação direcionada: **64 testes passaram, zero falhas/erros/ignorados** — 30 ConfiguracaoResendTest, 17 ResendEmailProviderTest, 13 DiagnosticoResendTest e 4 DiagnosticoResendProcessoTest. O comando foi executado com as quatro variáveis externas descritas acima carregadas, usando valores fictícios.
+
+Resultados finais, com as mesmas quatro variáveis Resend carregadas no processo e valores fictícios:
+
+| Execução | Resultado |
+| --- | --- |
+| `mvn -f backend/pom.xml package`, PostgreSQL de teste e navegador habilitados | **189 testes JUnit passaram; zero falhas, erros ou ignorados; BUILD SUCCESS** |
+| Mesmo comando sem `NEXO_TEST_DB_URL`/`NEXO_E2E`, como no cenário local informado | **174 casos contabilizados: 123 passaram e 51 foram ignorados; zero falhas/erros; BUILD SUCCESS** |
+| Recuperação Resend/SMTP e autenticação | Todas as suites existentes passaram na execução completa |
+| Playwright, backend e banco reais | **7 testes passaram** |
+| Frontend `npm test` | **25 testes passaram**, sem ignorados |
+| JAR e `git diff --check` | Passaram; Start-Class continua `br.com.nexo.NexoApplication` |
+
+As 51 ocorrências ignoradas na execução sem infraestrutura são os testes condicionais de integração/navegador. Foram executadas com sucesso na execução completa, mantendo suas condições e asserts. Nenhum teste foi removido ou teve sua expectativa de sucesso alterada para aceitar falha.
+
+O teste/build com variáveis presentes usa os mesmos nomes e o remetente informados pelo usuário; a chave é fictícia. Não foi executado no PowerShell do usuário nem com sua credencial real. Os fixtures explícitos prevalecem sobre as variáveis desse terminal: não é preciso apagar as variáveis Resend para executar package. Não houve chamada externa de envio, mudança de credenciais, regras de recuperação ou validações de produção.

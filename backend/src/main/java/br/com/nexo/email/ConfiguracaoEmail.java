@@ -22,17 +22,24 @@ public class ConfiguracaoEmail {
     public EmailProvider emailProvider(Environment ambiente, ObjectProvider<JavaMailSender> smtp) {
         String provider = ambiente.getProperty("nexo.email.provider", "resend");
         LoggerFactory.getLogger(ConfiguracaoEmail.class).info("E-mail etapa=selecao_provider");
+        // Cada ramo lê apenas sua configuração; providers inativos não validam credenciais.
         return switch (provider) {
             case "disabled" -> new EmailDesabilitadoProvider();
-            case "smtp" -> ambiente.getProperty("nexo.mail.enabled", Boolean.class, false)
-                    ? new SmtpEmailProvider(smtp.getObject(), ambiente.getProperty("nexo.mail.from", "no-reply@nexo.local"))
-                    : new EmailDesabilitadoProvider();
-            case "resend" -> ambiente.getProperty("nexo.resend.enabled", Boolean.class, false)
-                    ? new ResendEmailProvider(ambiente.getProperty("nexo.resend.api-key", ""),
-                            ambiente.getProperty("nexo.resend.from", ""), ambiente.getProperty("nexo.resend.reply-to", ""),
-                            ambiente.matchesProfiles("(dev | test) & !prod & !production"))
-                    : new EmailDesabilitadoProvider();
+            case "smtp" -> criarSmtp(ambiente, smtp);
+            case "resend" -> criarResend(ambiente);
             default -> throw new IllegalStateException("NEXO_EMAIL_PROVIDER inválido; use resend, smtp ou disabled.");
         };
+    }
+
+    private EmailProvider criarSmtp(Environment ambiente, ObjectProvider<JavaMailSender> smtp) {
+        if (!ambiente.getProperty("nexo.mail.enabled", Boolean.class, false)) return new EmailDesabilitadoProvider();
+        return new SmtpEmailProvider(smtp.getObject(), ambiente.getProperty("nexo.mail.from", "no-reply@nexo.local"));
+    }
+
+    private EmailProvider criarResend(Environment ambiente) {
+        if (!ambiente.getProperty("nexo.resend.enabled", Boolean.class, false)) return new EmailDesabilitadoProvider();
+        return new ResendEmailProvider(ambiente.getProperty("nexo.resend.api-key", ""),
+                ambiente.getProperty("nexo.resend.from", ""), ambiente.getProperty("nexo.resend.reply-to", ""),
+                ambiente.matchesProfiles("(dev | test) & !prod & !production"));
     }
 }
