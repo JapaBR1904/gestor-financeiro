@@ -1,3 +1,21 @@
+/* O resumo mantém o preço do catálogo e a identidade do plano escolhido. */
+.checkout-plan-summary {
+  position: relative;
+  overflow: hidden;
+  background: var(--gradient-highlight);
+  box-shadow: var(--shadow-md);
+}
+.checkout-plan-summary[data-plan="pro"] {
+  background: var(--gradient-pro);
+  border-color: color-mix(in srgb, var(--accent), var(--border) 60%);
+}
+.checkout-plan-summary[data-plan="business"] {
+  border-top: 3px solid var(--cyan);
+  background: var(--gradient-highlight);
+}
+.checkout-plan-summary h2 {
+  font-size: 1.75rem;
+}
 .checkout-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -110,6 +128,11 @@
 .checkout-simulation .field {
   margin-top: 10px;
 }
+.checkout-result[data-status="aprovado"] {
+  border-color: color-mix(in srgb, var(--accent), var(--border) 60%);
+  background: var(--gradient-pro);
+  box-shadow: var(--shadow-accent-hover);
+}
 .checkout-result {
   display: grid;
   justify-items: start;
@@ -120,6 +143,8 @@
   animation: page-enter var(--duration-slow) var(--ease);
 }
 .checkout-result-icon {
+  box-shadow: 0 0 0 8px color-mix(in srgb, var(--accent), transparent 94%);
+  animation: checkout-confirmed var(--duration-slow) var(--ease) both;
   display: grid;
   place-items: center;
   width: var(--space-7);
@@ -131,6 +156,16 @@
 .checkout-result-icon[data-success="false"] {
   background: var(--warning-soft);
   color: var(--warning);
+}
+@keyframes checkout-confirmed {
+  from {
+    opacity: 0;
+    transform: scale(0.86);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 .checkout-result h2 {
   font-size: 1.625rem;

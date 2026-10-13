@@ -148,7 +148,7 @@ export function AnaliseConteudo() {
                   },
                 ].map((item) => (
                   <article
-                    className={`summary-card ${item.nome === "Saldo" ? "balance-card" : ""}`}
+                    className={`summary-card ${item.nome === "Saldo" ? "balance-card" : item.nome === "Entradas" ? "income-card" : "expense-card"}`}
                     key={item.nome}
                   >
                     <span className="summary-label">

@@ -13,13 +13,29 @@
   flex-shrink: 0;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: var(--gradient-premium);
+  color: var(--cyan-light);
+  box-shadow: var(--shadow-accent);
+  animation: ai-light 8s ease-in-out infinite alternate;
 }
 .ia-intro p {
   color: var(--text-secondary);
   font-size: var(--text-xs);
   margin-top: var(--space-1);
+}
+@keyframes ai-light {
+  to {
+    transform: translateY(-2px);
+    opacity: 0.85;
+  }
+}
+.ia-unavailable .product-lock,
+.ia-workbench {
+  background:
+    radial-gradient(ellipse at 100% 0, var(--ambient-cyan), transparent 55%),
+    var(--gradient-highlight);
+  border-color: color-mix(in srgb, var(--accent), var(--border) 80%);
+  box-shadow: var(--shadow-lg);
 }
 .ia-question-form {
   display: grid;
@@ -35,7 +51,8 @@
   border: 1px solid var(--border-strong);
   border-left: 3px solid var(--accent);
   border-radius: var(--radius);
-  background: var(--surface-soft);
+  background: var(--gradient-highlight);
+  box-shadow: var(--shadow-md);
   animation: page-enter var(--duration-slow) var(--ease);
 }
 .ia-answer > div {
@@ -46,6 +63,10 @@
   overflow-wrap: anywhere;
 }
 .ia-thinking {
+  position: relative;
+  overflow: hidden;
+  background: var(--gradient-pro);
+  box-shadow: var(--shadow-sm);
   display: grid;
   gap: var(--space-3);
   margin-top: var(--space-5);

@@ -316,6 +316,7 @@
   box-shadow: 0 2px 8px var(--ambient-blue);
 }
 .plan-pill {
+  animation: notice-enter var(--duration) var(--ease);
   display: inline-flex;
   align-items: center;
   gap: 6px;

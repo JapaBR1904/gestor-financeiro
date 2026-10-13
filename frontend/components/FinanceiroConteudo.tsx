@@ -256,13 +256,13 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
             nome: "Entradas",
             valor: dados?.receitas,
             texto: "Receitas e vendas",
-            classe: "",
+            classe: "income-card",
           },
           {
             nome: "Saídas",
             valor: dados?.despesas,
             texto: "Gastos do período",
-            classe: "",
+            classe: "expense-card",
           },
           {
             nome: "Saldo do período",

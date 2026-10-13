@@ -124,7 +124,7 @@ export function IaConteudo() {
             </div>
           ) : configurada ? (
             <div className="product-two-columns">
-              <section className="panel">
+              <section className="panel ia-workbench">
                 <div className="ia-intro">
                   <span className="ia-symbol">
                     <Icone nome="ia" />

@@ -107,6 +107,17 @@ export default function PlanosConteudo() {
           organização.
         </p>
       </section>
+      {assinatura ? (
+        <div className="pricing-current" role="status">
+          <span className="plan-pill" data-plan={assinatura.plano.id}>
+            {assinatura.plano.nome}
+          </span>
+          <p>
+            Seu plano atual. Os dados da organização acompanham você em qualquer
+            mudança.
+          </p>
+        </div>
+      ) : null}
       {erro ? (
         <div className="form-error-banner" role="alert">
           <p>{erro}</p>
@@ -205,6 +216,74 @@ export default function PlanosConteudo() {
           );
         })}
       </section>
+      {planos.length ? (
+        <section
+          className="plan-comparison"
+          aria-labelledby="comparacao-planos"
+        >
+          <div className="panel-header">
+            <div>
+              <p className="eyebrow">Um próximo passo, no seu ritmo</p>
+              <h2 id="comparacao-planos">O que acompanha cada plano</h2>
+            </div>
+            <Icone nome="painel" />
+          </div>
+          <div className="plan-comparison-scroll">
+            <table>
+              <caption className="sr-only">
+                Recursos e limites fornecidos pelo catálogo do Nexo
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Recurso</th>
+                  {planos.map((plano) => (
+                    <th scope="col" key={plano.id}>
+                      {plano.nome}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Usuários no espaço</th>
+                  {planos.map((plano) => (
+                    <td key={plano.id}>{plano.limiteUsuarios}</td>
+                  ))}
+                </tr>
+                {[
+                  ["METAS", "Metas"],
+                  ["FLUXO_CAIXA", "Fluxo de caixa"],
+                  ["COMPARATIVOS", "Comparativos"],
+                  ["EXPORTACAO", "Exportação CSV"],
+                  ["IA_BASICA", "Assistente IA"],
+                  ["EQUIPE", "Equipe e convites"],
+                  ["PERMISSOES", "Papéis e permissões"],
+                  ["DOCUMENTOS", "Documentos"],
+                  ["IA_DOCUMENTOS", "IA com documentos"],
+                ].map(([recurso, nome]) => (
+                  <tr key={recurso}>
+                    <th scope="row">{nome}</th>
+                    {planos.map((plano) => (
+                      <td key={plano.id}>
+                        {plano.recursos.includes(recurso) ? (
+                          <>
+                            <Icone nome="check" />
+                            <span className="sr-only">Incluído</span>
+                          </>
+                        ) : (
+                          <span className="comparison-unavailable">
+                            Não incluído
+                          </span>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ) : null}
       {onboarding && assinatura ? (
         <button
           className="primary-button"

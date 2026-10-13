@@ -38,6 +38,12 @@
   --gradient-primary-hover: linear-gradient(135deg, #2058cf, #153ea8);
   --gradient-premium: linear-gradient(135deg, #0b1b38, #153567);
   --gradient-highlight: linear-gradient(135deg, #ffffff, #eef4ff);
+  --gradient-pro:
+    radial-gradient(ellipse at 100% 0, #78b5ff33, transparent 65%),
+    linear-gradient(145deg, #ffffff, #eaf1ff);
+  --light-border: #ffffff99;
+  --surface-glass: #ffffffed;
+  --shimmer: #ffffffa6;
   --shadow-accent: 0 7px 20px #2257d633, inset 0 1px #ffffff33;
   --shadow-accent-hover: 0 12px 28px #2257d640, inset 0 1px #ffffff40;
   --shadow-premium: 0 16px 38px #12377829, inset 0 1px #ffffff1a;
@@ -304,6 +310,7 @@ svg {
 .panel {
   padding: var(--space-5);
   min-width: 0;
+  box-shadow: var(--shadow-md);
 }
 .panel-header {
   display: flex;
@@ -671,10 +678,26 @@ input[type="radio"] {
     opacity: 0.45;
   }
 }
+@keyframes shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
 .skeleton {
+  position: relative;
+  overflow: hidden;
   border-radius: var(--radius-sm);
   background: var(--surface-interactive);
-  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, var(--shimmer), transparent);
+  animation: shimmer 1.6s ease-in-out infinite;
 }
 @media (max-width: 1180px) {
   .ingredient-row {

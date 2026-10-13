@@ -284,14 +284,32 @@
   margin-bottom: var(--space-6);
 }
 .pricing-heading h1 {
-  max-width: 23ch;
+  max-width: 25ch;
   margin: var(--space-3) 0;
-  font-size: 2.25rem;
+  font-size: clamp(2rem, 4vw, 2.625rem);
 }
 .pricing-heading > p:last-child {
   color: var(--text-secondary);
   max-width: 65ch;
   line-height: 1.8;
+}
+.pricing-current {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: min(1160px, 100%);
+  margin: 0 auto var(--space-5);
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+}
+.pricing-loading {
+  width: min(1160px, 100%);
+  margin: 0 auto var(--space-5);
+  display: grid;
+  gap: var(--space-3);
+}
+.pricing-loading .skeleton {
+  height: 120px;
 }
 .pricing-grid {
   display: grid;
@@ -307,25 +325,54 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--surface);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
+  animation: page-enter var(--duration-slow) var(--ease) backwards;
   transition:
     transform var(--duration) var(--ease),
     border-color var(--duration),
     box-shadow var(--duration);
 }
 .pricing-card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-4px);
   border-color: var(--border-strong);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg);
+}
+.pricing-card.plan-pro {
+  animation-delay: 35ms;
 }
 .pricing-card.featured {
+  border-color: color-mix(in srgb, var(--accent), var(--cyan-light) 25%);
+  background: var(--gradient-pro);
+  box-shadow: var(--shadow-accent-hover);
+}
+.pricing-card.featured .pricing-badge {
+  color: var(--on-accent);
+  background: var(--gradient-primary);
   border-color: var(--accent);
-  background: var(--accent-soft);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-accent);
 }
 .pricing-card.plan-business {
-  border-top: 3px solid var(--accent-ink);
+  --ink: var(--nav-text);
+  --text-secondary: var(--nav-secondary);
+  --text-subtle: var(--nav-subtle);
+  --surface: var(--nav-surface);
+  --border: var(--nav-border);
+  --border-strong: var(--cyan-light);
+  --accent: var(--cyan-light);
+  --surface-interactive: var(--nav-hover);
+  color: var(--ink);
+  background:
+    radial-gradient(ellipse at 100% 0, var(--ambient-cyan), transparent 60%),
+    var(--gradient-premium);
+  box-shadow: var(--shadow-premium);
+  border-top: 3px solid var(--cyan-light);
   padding-top: 26px;
+  animation-delay: 70ms;
+}
+.pricing-card.plan-current {
+  box-shadow:
+    var(--shadow-lg),
+    0 0 0 2px color-mix(in srgb, var(--accent), transparent 80%);
 }
 .pricing-card.plan-current::after {
   content: "";
@@ -425,6 +472,64 @@
 }
 .pricing-note p {
   margin-top: var(--space-1);
+}
+.plan-comparison {
+  width: min(1160px, 100%);
+  margin: var(--space-6) auto 0;
+  padding: var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-glass);
+  box-shadow: var(--shadow-md);
+}
+.plan-comparison-scroll {
+  max-width: 100%;
+}
+.plan-comparison table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: var(--text-xs);
+}
+.plan-comparison :is(th, td) {
+  padding: 14px 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+}
+.plan-comparison th {
+  font-weight: 600;
+}
+.plan-comparison :is(th, td):first-child {
+  width: 40%;
+  text-align: left;
+}
+.plan-comparison thead th {
+  background: var(--surface-soft);
+  color: var(--ink);
+}
+.plan-comparison thead th:nth-child(3) {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.plan-comparison tbody th {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+.plan-comparison tbody td:nth-child(3) {
+  background: color-mix(in srgb, var(--accent-soft), transparent 60%);
+}
+.plan-comparison tr:last-child :is(th, td) {
+  border-bottom: 0;
+}
+.plan-comparison svg {
+  width: 16px;
+  height: 16px;
+  color: var(--accent);
+  vertical-align: middle;
+}
+.comparison-unavailable {
+  color: var(--text-subtle);
+  font-size: 0.6875rem;
 }
 .subscription-heading {
   margin-bottom: 28px;
@@ -537,6 +642,19 @@
   }
 }
 @media (max-width: 760px) {
+  .plan-comparison {
+    padding: var(--space-4);
+  }
+  .plan-comparison :is(th, td) {
+    padding: 12px 4px;
+    font-size: 0.6875rem;
+  }
+  .plan-comparison .comparison-unavailable {
+    font-size: 0.6875rem;
+  }
+  .pricing-current {
+    align-items: start;
+  }
   .saas-shell {
     padding: var(--space-5) var(--space-4) 36px;
   }

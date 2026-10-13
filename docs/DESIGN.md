@@ -169,3 +169,15 @@ Os tokens permanecem em `globals.css`: fundo, texto, bordas, accent, cyan, cores
 Os efeitos ambientais usam um único contêiner semântico oculto, dois pseudo-elementos, overflow limitado e `pointer-events: none`. Não há partículas JavaScript, listeners, canvas ou filtros animados. No celular os campos de luz ficam estáticos. Reduced-motion continua desativando animações e transições em todos os componentes.
 
 Checkpoint da nova base: 30 testes frontend, TypeScript, lint e build passaram. Inspeção no Chromium de login, dashboard, planos, equipe e IA em 1440/390 px: sem overflow ou violações A/AA detectadas, incluindo navegação navy. O JAR local foi iniciado apenas com `SPRING_PROFILES_ACTIVE=dev`, sem flag de simulação; startup e API confirmaram disponibilidade para o proprietário. As telas e o drawer foram revistos pelas screenshots antes do checkpoint.
+
+## Acabamento dos módulos
+
+Dashboard e análises diferenciam entradas (verde financeiro), saídas (vermelho financeiro) e saldo (navy/azul com halos), sem criar valores ou tendências. Cards informativos recebem sombra/borda no hover; apenas ações e planos elevam. As categorias e metas usam progressos azul/cyan; o gráfico diário mantém valores, eixos, seleção por teclado/toque e tabela alternativa, com preenchimento em gradiente e entrada curta.
+
+Free permanece neutro, Pro recebe luz azul e destaque Recomendado, e Business usa navy/cyan. O comparativo é alimentado por `recursos` e `limiteUsuarios` do catálogo backend, incluindo a herança de Pro em Business. O resumo do checkout mostra a identidade do destino e seus preços reais de catálogo; confirmação tem feedback curto e preserva avisos da simulação, consentimento e falhas.
+
+Login mantém os textos e a composição editorial, com superfície translúcida, navy, aurora e órbitas decorativas da marca. IA recebe ícone luminoso, superfície contextual e shimmer de carregamento, mantendo explícita a indisponibilidade quando não configurada. As órbitas e halos são elementos decorativos, não representam dados financeiros.
+
+Nenhuma dependência foi adicionada nesta passagem. Gradientes e sombras são estáticos; movimentos ambientais e shimmer animam transform/opacity. Reduced-motion desativa tudo, inclusive pseudo-elementos. O teste de navegador também verifica atualização do badge e dos locks por navegação interna, sem F5/logout, após cada transição.
+
+Checkpoint dos módulos: 30 testes frontend, TypeScript, lint e build passaram. Segunda inspeção no Chromium de login, dashboard, planos, checkout, metas, fluxo de caixa, equipe e IA em 1440/390 px: 16 verificações A/AA sem violações detectadas ou overflow. As screenshots foram abertas para revisar leitura, profundidade, composição e comparação de planos no celular. A passagem completa das sete larguras e a suíte backend/navegador continuam no bloco final.

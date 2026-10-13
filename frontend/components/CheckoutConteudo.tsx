@@ -200,6 +200,8 @@ function CheckoutConteudo({
       {checkout && checkout.status !== "pendente" ? (
         <section
           className="subscription-current-card checkout-result"
+          data-status={checkout.status}
+          data-plan={checkout.plano.id}
           role="status"
         >
           <span
@@ -229,7 +231,10 @@ function CheckoutConteudo({
         </section>
       ) : checkout ? (
         <div className="checkout-grid">
-          <section className="subscription-current-card">
+          <section
+            className="subscription-current-card checkout-plan-summary"
+            data-plan={checkout.plano.id}
+          >
             <p className="eyebrow">Resumo do plano</p>
             <h2>{checkout.plano.nome}</h2>
             <p>

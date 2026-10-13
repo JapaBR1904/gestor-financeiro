@@ -19,6 +19,7 @@ const valorEixo = new Intl.NumberFormat("pt-BR", {
 export function GraficoSaldo({ dias }: { dias: Dia[] }) {
   const [selecionado, setSelecionado] = useState<number | null>(null);
   const descricao = useId();
+  const gradiente = useId();
   const minimo = Math.min(0, ...dias.map((d) => d.saldo));
   const maximo = Math.max(1, ...dias.map((d) => d.saldo));
   const amplitude = maximo - minimo;
@@ -67,6 +68,16 @@ export function GraficoSaldo({ dias }: { dias: Dia[] }) {
             if (ponto !== indice) setSelecionado(ponto);
           }}
         >
+          <defs>
+            <linearGradient id={gradiente} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.25" />
+              <stop
+                offset="100%"
+                stopColor="var(--accent)"
+                stopOpacity="0.02"
+              />
+            </linearGradient>
+          </defs>
           {[0, 1, 2, 3, 4].map((i) => (
             <line
               key={i}
@@ -79,6 +90,7 @@ export function GraficoSaldo({ dias }: { dias: Dia[] }) {
           ))}
           <polygon
             className="chart-area"
+            style={{ fill: `url(#${gradiente})` }}
             points={`8,${y(0)} ${pontos} ${x(dias.length - 1)},${y(0)}`}
           />
           <line className="chart-zero" x1="8" x2="592" y1={y(0)} y2={y(0)} />

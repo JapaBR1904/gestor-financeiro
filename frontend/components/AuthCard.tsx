@@ -16,6 +16,11 @@ export default function AuthCard({
     <main className="auth-shell">
       <div className="auth-layout">
         <aside className="auth-story" aria-label="Conheça o Nexo">
+          <div className="auth-constellation" aria-hidden="true">
+            <span />
+            <span />
+            <Marca />
+          </div>
           <div className="auth-story-label">
             <Marca />
             Seu dinheiro, com clareza

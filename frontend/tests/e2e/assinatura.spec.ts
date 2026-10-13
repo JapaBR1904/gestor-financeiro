@@ -87,6 +87,16 @@ test("seis transições, persistência após reload e novo login", async ({
   ] as const) {
     await atual(page, origem);
     await mudar(page, destino, downgrade);
+    // Link do Next mantém a sessão e verifica o contexto global sem F5/logout.
+    await page.locator(".saas-brand").click();
+    await expect(page.locator(".workspace-bar .plan-pill")).toHaveText(destino);
+    await expect(
+      page.locator('.sidebar a[href="/metas"] .nav-lock'),
+    ).toHaveCount(destino === "Free" ? 1 : 0);
+    await expect(
+      page.locator('.sidebar a[href="/equipe"] .nav-lock'),
+    ).toHaveCount(destino === "Business" ? 0 : 1);
+    await page.locator(".workspace-bar .plan-pill").click();
     await page.reload();
     await expect(
       page.getByRole("heading", { name: destino, exact: true }),
@@ -751,6 +761,17 @@ test("polish em sete larguras, drawer, teclado, gráfico e movimento reduzido", 
   await page.getByText("Ver valores por dia", { exact: true }).click();
   await expect(page.locator(".chart-data table")).toBeVisible();
   await page.emulateMedia({ reducedMotion: "reduce" });
+  for (const pseudo of ["::before", "::after"]) {
+    expect(
+      await page
+        .locator(".nexo-ambient")
+        .evaluate(
+          (elemento, seletor) =>
+            getComputedStyle(elemento, seletor).animationName,
+          pseudo,
+        ),
+    ).toBe("none");
+  }
   await page.goto("/metas");
   await expect(page.locator(".pro-goal-card")).toBeVisible();
   expect(
