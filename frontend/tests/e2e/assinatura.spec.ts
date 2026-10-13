@@ -97,6 +97,10 @@ test("seis transições, persistência após reload e novo login", async ({
       page.locator('.sidebar a[href="/equipe"] .nav-lock'),
     ).toHaveCount(destino === "Business" ? 0 : 1);
     await page.locator(".workspace-bar .plan-pill").click();
+    await expect(page).toHaveURL(/\/conta\/assinatura$/);
+    await expect(
+      page.getByRole("heading", { name: destino, exact: true }),
+    ).toBeVisible();
     await page.reload();
     await expect(
       page.getByRole("heading", { name: destino, exact: true }),
@@ -540,6 +544,21 @@ test("finanças, Pro, Business, convite, documentos e downgrade preservam dados"
       ).toHaveCount(0);
       await semOverflow(page);
       await page.waitForTimeout(350);
+      if (largura > 900) {
+        const visivel = await page
+          .locator(".sidebar .menu")
+          .evaluate((menu) => {
+            const atual = menu.querySelector('[aria-current="page"]');
+            if (!atual) return true;
+            const area = menu.getBoundingClientRect(),
+              item = atual.getBoundingClientRect();
+            return item.top >= area.top - 1 && item.bottom <= area.bottom + 1;
+          });
+        expect(
+          visivel,
+          `Navegação ativa visível: ${rota} em ${largura}px`,
+        ).toBe(true);
+      }
       await page.screenshot({
         path: testInfo.outputPath(
           `${nome}-${rota.replaceAll("/", "") || "dashboard"}.png`,

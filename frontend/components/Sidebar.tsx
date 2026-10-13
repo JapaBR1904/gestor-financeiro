@@ -69,6 +69,7 @@ export function Sidebar(props: {
   const [aberto, setAberto] = useState(false);
   const [fechando, setFechando] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
+  const desktop = useRef<HTMLElement>(null);
   const fecharTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const toggle = useRef<HTMLButtonElement>(null);
 
@@ -108,6 +109,30 @@ export function Sidebar(props: {
       if (fecharTimer.current) clearTimeout(fecharTimer.current);
     };
   }, [aberto]);
+
+  useEffect(() => {
+    const menus = [desktop.current, aberto ? dialog.current : null]
+      .map((raiz) => raiz?.querySelector<HTMLElement>(".menu"))
+      .filter((menu): menu is HTMLElement => Boolean(menu));
+    const ajustar = () => {
+      for (const menu of menus) {
+        const atual = menu.querySelector<HTMLElement>('[aria-current="page"]');
+        if (!atual || !menu.clientHeight) continue;
+        const inicio =
+          atual.getBoundingClientRect().top -
+          menu.getBoundingClientRect().top +
+          menu.scrollTop;
+        const fim = inicio + atual.offsetHeight;
+        if (inicio < menu.scrollTop) menu.scrollTop = inicio;
+        else if (fim > menu.scrollTop + menu.clientHeight)
+          menu.scrollTop = fim - menu.clientHeight;
+      }
+    };
+    ajustar();
+    const observador = new ResizeObserver(ajustar);
+    menus.forEach((menu) => observador.observe(menu));
+    return () => observador.disconnect();
+  }, [pathname, aberto]);
 
   async function sair() {
     if (saindo) return;
@@ -267,7 +292,7 @@ export function Sidebar(props: {
           <Icone nome="menu" />
         </button>
       </div>
-      <aside className="sidebar">
+      <aside className="sidebar" ref={desktop}>
         <div className="sidebar-brand-row">{marca}</div>
         {navegacao}
       </aside>

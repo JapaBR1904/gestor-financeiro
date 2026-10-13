@@ -47,7 +47,7 @@ Adicionado `@axe-core/playwright@4.13.0` apenas como dependência de desenvolvim
 
 TypeScript, lint, 25 testes unitários e build de todas as rotas passaram antes deste checkpoint. A suíte ampliada e a revisão final das sete larguras continuam no bloco final.
 
-## Entrega e validação final
+## Validação da passagem anterior
 
 - `npm test`: 25 testes passaram, sem falhas ou ignorados.
 - `npx --no-install tsc --noEmit`: passou.
@@ -181,3 +181,14 @@ Login mantém os textos e a composição editorial, com superfície translúcida
 Nenhuma dependência foi adicionada nesta passagem. Gradientes e sombras são estáticos; movimentos ambientais e shimmer animam transform/opacity. Reduced-motion desativa tudo, inclusive pseudo-elementos. O teste de navegador também verifica atualização do badge e dos locks por navegação interna, sem F5/logout, após cada transição.
 
 Checkpoint dos módulos: 30 testes frontend, TypeScript, lint e build passaram. Segunda inspeção no Chromium de login, dashboard, planos, checkout, metas, fluxo de caixa, equipe e IA em 1440/390 px: 16 verificações A/AA sem violações detectadas ou overflow. As screenshots foram abertas para revisar leitura, profundidade, composição e comparação de planos no celular. A passagem completa das sete larguras e a suíte backend/navegador continuam no bloco final.
+
+
+## Validação final da identidade azul
+
+Relatório desta etapa: [NEXO_AI_NATIVE.md](NEXO_AI_NATIVE.md). Suíte completa: 231 testes backend passaram, JAR gerado e 14 cenários Playwright passaram. Os 14 foram repetidos depois do ajuste final da navegação e passaram. Frontend: 30 testes, typecheck, lint sem avisos e build passaram.
+
+A revisão no JAR em dev verificou as seis transições de plano, persistência após refresh, atualização de badge/locks sem F5 e restauração de 2 membros/2 documentos depois do downgrade. O comparativo usa o catálogo real; IA sem chave fica explicitamente indisponível.
+
+Passagem final: 119 combinações de página/largura sem overflow; 47 verificações adicionais A/AA sem violações detectadas, incluindo drawer. Capturas abertas para revisão em desktop, notebook, tablet e celular. O item ativo da navegação agora é mantido visível dentro do menu, inclusive ao redimensionar a janela; nenhuma rolagem do conteúdo principal é disparada. Onze capturas de referência estão preservadas em `docs/design` e listadas no relatório.
+
+Os testes intermediários de mensagens e navegação foram estabilizados com conta independente e espera explícita antes de refresh. Nenhum teste foi removido. Nenhuma dependência nova, mudança em autenticação/e-mail, migration, merge ou deploy foi introduzida nesta passagem.
