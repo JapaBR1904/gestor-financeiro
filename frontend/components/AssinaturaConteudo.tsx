@@ -8,7 +8,12 @@ import {
   carregarAssinatura,
   carregarCheckout,
 } from "../lib/assinatura";
-import { nomePlano, nomeStatus, precoPlano } from "../lib/planos";
+import {
+  disponibilidadeAssinatura,
+  nomePlano,
+  nomeStatus,
+  precoPlano,
+} from "../lib/planos";
 
 export default function AssinaturaConteudo() {
   const params = useSearchParams();
@@ -119,14 +124,7 @@ export default function AssinaturaConteudo() {
                   do limite não estão disponíveis.
                 </p>
               ) : null}
-              <p>
-                {assinatura.simulacaoHabilitada
-                  ? "As alterações usam pagamento simulado. Nenhuma cobrança real é realizada."
-                  : "O gerenciamento simulado está desabilitado neste ambiente."}
-              </p>
-              {!assinatura.podeGerenciar ? (
-                <p>Somente o dono pode alterar a assinatura.</p>
-              ) : null}
+              <p>{disponibilidadeAssinatura(assinatura).mensagem}</p>
               {assinatura.plano.id !== "free" &&
               assinatura.podeGerenciar &&
               assinatura.simulacaoHabilitada ? (

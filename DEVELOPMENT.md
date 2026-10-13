@@ -21,7 +21,7 @@ Nomes usados pelo backend:
 - Segurança: `NEXO_ALLOWED_ORIGINS`, `COOKIE_SECURE`.
 - Convites: `NEXO_FRONTEND_URL`, origem pública do frontend, sem caminho/query/fragmento. HTTP só é aceito em loopback fora de produção; em prod/production, use HTTPS.
 - IA opcional: `GEMINI_API_KEY` e `GEMINI_MODEL` (padrão `gemini-flash-latest`). Sem chave, os demais recursos continuam disponíveis. O envio de resumo ou documento exige autorização na interface.
-- Assinatura simulada, opcional: `SPRING_PROFILES_ACTIVE=dev` e `PAGAMENTO_SIMULADO_ENABLED=true`. Os perfis `prod` e `production` impedem sua ativação mesmo se a flag estiver habilitada.
+- Assinatura simulada, opcional: `SPRING_PROFILES_ACTIVE=dev` habilita o simulador automaticamente. `PAGAMENTO_SIMULADO_ENABLED=false` o desliga explicitamente. Os perfis `prod` e `production` impedem sua ativação mesmo se a flag estiver habilitada.
 - E-mail recomendado: `NEXO_EMAIL_PROVIDER=resend`, `RESEND_ENABLED`, `RESEND_API_KEY`, `RESEND_FROM`, `RESEND_REPLY_TO`. Veja [docs/RESEND.md](docs/RESEND.md), incluindo o diagnóstico isolado em PowerShell.
 - SMTP legado, somente `NEXO_EMAIL_PROVIDER=smtp`: `MAIL_ENABLED`, `MAIL_FROM`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_SMTP_AUTH`, `MAIL_STARTTLS`, `MAIL_STARTTLS_REQUIRED`.
 
@@ -43,9 +43,12 @@ No frontend, `NEXT_PUBLIC_API_URL` define a origem da API. Se necessário, confi
 Na raiz do repositório, depois de preparar banco e variáveis, em um terminal:
 
 ```bash
+export SPRING_PROFILES_ACTIVE=dev
 cd backend
 mvn spring-boot:run
 ```
+
+No PowerShell, use `$env:SPRING_PROFILES_ACTIVE = 'dev'` antes de `mvn -f backend/pom.xml spring-boot:run`. Não é necessário definir a flag do pagamento; se o terminal já tiver `PAGAMENTO_SIMULADO_ENABLED=false`, remova essa variável para usar o padrão dev. O startup informa de forma segura se a simulação está habilitada. Em `test`, a habilitação continua explícita. Em produção, inclusive perfis mistos, ela permanece bloqueada.
 
 Em outro terminal, partindo da raiz:
 

@@ -23,6 +23,6 @@ Nunca versione credenciais, arquivos `.env` reais ou backups de dados pessoais.
 
 ## Planos e assinaturas simuladas
 
-Free, Pro e Business são gerenciados pelo backend, com checkout interno, upgrade, downgrade, cancelamento e histórico por organização. O simulador exige perfil `dev` ou `test` e `PAGAMENTO_SIMULADO_ENABLED=true`; fica desabilitado por padrão e nos perfis `prod`/`production`. Não há cobranças reais nem coleta de cartão ou dados bancários.
+Free, Pro e Business são gerenciados pelo backend, com checkout interno, upgrade, downgrade, cancelamento e histórico por organização. O perfil `dev` habilita o simulador por padrão; `PAGAMENTO_SIMULADO_ENABLED=false` o desliga. Em `test`, a flag continua explícita. Os perfis `prod`/`production`, inclusive misturados com dev/test, sempre impedem a simulação. Não há cobranças reais nem coleta de cartão ou dados bancários.
 
 Aplique a migração incremental `10_assinaturas_simuladas.sql` depois da `09`. Consulte [docs/ASSINATURAS.md](docs/ASSINATURAS.md) para regras, endpoints, testes e pendências.

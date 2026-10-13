@@ -62,7 +62,7 @@ No mesmo PowerShell que inicia o backend:
 
 ```powershell
 $env:SPRING_PROFILES_ACTIVE = 'dev'
-$env:PAGAMENTO_SIMULADO_ENABLED = 'true'
+# O perfil dev habilita o simulador por padrão; a flag false pode desligá-lo.
 mvn -f backend/pom.xml spring-boot:run
 ```
 
@@ -118,7 +118,7 @@ Os relatórios comerciais preservam as fórmulas e rankings existentes para todo
 - Banco/segurança/Resend: as mesmas variáveis anteriores, sem credenciais novas obrigatórias.
 - `NEXO_FRONTEND_URL`: origem usada nos links de convite; padrão local `http://localhost:3000`. Produção exige HTTPS.
 - `GEMINI_API_KEY`: opcional, inserida no processo ou gerenciador seguro; `GEMINI_MODEL`: padrão `gemini-flash-latest`. O backend usa o endpoint oficial `generateContent`, header de chave, timeout, sem redirecionamentos ou retries automáticos.
-- `SPRING_PROFILES_ACTIVE=dev` + `PAGAMENTO_SIMULADO_ENABLED=true`: demonstração local somente.
+- `SPRING_PROFILES_ACTIVE=dev` (simulação habilitada por padrão): demonstração local somente.
 - Testes: `NEXO_TEST_DB_URL`, usuário/senha de banco exclusivos e, para navegador, `NEXO_E2E=true`. Chromium pode ser indicado por `NEXO_BROWSER_EXECUTABLE`.
 
 Documentos aceitam PDF, UTF-8 TXT/CSV, PNG e JPEG, até 5 MB por arquivo e 50 MB por organização. Downloads são anexos, e uploads não executam HTML/SVG. A IA de documentos aceita apenas TXT/CSV de até 12 mil caracteres e autorização explícita para envio; PDF/imagem continuam disponíveis para download, sem OCR inventado.

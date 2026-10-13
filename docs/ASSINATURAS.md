@@ -4,7 +4,7 @@ Implementação exclusiva da branch `nexo-next-spring`, sobre a autenticação c
 
 ## Comportamento implementado
 
-O catálogo apresenta Free, Pro e Business com preços e limites existentes: R$ 0, R$ 39 e R$ 99 por mês, com 1, 3 e 10 usuários. O servidor fornece preços, benefícios, recursos e limites; o navegador não determina o valor da operação. O botão do plano atual fica desabilitado; os demais indicam upgrade ou downgrade.
+O catálogo apresenta Free, Pro e Business com preços e limites existentes: R$ 0, R$ 39 e R$ 99 por mês, com 1, 1 e 10 usuários. O servidor fornece preços, benefícios, recursos e limites; o navegador não determina o valor da operação. O botão do plano atual fica desabilitado; os demais indicam upgrade ou downgrade.
 
 O checkout interno mostra resumo, periodicidade e total. Cartão, Pix e boleto são apenas escolhas de método: nenhum número de cartão, CVV, dado bancário ou chave Pix é solicitado, enviado ou persistido. Em desenvolvimento habilitado, o seletor permite aprovação, recusa ou erro inesperado. Também é possível cancelar o checkout.
 
@@ -33,10 +33,9 @@ O simulador exige simultaneamente:
 
 ```bash
 export SPRING_PROFILES_ACTIVE=dev
-export PAGAMENTO_SIMULADO_ENABLED=true
 ```
 
-Configure isso somente no processo local de desenvolvimento, junto das variáveis de banco já utilizadas. Não muda credenciais de banco ou e-mail. A flag é falsa por padrão. Os perfis `prod` e `production` impedem o simulador mesmo quando combinados com `dev`/`test` e flag verdadeira. Sem o simulador, criar/confirmar/cancelar checkout fica bloqueado no backend e os controles da interface ficam indisponíveis.
+Configure isso somente no processo local de desenvolvimento, junto das variáveis de banco já utilizadas. Não muda credenciais de banco ou e-mail. Em `dev`, o padrão é verdadeiro via `application-dev.properties`; não é preciso definir outra variável. `PAGAMENTO_SIMULADO_ENABLED=false` desliga explicitamente, e `test` ainda requer flag verdadeira. Os perfis `prod` e `production` impedem o simulador mesmo quando combinados com `dev`/`test` e flag verdadeira. Sem o simulador, criar/confirmar/cancelar checkout fica bloqueado no backend e os controles da interface ficam indisponíveis.
 
 Planos com provedor `simulado`, e os planos do antigo status `prototipo`, só concedem recursos pagos enquanto o simulador estiver habilitado. Fora desse modo, o plano efetivo é Free, preservando o valor original no banco. Isso evita levar benefícios simulados para produção. Assinaturas não simuladas em `ativa`/`trial` mantêm a interpretação existente. Status `pendente`, `vencida`, `pagamento_falhou`, `atrasada` e `cancelada` não concedem recursos pagos. O status do checkout pendente/recusado não desativa uma assinatura previamente válida.
 
@@ -179,3 +178,25 @@ Os caminhos abaixo são relativos à raiz do repositório. `A` indica criado e `
 | A | `frontend/playwright.config.ts` |
 | A | `frontend/tests/e2e/assinatura.spec.ts` |
 | A | `frontend/tests/planos.test.mjs` |
+
+
+## Correção da disponibilidade em desenvolvimento — 2026-10-13
+
+A mensagem “Troca indisponível” reunia dois motivos diferentes: falta de permissão e ausência do simulador. O arquivo base usava `${PAGAMENTO_SIMULADO_ENABLED:false}`, sem configuração específica para dev. Portanto selecionar apenas `SPRING_PROFILES_ACTIVE=dev` não criava `PagamentoSimulado`, e a API devolvia `simulacaoHabilitada=false`.
+
+O novo arquivo `application-dev.properties` usa padrão true apenas em dev. `@Profile("(dev | test) & !prod & !production")` continua bloqueando produção, mesmo com flag true ou perfis mistos. O startup informa apenas habilitado/desabilitado. Nenhuma credencial ou integração de e-mail foi alterada.
+
+A API acrescenta `ambienteDesenvolvimento`, um booleano seguro calculado com a mesma exclusão de produção. A interface distingue plano atual, gerenciamento pelo proprietário, simulação desabilitada, checkout indisponível e falha de carregamento com nova tentativa. Somente dev/test mostra orientação de configuração; produção não recebe esses detalhes. Administradores e membros continuam sem autorização para alterar assinatura.
+
+Para iniciar no PowerShell, após configurar o banco existente:
+
+```powershell
+$env:SPRING_PROFILES_ACTIVE = 'dev'
+mvn -f backend/pom.xml spring-boot:run
+```
+
+Se uma flag false antiga já estiver no terminal, remova apenas essa variável (`Remove-Item Env:PAGAMENTO_SIMULADO_ENABLED`) para usar o padrão dev. O `.env` da raiz não é carregado automaticamente pelo Spring.
+
+Para cada uma das seis transições, entre como proprietário, abra Planos, escolha o destino, confira preço e benefícios e confirme o cenário Aprovado. Downgrade requer o consentimento sobre recursos/limites. Selecionar o plano atual não cria checkout. Depois da confirmação, o evento `nexo:workspace` recarrega assinatura, configuração e permissões; o backend persiste plano e histórico atomicamente. Recarregue a página e entre novamente para conferir a persistência. Dados de metas, documentos e membros ficam preservados ao reduzir o plano e voltam a aparecer no upgrade correspondente.
+
+A suíte de navegador agora inicia o backend real em **dev sem flag explícita**, para verificar o comportamento de um clone novo. Os testes de configuração carregam os arquivos de propriedades reais com ambiente isolado do terminal, verificando padrão dev, flag false, test explícito, prod/production e perfis mistos. Casos da interface verificam os motivos de indisponibilidade e a nova tentativa após erro, além das transições e dos bloqueios reais já existentes.

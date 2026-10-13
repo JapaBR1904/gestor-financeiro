@@ -10,7 +10,11 @@ import {
   listarPlanos,
   PlanoDetalhe,
 } from "../lib/assinatura";
-import { acaoPlano, precoPlano } from "../lib/planos";
+import {
+  acaoPlano,
+  disponibilidadeAssinatura,
+  precoPlano,
+} from "../lib/planos";
 import {
   carregarConfiguracaoSaas,
   salvarOnboardingNoBackend,
@@ -24,6 +28,10 @@ export default function PlanosConteudo() {
   const [planos, setPlanos] = useState<PlanoDetalhe[]>([]);
   const [erro, setErro] = useState("");
   const [salvando, setSalvando] = useState(false);
+  const [tentativa, setTentativa] = useState(0);
+  const disponibilidade = assinatura
+    ? disponibilidadeAssinatura(assinatura)
+    : null;
   useEffect(() => {
     let ativo = true;
     Promise.all([carregarAssinatura(), listarPlanos()])
@@ -44,7 +52,7 @@ export default function PlanosConteudo() {
     return () => {
       ativo = false;
     };
-  }, []);
+  }, [tentativa]);
   async function continuar() {
     if (salvando) return;
     setSalvando(true);
@@ -100,17 +108,37 @@ export default function PlanosConteudo() {
         </p>
       </section>
       {erro ? (
-        <p className="form-error-banner" role="alert">
-          {erro}
-        </p>
+        <div className="form-error-banner" role="alert">
+          <p>{erro}</p>
+          <button
+            className="secondary-button"
+            onClick={() => {
+              setErro("");
+              setTentativa((valor) => valor + 1);
+            }}
+          >
+            Tentar novamente
+          </button>
+        </div>
       ) : !assinatura ? (
-        <p role="status">Carregando planos...</p>
+        <div className="pricing-loading" role="status">
+          <p>Carregando planos…</p>
+          <div className="skeleton" aria-hidden="true" />
+        </div>
+      ) : null}
+      {disponibilidade && !disponibilidade.habilitada ? (
+        <section
+          className="pricing-note"
+          aria-label="Disponibilidade da assinatura"
+        >
+          <strong>{disponibilidade.titulo}</strong>
+          <p>{disponibilidade.mensagem}</p>
+        </section>
       ) : null}
       <section className="pricing-grid">
         {planos.map((plano) => {
           const atual = assinatura?.plano.id === plano.id;
-          const habilitado =
-            assinatura?.podeGerenciar && assinatura.simulacaoHabilitada;
+          const habilitado = disponibilidade?.habilitada;
           return (
             <article
               className={`pricing-card plan-${plano.id}${plano.id === "pro" ? " featured" : ""}${atual ? " plan-current" : ""}`}
@@ -157,7 +185,9 @@ export default function PlanosConteudo() {
               </p>
               {atual || !habilitado ? (
                 <button className="secondary-button pricing-button" disabled>
-                  {atual ? "Plano atual" : "Troca indisponível"}
+                  {atual
+                    ? "Plano atual"
+                    : (disponibilidade?.titulo ?? "Carregando…")}
                 </button>
               ) : (
                 <Link
@@ -185,18 +215,11 @@ export default function PlanosConteudo() {
         </button>
       ) : null}
       <section className="pricing-note">
-        <strong>
-          {assinatura?.simulacaoHabilitada
-            ? "Pagamento simulado"
-            : "Assinaturas em preparação"}
-        </strong>
-        <p>
-          {assinatura?.simulacaoHabilitada
-            ? "O checkout não realiza cobranças e não pede dados de cartão ou banco."
-            : "A troca simulada precisa estar habilitada em desenvolvimento. Nenhuma cobrança real está disponível."}
-        </p>
-        {assinatura && !assinatura.podeGerenciar ? (
-          <p>Somente o dono da organização pode trocar o plano.</p>
+        {disponibilidade?.habilitada ? (
+          <>
+            <strong>{disponibilidade.titulo}</strong>
+            <p>{disponibilidade.mensagem}</p>
+          </>
         ) : null}
         <p>
           Free e Pro são para uso individual. Business inclui os recursos Pro e

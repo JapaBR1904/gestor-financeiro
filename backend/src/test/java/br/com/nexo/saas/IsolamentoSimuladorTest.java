@@ -4,6 +4,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
+import org.springframework.core.env.StandardEnvironment;
+import org.springframework.core.env.SystemEnvironmentPropertySource;
+import java.util.Map;
 import br.com.nexo.auth.AuthService.UsuarioAutenticado;
 import br.com.nexo.config.AcessoNegadoException;
 import java.util.UUID;
@@ -39,5 +43,35 @@ class IsolamentoSimuladorTest {
         new ApplicationContextRunner().withUserConfiguration(PagamentoSimulado.class, PoliticaAssinatura.class)
                 .withPropertyValues("spring.profiles.active=dev")
                 .run(context -> assertFalse(context.getBean(PoliticaAssinatura.class).simulacaoHabilitada()));
+    }
+    @ParameterizedTest
+    @CsvSource({"dev,true", "test,false", "default,false", "prod,false", "production,false", "'dev,prod',false", "'dev,production',false"})
+    void configuracaoRealHabilitaAutomaticamenteSomenteDev(String perfis, boolean esperado) {
+        contextoConfigurado(perfis, Map.of()).run(context -> {
+            assertNull(context.getStartupFailure());
+            assertEquals(esperado, context.getBean(PoliticaAssinatura.class).simulacaoHabilitada());
+        });
+    }
+    @ParameterizedTest
+    @CsvSource({"dev,false,false", "test,true,true", "prod,true,false", "production,true,false", "'dev,prod',true,false", "'dev,production',true,false"})
+    void flagDoTerminalRespeitaDesativacaoEMantemBloqueioDeProducao(String perfis, String flag, boolean esperado) {
+        contextoConfigurado(perfis, Map.of("PAGAMENTO_SIMULADO_ENABLED", flag)).run(context -> {
+            assertNull(context.getStartupFailure());
+            assertEquals(esperado, context.getBean(PoliticaAssinatura.class).simulacaoHabilitada());
+            if (perfis.contains("prod")) assertFalse(context.getBean(PoliticaAssinatura.class).ambienteDesenvolvimento());
+        });
+    }
+    private ApplicationContextRunner contextoConfigurado(String perfis, Map<String, Object> variaveis) {
+        return new ApplicationContextRunner()
+                .withUserConfiguration(PagamentoSimulado.class, PoliticaAssinatura.class)
+                .withInitializer(context -> {
+                    var ambiente = context.getEnvironment();
+                    // Não herdar flags ou perfis reais do terminal: carregar os arquivos reais
+                    // com aliases controlados, mantendo a precedência do ambiente de um clone novo.
+                    ambiente.getPropertySources().remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);
+                    ambiente.getPropertySources().replace(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME,
+                            new SystemEnvironmentPropertySource(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME, variaveis));
+                    new ConfigDataApplicationContextInitializer().initialize(context);
+                }).withPropertyValues("spring.profiles.active=" + perfis);
     }
 }

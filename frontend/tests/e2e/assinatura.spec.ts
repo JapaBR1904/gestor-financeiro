@@ -367,13 +367,11 @@ test("finanças, Pro, Business, convite, documentos e downgrade preservam dados"
   await atual(page, "Pro");
   await mudar(page, "Business");
   await page.goto("/documentos");
-  await page
-    .getByLabel("Arquivo", { exact: true })
-    .setInputFiles({
-      name: "resumo.txt",
-      mimeType: "text/plain",
-      buffer: Buffer.from("Receitas: 2500. Despesas: 350."),
-    });
+  await page.getByLabel("Arquivo", { exact: true }).setInputFiles({
+    name: "resumo.txt",
+    mimeType: "text/plain",
+    buffer: Buffer.from("Receitas: 2500. Despesas: 350."),
+  });
   await page.getByLabel("Descrição (opcional)").fill("Resumo para a equipe");
   await page
     .getByRole("button", { name: "Salvar documento", exact: true })
@@ -491,11 +489,9 @@ test("finanças, Pro, Business, convite, documentos e downgrade preservam dados"
   await expect(page.getByText("resumo.txt", { exact: true })).toBeVisible();
   await page.goto("/equipe");
   await expect(
-    page
-      .locator(".member-row")
-      .filter({
-        has: page.getByRole("button", { name: "Remover", exact: true }),
-      }),
+    page.locator(".member-row").filter({
+      has: page.getByRole("button", { name: "Remover", exact: true }),
+    }),
   ).toHaveCount(1);
   for (const [largura, altura, nome] of [
     [1440, 900, "desktop"],
@@ -945,4 +941,73 @@ test("acessibilidade WCAG nas telas principais em desktop e celular", async ({
         .toEqual([]);
     }
   }
+});
+
+test("planos explicam permissão, simulação desligada, produção e erro de carregamento", async ({
+  page,
+}) => {
+  await login(page, 9);
+  const resposta = await page.request.get(`${api}/api/assinatura`);
+  expect(resposta.ok()).toBe(true);
+  const assinatura = await resposta.json();
+  expect(assinatura.simulacaoHabilitada).toBe(true);
+  expect(assinatura.ambienteDesenvolvimento).toBe(true);
+  let estado = { ...assinatura, podeGerenciar: false };
+  let falhar = false;
+  await page.route("**/api/assinatura", async (rota) => {
+    await rota.fulfill(
+      falhar
+        ? {
+            status: 503,
+            json: {
+              mensagem:
+                "Não foi possível carregar sua assinatura. Tente novamente.",
+            },
+          }
+        : { json: estado },
+    );
+  });
+  await page.goto("/planos");
+  await expect(
+    page.getByRole("button", { name: "Gerenciado pelo proprietário" }),
+  ).toHaveCount(2);
+  await expect(
+    page.getByText("Somente o proprietário pode alterar", { exact: false }),
+  ).toBeVisible();
+  estado = {
+    ...assinatura,
+    simulacaoHabilitada: false,
+    ambienteDesenvolvimento: true,
+  };
+  await page.reload();
+  await expect(
+    page.getByRole("button", { name: "Simulação desabilitada" }),
+  ).toHaveCount(2);
+  await expect(
+    page.getByText("No backend local, use SPRING_PROFILES_ACTIVE=dev.", {
+      exact: false,
+    }),
+  ).toBeVisible();
+  estado = { ...estado, ambienteDesenvolvimento: false };
+  await page.reload();
+  await expect(
+    page.getByRole("button", { name: "Checkout indisponível" }),
+  ).toHaveCount(2);
+  await expect(page.locator("body")).not.toContainText(
+    "SPRING_PROFILES_ACTIVE",
+  );
+  falhar = true;
+  await page.reload();
+  await expect(
+    page.getByRole("button", { name: "Tentar novamente" }),
+  ).toBeVisible();
+  falhar = false;
+  estado = assinatura;
+  await page.getByRole("button", { name: "Tentar novamente" }).click();
+  await expect(
+    page
+      .getByRole("article", { name: "Plano Pro", exact: true })
+      .getByRole("link", { name: "Fazer upgrade" }),
+  ).toBeVisible();
+  await page.unroute("**/api/assinatura");
 });

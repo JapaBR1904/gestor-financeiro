@@ -27,7 +27,7 @@ public class AssinaturaService {
         var estado = repository.carregar(usuario.organizacaoId(), false);
         var plano = politica.planoEfetivo(estado);
         return new Detalhe(plano.detalhe(), estado.status(), estado.atualizadoEm(), repository.usuarios(usuario.organizacaoId()),
-                "proprietario".equals(usuario.papel()), simulacaoHabilitada(), repository.historico(usuario.organizacaoId()));
+                "proprietario".equals(usuario.papel()), simulacaoHabilitada(), politica.ambienteDesenvolvimento(), repository.historico(usuario.organizacaoId()));
     }
     public List<Plano.Detalhe> planos() { return Arrays.stream(Plano.values()).map(Plano::detalhe).toList(); }
 
@@ -98,7 +98,7 @@ public class AssinaturaService {
         return new CheckoutDetalhe(checkout.id(), checkout.planoAnterior(), Plano.de(checkout.planoDestino()).detalhe(), checkout.tipo(), checkout.valor(), checkout.status(), checkout.metodo(), checkout.expiraEm());
     }
     public record Detalhe(Plano.Detalhe plano, String status, OffsetDateTime ultimaAlteracao, int usuariosAtivos,
-                          boolean podeGerenciar, boolean simulacaoHabilitada, List<AssinaturaRepository.Historico> historico) {}
+                          boolean podeGerenciar, boolean simulacaoHabilitada, boolean ambienteDesenvolvimento, List<AssinaturaRepository.Historico> historico) {}
     public record CheckoutDetalhe(UUID id, String planoAnterior, Plano.Detalhe plano, String tipo, java.math.BigDecimal total,
                                   String status, String metodo, OffsetDateTime expiraEm) {}
 }
