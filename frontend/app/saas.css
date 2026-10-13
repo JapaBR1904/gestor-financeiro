@@ -742,3 +742,7 @@
 
 .first-steps { margin-top: var(--space-5); box-shadow: none; }
 .first-steps ul { padding-left: var(--space-4); margin-block: var(--space-3); line-height: 1.8; color: var(--text-secondary); font-size: var(--text-sm); }
+
+.subscription-history-details > summary { min-height: 44px; display: flex; align-items: center; gap: var(--space-2); cursor: pointer; color: var(--accent); font-size: var(--text-sm); font-weight: 600; }
+.subscription-history-details > summary::after { content: "+"; }
+.subscription-history-details[open] > summary::after { content: "−"; }

@@ -1,0 +1,213 @@
+{
+  "cenarios": 25,
+  "excecoesJavascript": 0,
+  "errosConsole": 12,
+  "respostas4xx5xx": 11,
+  "classificacao": "11 respostas negativas intencionais (401, 503, 504) e um aborto offline; 12 erros de recurso do Chromium correspondentes. Nenhum erro de JavaScript ou resposta inesperada nos caminhos positivos.",
+  "detalhes": [
+    {
+      "cenario": "confianca-confiança-relató-1fc52-ra-de-503-sem-alerta-antigo",
+      "errosJavascript": [],
+      "errosConsole": 1,
+      "rede": [
+        {
+          "caminho": "/api/relatorios/resumo",
+          "status": 503
+        }
+      ]
+    },
+    {
+      "cenario": "assinatura-finanças-Pro-Bu-d41a4-e-downgrade-preservam-dados",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    },
+    {
+      "cenario": "confianca-guia-objetivo-or-e530e-ispensa-persiste-por-espaço",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    },
+    {
+      "cenario": "confianca-organizações-fal-9c988--e-retry-recupera-o-destino",
+      "errosJavascript": [],
+      "errosConsole": 2,
+      "rede": [
+        {
+          "caminho": "/api/saas",
+          "status": 503
+        },
+        {
+          "caminho": "/api/saas",
+          "status": 503
+        }
+      ]
+    },
+    {
+      "cenario": "assinatura-seis-transições-de2d2-ia-após-reload-e-novo-login",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    },
+    {
+      "cenario": "assinatura-destino-inválid-f90a3-não-criam-promoção-indevida",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    },
+    {
+      "cenario": "assinatura-limites-por-pla-367f8-sinatura-e-links-essenciais",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    },
+    {
+      "cenario": "assinatura-acessibilidade--79e58-cipais-em-desktop-e-celular",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    },
+    {
+      "cenario": "confianca-confiança-logout-3e020-ão-comprovadamente-expirada",
+      "errosJavascript": [],
+      "errosConsole": 1,
+      "rede": [
+        {
+          "caminho": "/api/auth/logout",
+          "status": 401
+        }
+      ]
+    },
+    {
+      "cenario": "confianca-confiança-anális-d5aab-m-503-e-CSV-sem-ambiguidade",
+      "errosJavascript": [],
+      "errosConsole": 1,
+      "rede": [
+        {
+          "caminho": "/api/financeiro/analise",
+          "status": 503
+        }
+      ]
+    },
+    {
+      "cenario": "assinatura-planos-checkout-7a702-tura-utilizáveis-em-desktop",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    },
+    {
+      "cenario": "assinatura-telas-de-acesso-6f855-s-da-IA-sem-serviço-externo",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    },
+    {
+      "cenario": "assinatura-membro-legado-c-2c1eb-óprio-sem-assumir-a-empresa",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    },
+    {
+      "cenario": "assinatura-planos-explicam-b6d80-ução-e-erro-de-carregamento",
+      "errosJavascript": [],
+      "errosConsole": 1,
+      "rede": [
+        {
+          "caminho": "/api/assinatura",
+          "status": 503
+        }
+      ]
+    },
+    {
+      "cenario": "assinatura-cadastro-confir-4fca7-recuperação-mantêm-o-acesso",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    },
+    {
+      "cenario": "assinatura-recusa-cancelamento-erro-e-reenvio-seguro",
+      "errosJavascript": [],
+      "errosConsole": 1,
+      "rede": [
+        {
+          "caminho": "/api/assinatura/checkout/[id]/confirmar",
+          "status": 503
+        }
+      ]
+    },
+    {
+      "cenario": "confianca-confiança-onboar-1f6a9-até-preferências-carregarem",
+      "errosJavascript": [],
+      "errosConsole": 1,
+      "rede": [
+        {
+          "caminho": "/api/saas",
+          "status": 503
+        }
+      ]
+    },
+    {
+      "cenario": "confianca-navegação-sete-l-6abd5-foco-e-redução-de-movimento",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    },
+    {
+      "cenario": "confianca-IA-pergunta-sem--f0bde--e-consentimento-específico",
+      "errosJavascript": [],
+      "errosConsole": 1,
+      "rede": [
+        {
+          "caminho": "/api/ia/perguntar",
+          "status": 504
+        }
+      ]
+    },
+    {
+      "cenario": "qualidade-qualidade-nomes--706b7-ste-e-zoom-equivalente-200-",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    },
+    {
+      "cenario": "confianca-confiança-logout-b74d5-repetido-e-retry-confirmado",
+      "errosJavascript": [],
+      "errosConsole": 2,
+      "rede": [
+        {
+          "caminho": "/api/auth/logout",
+          "status": 503
+        }
+      ]
+    },
+    {
+      "cenario": "assinatura-planos-checkout-65b4a-tura-utilizáveis-em-celular",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    },
+    {
+      "cenario": "assinatura-planos-checkout-f9658-atura-utilizáveis-em-tablet",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    },
+    {
+      "cenario": "confianca-financeiro-atual-a2679-503-edição-e-vazio-filtrado",
+      "errosJavascript": [],
+      "errosConsole": 1,
+      "rede": [
+        {
+          "caminho": "/api/financeiro/movimentacoes/31",
+          "status": 503
+        }
+      ]
+    },
+    {
+      "cenario": "assinatura-polish-em-sete--6707d-ráfico-e-movimento-reduzido",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    }
+  ]
+}

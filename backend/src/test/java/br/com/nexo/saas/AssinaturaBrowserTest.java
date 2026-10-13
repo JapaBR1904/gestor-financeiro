@@ -17,7 +17,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"nexo.email.provider=disabled"})
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"nexo.email.provider=disabled", "nexo.ia.api-key="})
 @ActiveProfiles("dev")
 @EnabledIfEnvironmentVariable(named = "NEXO_TEST_DB_URL", matches = ".+")
 @EnabledIfEnvironmentVariable(named = "NEXO_E2E", matches = "true")
@@ -80,7 +80,11 @@ class AssinaturaBrowserTest {
         } finally { if (processo.isAlive()) processo.destroyForcibly(); Files.deleteIfExists(caixa); }
     }
     private String lerLog(Path caminho) {
-        try { return Files.readString(caminho).replaceAll("(?i)(cookie: )[^\\r\\n]+", "$1[oculto]"); }
-        catch (java.io.IOException exception) { return "Não foi possível ler o relatório do navegador."; }
+        try {
+            return Files.readString(caminho)
+                    .replaceAll("(?i)(cookie: )[^\\r\\n]+", "$1[oculto]")
+                    .replaceAll("(?<![A-Za-z0-9_-])[A-Za-z0-9_-]{43,}(?![A-Za-z0-9_-])", "[identificador omitido]")
+                    .replaceAll("\\b\\d{6}\\b", "[código omitido]");
+        } catch (java.io.IOException exception) { return "Não foi possível ler o relatório do navegador."; }
     }
 }

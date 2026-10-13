@@ -192,7 +192,7 @@ export function Sidebar(props: {
           })}
       </nav>
       <div className="sidebar-footer">
-      {erroSaida ? <p className="sidebar-feedback" role="alert">{erroSaida} Você continua nesta sessão. Use Sair para tentar novamente.</p> : null}
+      {erroSaida ? <p className="sidebar-feedback" role="alert">{erroSaida} A saída não foi confirmada. Use Sair para tentar novamente.</p> : null}
         <Link
           className="plan-card"
           data-plan={config?.plano}

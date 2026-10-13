@@ -183,7 +183,7 @@ export default function PlanosConteudo() {
                 </div>
               </div>
               <ul className="pricing-features">
-                {plano.beneficios.slice(0, 5).map((recurso) => (
+                {plano.beneficios.filter(recurso => plano.id !== "business" || recurso !== "Organizações independentes").slice(0, 5).map((recurso) => (
                   <li key={recurso}>
                     <Icone nome="check" />
                     {recurso}
@@ -191,7 +191,7 @@ export default function PlanosConteudo() {
                 ))}
               </ul>
               <p className="subscription-limit">
-                Limite: {plano.limiteUsuarios} usuário(s). Business inclui os recursos Pro; colaboração exclusiva do Business.
+                Limite: {plano.limiteUsuarios} usuário(s). {plano.id === "business" ? "Proprietário incluído." : "Uso individual."}
               </p>
               {atual || !habilitado ? (
                 <button className="secondary-button pricing-button" disabled>

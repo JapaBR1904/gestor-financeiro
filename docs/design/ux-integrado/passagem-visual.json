@@ -1,0 +1,10 @@
+{
+  "capturas": 120,
+  "origem": "Frontend de produção local e JAR real, perfil dev, somente banco nexo_test e conta sintética. E-mail e IA externos desativados. Checkout aberto, sem confirmação de plano nesta passagem.",
+  "foco": {
+    "ativo": true,
+    "outline": "solid",
+    "largura": "2px"
+  },
+  "erros": []
+}

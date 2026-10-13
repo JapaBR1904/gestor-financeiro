@@ -293,9 +293,8 @@
   min-width: 0;
 }
 .workspace-context > span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .workspace-bar > div:last-child {
   display: flex;

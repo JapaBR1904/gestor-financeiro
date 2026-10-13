@@ -22,7 +22,7 @@ export function WorkspaceShell({
         <div className="workspace-bar">
           <div className="workspace-context" aria-label="Organização atual">
             <Icone nome="empresa" />
-            <span>{usuario?.organizacaoNome ?? "Seu espaço"}</span>
+            <span title={usuario?.organizacaoNome}>{usuario?.organizacaoNome ?? "Seu espaço"}</span>
           </div>
           <div>
             <Link

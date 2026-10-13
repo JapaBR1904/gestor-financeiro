@@ -1,4 +1,7 @@
 import { test, expect, Page } from "@playwright/test";
+import { observar, registrarObservacoes } from "./observacoes";
+test.beforeEach(({ page }) => observar(page));
+test.afterEach(async ({ page }, info) => registrarObservacoes(page, info));
 
 const emails = process.env.NEXO_E2E_EMAILS?.split(",") ?? [];
 const api = process.env.NEXO_E2E_API_URL;
@@ -173,7 +176,7 @@ test("limites por plano, cancelamento da assinatura e links essenciais", async (
   await mudar(page, "Pro");
   await page.goto("/metas");
   await expect(
-    page.getByRole("heading", { name: "Metas e comparativos", exact: true }),
+    page.getByRole("heading", { name: "Metas", exact: true }),
   ).toBeVisible();
   await atual(page, "Pro");
   await mudar(page, "Business");
@@ -547,7 +550,7 @@ test("finanças, Pro, Business, convite, documentos e downgrade preservam dados"
       ).toHaveCount(0);
       await semOverflow(page);
       await page.waitForTimeout(350);
-      if (largura > 900) {
+      if (largura >= 1024) {
         const visivel = await page
           .locator(".sidebar .menu")
           .evaluate((menu) => {

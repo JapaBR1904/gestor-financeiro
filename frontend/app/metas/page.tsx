@@ -190,7 +190,7 @@ export default function MetasPage() {
   }
   return (
     <WorkspaceShell
-      titulo="Metas e comparativos"
+      titulo="Metas"
       descricao="Defina objetivos e acompanhe o progresso que você registra."
       acoes={
         liberado && gestao ? (

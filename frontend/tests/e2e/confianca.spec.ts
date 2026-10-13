@@ -1,5 +1,8 @@
 import { test, expect } from "@playwright/test";
-import { apresentar } from "./fixtures/apresentacao";
+import { observar, registrarObservacoes } from "./observacoes";
+test.beforeEach(({ page }) => observar(page));
+test.afterEach(async ({ page }, info) => registrarObservacoes(page, info));
+import { apresentar, fixtures } from "./fixtures/apresentacao";
 
 test.beforeEach(async ({ page }) => { await apresentar(page); });
 
@@ -17,7 +20,7 @@ test("confiança: logout offline, 503, clique repetido e retry confirmado", asyn
   });
   const sair = page.getByRole("button", { name: "Sair", exact: true });
   await sair.click();
-  await expect(page.locator("main").getByRole("alert")).toContainText("Você continua nesta sessão");
+  await expect(page.locator("main").getByRole("alert")).toContainText("A saída não foi confirmada");
   await expect(page).not.toHaveURL(/\/login$/);
   await sair.click();
   await expect(page.locator("main").getByRole("alert")).toContainText("indisponível");
@@ -226,4 +229,15 @@ test("IA: pergunta sem resumo por padrão, timeout e consentimento específico",
   expect(enviados[1].incluirResumo).toBe(true);
   await consentimento.uncheck();
   await expect(page.locator(".ia-answer-context")).toContainText("resumo deste mês autorizado");
+});
+
+test("guia: membro recebe tarefa de consulta no vazio, sem ação de gestão", async ({ page }) => {
+  await page.route("**/api/assinatura", route => route.fulfill({ status: 200, json: { ...(fixtures["/api/assinatura"] as Record<string, unknown>), podeGerenciar: false } }));
+  await page.route("**/api/auth/me", route => route.fulfill({ status: 200, json: { id: 900009, nome: "Membro de apresentação", email: "membro@example.com", organizacaoId: 900001, organizacaoNome: "Espaço de apresentação", papel: "membro" } }));
+  await page.route("**/api/financeiro/resumo?*", route => { const q = new URL(route.request().url()).searchParams; return route.fulfill({ status: 200, json: { inicio: q.get("inicio"), fim: q.get("fim"), receitas: 0, despesas: 0, saldo: 0, movimentacoes: [] } }); });
+  await page.goto("/");
+  await page.locator(".first-steps > summary").click();
+  await expect(page.locator(".first-steps")).toContainText("Seu papel permite acompanhar os registros da equipe");
+  await expect(page.getByRole("link", { name: "Consultar lançamentos", exact: true })).toHaveAttribute("href", "/pessoal");
+  await expect(page.getByRole("button", { name: "+ Novo lançamento", exact: true })).toHaveCount(0);
 });

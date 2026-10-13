@@ -140,8 +140,8 @@ export default function AssinaturaConteudo() {
               </Link>
             </article>
           </section>
-          <section className="subscription-current-card">
-            <h2>Histórico de alterações</h2>
+          <details className="subscription-current-card subscription-history-details">
+            <summary>Histórico de alterações</summary>
             {assinatura.historico.length ? (
               <ul className="subscription-history">
                 {assinatura.historico.map((item, indice) => (
@@ -170,7 +170,7 @@ export default function AssinaturaConteudo() {
                 não geram um histórico fictício.
               </p>
             )}
-          </section>
+          </details>
           <section className="plan-capability-grid">
             <Link href="/" className="plan-capability-link">
               <div>

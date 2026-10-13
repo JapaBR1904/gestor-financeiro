@@ -1,0 +1,46 @@
+{
+  "passos": [
+    {
+      "origem": "Business",
+      "destino": "Free",
+      "persistiu": true
+    },
+    {
+      "origem": "Free",
+      "destino": "Pro",
+      "persistiu": true
+    },
+    {
+      "origem": "Pro",
+      "destino": "Business",
+      "persistiu": true
+    },
+    {
+      "origem": "Business",
+      "destino": "Pro",
+      "persistiu": true
+    },
+    {
+      "origem": "Pro",
+      "destino": "Free",
+      "persistiu": true
+    },
+    {
+      "origem": "Free",
+      "destino": "Business",
+      "persistiu": true
+    }
+  ],
+  "antes": {
+    "movimentacoes": 2,
+    "metas": 1,
+    "documentos": 2
+  },
+  "depois": {
+    "movimentacoes": 2,
+    "metas": 1,
+    "documentos": 2
+  },
+  "problemas": [],
+  "origem": "JAR real e banco nexo_test; conta e registros sintéticos; seis transições reais do simulador, plano final Business."
+}

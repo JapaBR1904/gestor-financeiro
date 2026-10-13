@@ -447,7 +447,6 @@ button.quick-action:hover:not(:disabled) {
   border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--ink);
-  outline: none;
   transition:
     border-color var(--duration-fast),
     box-shadow var(--duration-fast),

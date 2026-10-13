@@ -441,7 +441,7 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
                 </thead>
                 <tbody>
                   {movimentos.map((item) => (
-                    <tr key={`${item.origem}-${item.id}`}>
+                    <tr key={`${item.origem}-${item.id}`} data-large-value={Math.abs(item.valor) >= 1_000_000}>
                       <td>
                         {item.descricao}
                         <small>
