@@ -1,4 +1,5 @@
 "use client";
+import { Icone } from "../../components/Icone";
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -23,7 +24,7 @@ export default function DespesasPage() {
   return (
     <main className="app-shell">
       <Sidebar ativo="despesas" />
-      <section className="content">
+      <section className="content" id="conteudo" tabIndex={-1}>
         <header className="topbar">
           <div>
             <p className="eyebrow">Financeiro</p>
@@ -43,7 +44,7 @@ export default function DespesasPage() {
         <article className="panel">
           <div className="panel-header"><div><p className="eyebrow">Histórico</p><h2>Despesas registradas</h2><p className="subtitle">Consulte cada lançamento e abra os detalhes quando precisar.</p></div></div>
           {carregando ? <div className="empty-state"><strong>Carregando despesas...</strong></div> : despesas.length === 0 ? (
-            <div className="empty-state"><span className="empty-icon">D</span><strong>Nenhuma despesa registrada</strong><p>Cadastre a primeira despesa para começar a acompanhar as saídas.</p></div>
+            <div className="empty-state"><span className="empty-icon"><Icone nome="despesa" /></span><strong>Nenhuma despesa registrada</strong><p>Cadastre a primeira despesa para começar a acompanhar as saídas.</p></div>
           ) : (
             <div className="sales-history-list">
               <div className="sales-history-head" aria-hidden="true"><span>Despesa</span><span>Data</span><span>Categoria</span><span>Forma de pagamento</span><span>Valor</span><span></span></div>

@@ -1,4 +1,5 @@
 "use client";
+import { Icone } from "../../components/Icone";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -64,7 +65,7 @@ export default function RelatoriosPage() {
 
             <section className="report-grid">
               <article className="panel report-card">
-                <div className="report-card-header"><div><p className="eyebrow">Produtos</p><h2>Mais vendidos</h2></div><span className="report-card-icon">◇</span></div>
+                <div className="report-card-header"><div><p className="eyebrow">Produtos</p><h2>Mais vendidos</h2></div><span className="report-card-icon"><Icone nome="produto" /></span></div>
                 {relatorio.produtosMaisVendidos.length === 0 ? <div className="empty-state compact-empty-state"><strong>Ainda não há vendas.</strong></div> : (
                   <div className="report-list">
                     {itensVisiveis(relatorio.produtosMaisVendidos, "produtos").map((produto, indice) => (
@@ -80,7 +81,7 @@ export default function RelatoriosPage() {
               </article>
 
               <article className="panel report-card">
-                <div className="report-card-header"><div><p className="eyebrow">Recebimentos</p><h2>Formas de pagamento</h2></div><span className="report-card-icon">↗</span></div>
+                <div className="report-card-header"><div><p className="eyebrow">Recebimentos</p><h2>Formas de pagamento</h2></div><span className="report-card-icon"><Icone nome="venda" /></span></div>
                 {relatorio.formasPagamento.length === 0 ? <div className="empty-state compact-empty-state"><strong>Nenhuma venda registrada.</strong></div> : (
                   <div className="report-list">
                     {itensVisiveis(relatorio.formasPagamento, "recebimentos").map((item) => (
@@ -96,7 +97,7 @@ export default function RelatoriosPage() {
               </article>
 
               <article className="panel report-card">
-                <div className="report-card-header"><div><p className="eyebrow">Despesas</p><h2>Gastos por categoria</h2></div><span className="report-card-icon">↓</span></div>
+                <div className="report-card-header"><div><p className="eyebrow">Despesas</p><h2>Gastos por categoria</h2></div><span className="report-card-icon"><Icone nome="despesa" /></span></div>
                 {relatorio.despesasPorCategoria.length === 0 ? <div className="empty-state compact-empty-state"><strong>Nenhuma despesa registrada.</strong></div> : (
                   <div className="report-list">
                     {itensVisiveis(relatorio.despesasPorCategoria, "despesas").map((item) => (
@@ -112,7 +113,7 @@ export default function RelatoriosPage() {
               </article>
 
               <article className="panel report-card">
-                <div className="report-card-header"><div><p className="eyebrow">Clientes</p><h2>Maiores compradores</h2></div><span className="report-card-icon">+</span></div>
+                <div className="report-card-header"><div><p className="eyebrow">Clientes</p><h2>Maiores compradores</h2></div><span className="report-card-icon"><Icone nome="clientes" /></span></div>
                 {relatorio.melhoresClientes.length === 0 ? <div className="empty-state compact-empty-state"><strong>Ainda não há vendas vinculadas a clientes.</strong></div> : (
                   <div className="report-list">
                     {itensVisiveis(relatorio.melhoresClientes, "clientes").map((cliente, indice) => (

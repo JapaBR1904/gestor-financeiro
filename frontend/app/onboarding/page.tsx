@@ -1,4 +1,5 @@
 "use client";
+import { Marca } from "../../components/Marca";
 import { useWorkspace, avisarWorkspace } from "../../lib/workspace";
 import { Icone } from "../../components/Icone";
 
@@ -47,6 +48,8 @@ export default function OnboardingPage() {
   const [perfil, setPerfil] = useState<PerfilUso | null>(null);
   const [objetivos, setObjetivos] = useState<string[]>([]);
   const [etapa, setEtapa] = useState<1 | 2 | 3>(1);
+  const etapaAnterior = useRef(etapa);
+  useEffect(() => { if (etapaAnterior.current !== etapa) { document.querySelector<HTMLElement>(".onboarding-card h1")?.focus(); etapaAnterior.current = etapa; } }, [etapa]);
   const [erro, setErro] = useState("");
   const [salvando, setSalvando] = useState(false);
 
@@ -109,11 +112,11 @@ export default function OnboardingPage() {
     router.push("/planos?origem=onboarding");
   }
 
-  if (usuario?.papel === "membro") return <main className="saas-shell"><section className="product-lock"><h1>Preferências do espaço</h1><p>O proprietário ou administrador define as preferências compartilhadas. Consulte sua conta para ver as escolhas atuais.</p><a className="primary-button" href="/conta">Voltar à conta</a></section></main>;
+  if (usuario?.papel === "membro") return <main id="conteudo" tabIndex={-1} className="saas-shell"><section className="product-lock"><h1 tabIndex={-1}>Preferências do espaço</h1><p>O proprietário ou administrador define as preferências compartilhadas. Consulte sua conta para ver as escolhas atuais.</p><a className="primary-button" href="/conta">Voltar à conta</a></section></main>;
   return (
-    <main className="saas-shell onboarding-shell">
+    <main id="conteudo" tabIndex={-1} className="saas-shell onboarding-shell">
       <section className="saas-brandbar">
-        <div className="saas-brand"><span>N</span><div><strong>Nexo</strong><small>Seu espaço financeiro</small></div></div>
+        <div className="saas-brand"><span><Marca /></span><div><strong>Nexo</strong><small>Seu espaço financeiro</small></div></div>
         <div className="onboarding-progress" aria-label={`Etapa ${etapa} de 3`}>
           <span className={etapa >= 1 ? "active" : ""} />
           <span className={etapa >= 2 ? "active" : ""} />
@@ -123,14 +126,14 @@ export default function OnboardingPage() {
       </section>
 
       {etapa === 1 ? (
-        <section className="onboarding-card">
-          <div className="saas-heading"><p className="eyebrow">Bem-vindo ao Nexo</p><h1>Como você pretende usar o Nexo?</h1><p>Essa escolha prepara sua experiência inicial. Você pode alterar depois nas configurações.</p></div>
+        <section className="onboarding-card" key={etapa}>
+          <div className="saas-heading"><p className="eyebrow">Bem-vindo ao Nexo</p><h1 tabIndex={-1}>Como você pretende usar o Nexo?</h1><p>Essa escolha prepara sua experiência inicial. Você pode alterar depois nas configurações.</p></div>
           <div className="use-case-grid">
             {opcoes.map((opcao) => (
               <button className={`use-case-card${perfil === opcao.id ? " selected" : ""}`} key={opcao.id} aria-pressed={perfil === opcao.id} type="button" onClick={() => escolherPerfil(opcao.id)}>
                 <span className="use-case-icon"><Icone nome={opcao.id === "pessoal" ? "movimentos" : opcao.id === "empresa" ? "empresa" : "venda"} /></span>
                 <span className="use-case-copy"><strong>{opcao.titulo}</strong><span>{opcao.descricao}</span><small>{opcao.detalhe}</small></span>
-                <span className="use-case-check">{perfil === opcao.id ? "✓" : ""}</span>
+                <span className="use-case-check">{perfil === opcao.id ? <Icone nome="check" /> : null}</span>
               </button>
             ))}
           </div>
@@ -139,12 +142,12 @@ export default function OnboardingPage() {
       ) : null}
 
       {etapa === 2 ? (
-        <section className="onboarding-card">
-          <div className="saas-heading"><p className="eyebrow">Personalização</p><h1>O que você mais quer melhorar agora?</h1><p>Escolha quantos objetivos quiser. Isso vai ajudar o Nexo a destacar as informações mais úteis.</p></div>
+        <section className="onboarding-card" key={etapa}>
+          <div className="saas-heading"><p className="eyebrow">Personalização</p><h1 tabIndex={-1}>O que você mais quer melhorar agora?</h1><p>Escolha quantos objetivos quiser. Isso vai ajudar o Nexo a destacar as informações mais úteis.</p></div>
           <div className="goal-choice-grid">
             {objetivosDisponiveis.map((objetivo) => (
               <button className={`goal-choice${objetivos.includes(objetivo) ? " selected" : ""}`} key={objetivo} aria-pressed={objetivos.includes(objetivo)} type="button" onClick={() => alternarObjetivo(objetivo)}>
-                <span className="goal-choice-check">{objetivos.includes(objetivo) ? "✓" : "+"}</span><strong>{objetivo}</strong>
+                <span className="goal-choice-check">{objetivos.includes(objetivo) ? <Icone nome="check" /> : <Icone nome="mais" />}</span><strong>{objetivo}</strong>
               </button>
             ))}
           </div>
@@ -153,10 +156,10 @@ export default function OnboardingPage() {
       ) : null}
 
       {etapa === 3 ? (
-        <section className="onboarding-card onboarding-plan-step">
-          <div className="saas-heading"><p className="eyebrow">Tudo pronto</p><h1>Continue com seu plano e evolua quando precisar</h1><p>Suas preferências serão salvas no espaço atual. Compare os planos se precisar de mais recursos.</p></div>
-          <div className="onboarding-plan-preview"><div className="plan-preview-main"><span className="plan-mini-label">Plano atual</span><strong>{config ? nomePlano(config.plano) : "Seu plano"}</strong><p>Operação essencial para conhecer o Nexo e organizar suas primeiras informações.</p></div><div className="plan-preview-price"><strong>{assinatura ? assinatura.plano.valorMensal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "—"}</strong><span>/mês</span></div></div>
-          <div className="onboarding-benefits"><span>✓ Dashboard financeiro</span><span>✓ Vendas e despesas</span><span>✓ Produtos e clientes</span><span>✓ Relatórios essenciais</span></div>
+        <section className="onboarding-card onboarding-plan-step" key={etapa}>
+          <div className="saas-heading"><p className="eyebrow">Tudo pronto</p><h1 tabIndex={-1}>Continue com seu plano e evolua quando precisar</h1><p>Suas preferências serão salvas no espaço atual. Compare os planos se precisar de mais recursos.</p></div>
+          <div className="onboarding-plan-preview"><div className="plan-preview-main"><span className="plan-mini-label">Plano atual</span><strong>{config ? nomePlano(config.plano) : "Seu plano"}</strong><p>Seu plano acompanha este espaço. Comece agora e compare opções quando precisar.</p></div><div className="plan-preview-price"><strong>{assinatura ? assinatura.plano.valorMensal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "—"}</strong><span>/mês</span></div></div>
+          <div className="onboarding-benefits"><span><Icone nome="check" />Dashboard financeiro</span><span><Icone nome="check" />Vendas e despesas</span><span><Icone nome="check" />Produtos e clientes</span><span><Icone nome="check" />Relatórios essenciais</span></div>
           {erro ? <p className="form-error-banner" role="alert">{erro}</p> : null}
           <div className="saas-actions split-actions"><button className="secondary-button" type="button" onClick={() => setEtapa(2)} disabled={salvando}>Voltar</button><button className="secondary-button" type="button" onClick={verPlanos} disabled={salvando}>Conhecer planos</button><button className="primary-button saas-primary" type="button" onClick={entrarNoNexo} disabled={salvando}>{salvando ? "Salvando..." : "Entrar no Nexo"}</button></div>
         </section>

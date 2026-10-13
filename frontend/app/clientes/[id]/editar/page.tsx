@@ -52,7 +52,7 @@ export default function EditarClientePage() {
   return (
     <main className="app-shell">
       <Sidebar ativo="clientes" />
-      <section className="content">
+      <section className="content" id="conteudo" tabIndex={-1}>
         <header className="topbar"><div><p className="eyebrow">Cliente</p><h1>Editar cliente</h1><p className="subtitle">Atualize os dados cadastrais.</p></div><Link className="secondary-button" href={`/clientes/${params.id}`}>Voltar</Link></header>
         {carregando ? <article className="panel"><div className="empty-state"><strong>Carregando cliente...</strong></div></article> : (
           <form className="product-form-stack" onSubmit={handleSubmit}>

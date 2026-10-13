@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { Icone } from "./Icone";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { WorkspaceShell } from "./WorkspaceShell";
@@ -231,9 +232,9 @@ export function EmpresaConteudo() {
           <div className="panel-header">
             <h2>Gestão do espaço</h2>
           </div>
-          <div className="quick-actions">
+          <div className="quick-actions organization-actions">
             <Link className="quick-action" href="/equipe">
-              <strong>Equipe e permissões</strong>
+              <Icone nome="equipe" /><strong>Equipe e permissões</strong>
               <span>
                 {config?.plano === "business"
                   ? "Convide e gerencie quem trabalha com você."
@@ -241,11 +242,11 @@ export function EmpresaConteudo() {
               </span>
             </Link>
             <Link className="quick-action" href="/documentos">
-              <strong>Documentos</strong>
+              <Icone nome="documento" /><strong>Documentos</strong>
               <span>Arquivos da empresa, disponíveis para a equipe.</span>
             </Link>
             <Link className="quick-action" href="/conta/assinatura">
-              <strong>Assinatura</strong>
+              <Icone nome="conta" /><strong>Assinatura</strong>
               <span>Plano, histórico e ações permitidas.</span>
             </Link>
           </div>

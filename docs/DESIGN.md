@@ -31,3 +31,13 @@ TypeScript, lint, build de todas as rotas e 25 testes unitários passaram. Prime
 Cards de saldo com contraste próprio e ícones funcionais, tabela móvel com data/categoria/ações preservadas e gráficos baseados nos valores retornados pelo backend. O gráfico diário possui eixos legíveis, legenda, consulta por ponteiro, controle de dia operável por teclado/toque e tabela alternativa. Metas concluídas recebem tratamento discreto e progresso animado.
 
 Os 10 cenários de Playwright passaram contra backend e PostgreSQL reais de teste, incluindo as seis transições de plano, persistência, permissões, convite, documentos, cadastro e recuperação. O teste de membro foi direcionado à lista de equipe: o novo nome de usuário na navegação tornou o antigo seletor global ambíguo. Nenhuma asserção funcional foi removida.
+
+## Checkpoint das experiências
+
+Autenticação com composição editorial e formulário direto no celular; checklist de senha legível e sem mudanças na política. Onboarding com seleção, transição curta e foco no título da nova etapa. Free, Pro e Business com hierarquia distinta, preços e benefícios vindos do catálogo, destaque do Pro e identificação do plano atual. Checkout preserva simulação explícita, consentimento, métodos, falhas e confirmação.
+
+Business recebe identificação de papéis, navegação entre espaços, arquivos com seleção acessível e drag/drop, indicação do tamanho real e quota. O assistente mantém os contratos existentes, apresenta disponibilidade real e oferece estados de carregamento/resposta e atalhos para ferramentas já disponíveis.
+
+Adicionado `@axe-core/playwright@4.13.0` apenas como dependência de desenvolvimento. Auditoria manual automatizada no Chromium: **46 páginas/viewport**, em 1440 e 390 px, sem violações WCAG A/AA detectadas pelo axe e sem overflow horizontal. Isso não substitui avaliação humana de acessibilidade. A primeira execução da suíte ampliada revelou foco do drawer, contraste e overflow do input oculto; esses pontos foram corrigidos. A inspeção visual também corrigiu o campo de progresso que ficava estreito em 360 px.
+
+TypeScript, lint, 25 testes unitários e build de todas as rotas passaram antes deste checkpoint. A suíte ampliada e a revisão final das sete larguras continuam no bloco final.

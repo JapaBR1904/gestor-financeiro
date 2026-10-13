@@ -35,17 +35,17 @@ export default function ClienteDetalhePage() {
   }
 
   if (carregando) {
-    return <main className="app-shell"><Sidebar ativo="clientes" /><section className="content"><article className="panel"><div className="empty-state"><strong>Carregando cliente...</strong></div></article></section></main>;
+    return <main className="app-shell"><Sidebar ativo="clientes" /><section className="content" id="conteudo" tabIndex={-1}><article className="panel"><div className="empty-state"><strong>Carregando cliente...</strong></div></article></section></main>;
   }
 
   if (!cliente) {
-    return <main className="app-shell"><Sidebar ativo="clientes" /><section className="content"><article className="panel"><div className="empty-state"><strong>Não foi possível carregar o cliente</strong><p>{erro}</p></div></article></section></main>;
+    return <main className="app-shell"><Sidebar ativo="clientes" /><section className="content" id="conteudo" tabIndex={-1}><article className="panel"><div className="empty-state"><strong>Não foi possível carregar o cliente</strong><p>{erro}</p></div></article></section></main>;
   }
 
   return (
     <main className="app-shell">
       <Sidebar ativo="clientes" />
-      <section className="content">
+      <section className="content" id="conteudo" tabIndex={-1}>
         <header className="topbar">
           <div><p className="eyebrow">Cliente</p><h1>{cliente.nome}</h1><p className="subtitle">Dados cadastrais e situação do cliente.</p></div>
           <div className="topbar-actions"><Link className="secondary-button" href="/clientes">Voltar</Link><Link className="secondary-button" href={`/clientes/${cliente.id}/editar`}>Editar</Link><button className="primary-button product-status-button" type="button" disabled={alterando} onClick={alternarStatus}>{alterando ? "Salvando..." : cliente.ativo ? "Desativar" : "Ativar"}</button></div>

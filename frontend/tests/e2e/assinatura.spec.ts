@@ -181,9 +181,9 @@ test("finanças, Pro, Business, convite, documentos e downgrade preservam dados"
   await login(page, 7);
   await atual(page, "Free"); await mudar(page, "Business"); await page.goto("/documentos"); await expect(page.getByText("resumo.txt", { exact: true })).toBeVisible();
   await page.goto("/equipe"); await expect(page.locator(".member-row").filter({ has: page.getByRole("button", { name: "Remover", exact: true }) })).toHaveCount(1);
-  for (const [largura, altura, nome] of [[1440, 900, "desktop"], [1024, 768, "notebook"], [768, 1024, "tablet"], [390, 844, "mobile"]] as const) {
+  for (const [largura, altura, nome] of [[1440, 900, "desktop"], [1280, 800, "desktop-1280"], [1024, 768, "notebook"], [768, 1024, "tablet"], [430, 932, "mobile-430"], [390, 844, "mobile"], [360, 800, "mobile-360"]] as const) {
     await page.setViewportSize({ width: largura, height: altura });
-    for (const rota of ["/", "/pessoal", "/fluxo-caixa", "/metas", "/equipe", "/documentos", "/conta", "/produtos", "/clientes", "/vendas", "/despesas", "/relatorios"]) {
+    for (const rota of ["/", "/pessoal", "/fluxo-caixa", "/metas", "/equipe", "/documentos", "/conta", "/produtos", "/clientes", "/vendas", "/despesas", "/relatorios", "/empresa", "/ia"]) {
       await page.goto(rota); await expect(page.locator("main")).toBeVisible(); await expect(page.locator(largura <= 900 ? ".mobile-nav-bar" : ".sidebar")).toBeVisible(); await expect(page.getByText(/^Carregando/)).toHaveCount(0); await expect(page.getByText("Carregando seu espaço…", { exact: true })).toHaveCount(0); await semOverflow(page); await page.waitForTimeout(350); await page.screenshot({ path: testInfo.outputPath(`${nome}-${rota.replaceAll("/", "") || "dashboard"}.png`), fullPage: true });
     }
   }
@@ -244,4 +244,99 @@ test("membro legado cria espaço próprio sem assumir a empresa", async ({ page 
   await page.goto("/empresa"); await page.getByRole("button", { name: /^Organização sintética/ }).click();
   await page.goto("/conta/assinatura"); await expect(page.getByRole("link", { name: "Solicitar cancelamento", exact: true })).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "Business", exact: true })).toBeVisible();
+});
+
+test("polish em sete larguras, drawer, teclado, gráfico e movimento reduzido", async ({ page }, testInfo) => {
+  test.setTimeout(240_000);
+  await login(page, 7);
+  const larguras = [1440, 1280, 1024, 768, 430, 390, 360];
+  for (const largura of larguras) {
+    await page.setViewportSize({ width: largura, height: 900 });
+    for (const rota of ["/planos", "/checkout?plano=pro", "/onboarding"]) {
+      await page.goto(rota);
+      if (rota.startsWith("/checkout")) await expect(page.getByRole("radio", { name: "Pix", exact: true })).toBeVisible();
+      if (rota === "/planos") await expect(page.getByRole("article", { name: "Plano Business", exact: true }).getByRole("button", { name: "Plano atual" })).toBeDisabled();
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      await page.evaluate(() => document.fonts.ready); await page.waitForTimeout(350);
+      await semOverflow(page);
+      await page.screenshot({ path: testInfo.outputPath(`${largura}-${rota.split("?")[0].slice(1)}.png`), fullPage: true });
+    }
+    await page.goto("/"); await expect(page.getByRole("heading", { name: "Visão geral", exact: true })).toBeVisible();
+    if (largura <= 900) {
+      const abrir = page.getByRole("button", { name: "Abrir menu", exact: true });
+      await abrir.click(); const menu = page.getByRole("dialog", { name: "Navegação do Nexo" });
+      await expect(menu).toBeVisible(); await page.waitForTimeout(350);
+      for (let i = 0; i < 20; i++) { await page.keyboard.press("Tab"); expect(await menu.evaluate(e => e.contains(document.activeElement))).toBe(true); }
+      await page.screenshot({ path: testInfo.outputPath(`${largura}-menu.png`) });
+      await page.keyboard.press("Escape"); await expect(menu).not.toBeVisible(); await expect(abrir).toBeFocused();
+      await expect(page.locator("body")).not.toHaveCSS("overflow", "hidden");
+    }
+  }
+  await page.goto("/fluxo-caixa");
+  const dia = page.getByRole("slider", { name: "Dia no gráfico" });
+  await expect(dia).toBeVisible(); const anterior = await dia.inputValue();
+  await dia.focus(); await page.keyboard.press("ArrowLeft"); expect(await dia.inputValue()).not.toBe(anterior);
+  await page.getByText("Ver valores por dia", { exact: true }).click(); await expect(page.locator(".chart-data table")).toBeVisible();
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/metas"); await expect(page.locator(".pro-goal-card")).toBeVisible();
+  expect(await page.locator(".content").evaluate(e => getComputedStyle(e).animationName)).toBe("none");
+  expect(await page.locator(".premium-progress > span").evaluate(e => getComputedStyle(e).animationName)).toBe("none");
+  await page.goto("/onboarding"); await page.getByRole("button", { name: "Continuar", exact: true }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toBeFocused();
+  await page.getByRole("button", { name: "Voltar", exact: true }).click();
+  await expect(page.getByRole("button", { name: /^Quero usar em uma empresa maior/ })).toHaveAttribute("aria-pressed", "true");
+});
+
+test("telas de acesso em sete larguras e estados visuais da IA sem serviço externo", async ({ page }, testInfo) => {
+  test.setTimeout(180_000);
+  for (const largura of [1440, 1280, 1024, 768, 430, 390, 360]) {
+    await page.setViewportSize({ width: largura, height: 900 });
+    for (const rota of ["/login", "/cadastro", "/esqueci-senha", "/verificar-codigo", "/recuperar-senha", "/redefinir-senha"]) {
+      await page.goto(rota); await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      await page.evaluate(() => document.fonts.ready); await page.waitForTimeout(350); await semOverflow(page);
+      await page.screenshot({ path: testInfo.outputPath(`${largura}-${rota.slice(1)}.png`), fullPage: true });
+    }
+  }
+  await login(page, 7);
+  // Fixtures somente para apresentação de disponibilidade, loading e resposta; nenhuma chave externa.
+  await page.route("**/api/ia/status", route => route.fulfill({ json: { configurada: true } }));
+  let responder: (() => void) | undefined;
+  await page.route("**/api/ia/perguntar", async route => { await new Promise<void>(resolve => { responder = resolve; }); await route.fulfill({ json: { resposta: "Orientação sintética de teste.\nRevise seus custos e acompanhe o saldo." } }); });
+  await page.goto("/ia"); await expect(page.getByRole("heading", { name: "Qual decisão você quer entender?" })).toBeVisible();
+  await page.getByRole("button", { name: "Como calcular a margem de um produto?", exact: true }).click();
+  await expect(page.getByLabel("Sua pergunta", { exact: true })).toBeFocused();
+  await page.getByRole("button", { name: "Perguntar ao assistente" }).click();
+  await expect(page.getByText("Preparando uma orientação…", { exact: true })).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath("ia-carregando.png"), fullPage: true });
+  await expect.poll(() => Boolean(responder)).toBe(true); responder!(); await expect(page.getByRole("heading", { name: "Uma orientação para você" })).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath("ia-resposta.png"), fullPage: true });
+  await page.unrouteAll({ behavior: "wait" });
+  await page.goto("/documentos"); await expect(page.getByRole("heading", { name: "Adicionar documento" })).toBeVisible();
+  const arquivo = await page.evaluateHandle(() => { const lista = new DataTransfer(); lista.items.add(new File(["Documento sintético de teste"], "arrastado.txt", { type: "text/plain" })); return lista; });
+  await page.locator(".upload-zone").dispatchEvent("drop", { dataTransfer: arquivo });
+  await expect(page.locator(".upload-selection")).toContainText("arrastado.txt");
+  expect(await page.getByLabel("Arquivo", { exact: true }).evaluate(e => (e as HTMLInputElement).files?.[0]?.name)).toBe("arrastado.txt");
+  await page.getByRole("button", { name: "Salvar documento" }).click();
+  await expect(page.locator(".document-row").filter({ hasText: "arrastado.txt" })).toBeVisible();
+});
+
+test("acessibilidade WCAG nas telas principais em desktop e celular", async ({ page }) => {
+  test.setTimeout(240_000);
+  const { default: AxeBuilder } = await import("@axe-core/playwright");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  for (const largura of [1440, 390]) {
+    await page.setViewportSize({ width: largura, height: 900 });
+    for (const rota of ["/login", "/cadastro", "/esqueci-senha", "/verificar-codigo", "/recuperar-senha", "/redefinir-senha"]) {
+      await page.goto(rota); await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      const resultado = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+      expect.soft(resultado.violations.map(v => ({ id: v.id, alvos: v.nodes.map(n => n.target) })), `${largura}px ${rota}`).toEqual([]);
+    }
+    await login(page, 7);
+    for (const rota of ["/", "/pessoal", "/fluxo-caixa", "/metas", "/equipe", "/documentos", "/conta", "/empresa", "/ia", "/relatorios", "/produtos", "/clientes", "/vendas", "/despesas", "/planos", "/checkout?plano=pro", "/onboarding"]) {
+      await page.goto(rota); await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      await expect(page.getByText(/^Carregando/)).toHaveCount(0);
+      const resultado = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+      expect.soft(resultado.violations.map(v => ({ id: v.id, alvos: v.nodes.map(n => n.target) })), `${largura}px ${rota}`).toEqual([]);
+    }
+  }
 });

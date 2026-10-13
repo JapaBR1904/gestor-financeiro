@@ -1,5 +1,7 @@
 "use client";
+import { Marca } from "./Marca";
 import Link from "next/link";
+import { Icone } from "./Icone";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Assinatura, carregarAssinatura, listarPlanos, PlanoDetalhe } from "../lib/assinatura";
@@ -31,16 +33,16 @@ export default function PlanosConteudo() {
     finally { setSalvando(false); }
   }
   return (
-    <main className="saas-shell pricing-shell">
-      <section className="saas-brandbar pricing-brandbar"><Link className="saas-brand" href="/"><span>N</span><div><strong>Nexo</strong><small>Planos e assinatura</small></div></Link><Link className="secondary-button compact-button" href={onboarding ? "/onboarding" : "/conta/assinatura"}>Voltar</Link></section>
+    <main id="conteudo" tabIndex={-1} className="saas-shell pricing-shell">
+      <section className="saas-brandbar pricing-brandbar"><Link className="saas-brand" href="/"><span><Marca /></span><div><strong>Nexo</strong><small>Planos e assinatura</small></div></Link><Link className="secondary-button compact-button" href={onboarding ? "/onboarding" : "/conta/assinatura"}>Voltar</Link></section>
       <section className="pricing-heading"><p className="eyebrow">Planos Nexo</p><h1>Escolha o plano para o seu momento</h1><p>Compare recursos e gerencie seu plano sem perder os dados da organização.</p></section>
       {erro ? <p className="form-error-banner" role="alert">{erro}</p> : !assinatura ? <p role="status">Carregando planos...</p> : null}
       <section className="pricing-grid">{planos.map((plano) => {
         const atual = assinatura?.plano.id === plano.id;
         const habilitado = assinatura?.podeGerenciar && assinatura.simulacaoHabilitada;
-        return <article className={`pricing-card${plano.id === "pro" ? " featured" : ""}`} key={plano.id} aria-label={`Plano ${plano.nome}`}>
-          <div className="pricing-card-top"><div><h2>{plano.nome}</h2><p>{plano.descricao}</p></div><div className="pricing-price"><strong>{precoPlano(plano.valorMensal)}</strong><span>/mês</span></div></div>
-          <div className="pricing-features">{plano.beneficios.map((recurso) => <span key={recurso}>✓ {recurso}</span>)}</div>
+        return <article className={`pricing-card plan-${plano.id}${plano.id === "pro" ? " featured" : ""}${atual ? " plan-current" : ""}`} key={plano.id} aria-label={`Plano ${plano.nome}`}>
+          <div className="pricing-card-kicker"><span>{plano.id === "free" ? "O essencial" : plano.id === "pro" ? "Mais autonomia" : "Gestão em equipe"}</span>{plano.id === "pro" ? <span className="pricing-badge">Recomendado</span> : <Icone nome={plano.id === "business" ? "equipe" : "movimentos"} />}</div><div className="pricing-card-top"><div><h2>{plano.nome}</h2><p>{plano.descricao}</p></div><div className="pricing-price"><strong>{precoPlano(plano.valorMensal)}</strong><span>/mês</span></div></div>
+          <ul className="pricing-features">{plano.beneficios.map((recurso) => <li key={recurso}><Icone nome="check" />{recurso}</li>)}</ul>
           <p className="subscription-limit">Limite: {plano.limiteUsuarios} usuário(s). Recursos adicionais dependem do plano.</p>
           {atual || !habilitado ? <button className="secondary-button pricing-button" disabled>{atual ? "Plano atual" : "Troca indisponível"}</button> : <Link className={plano.id === "pro" ? "primary-button pricing-button" : "secondary-button pricing-button"} href={`/checkout?plano=${plano.id}${onboarding ? "&origem=onboarding" : ""}`}>{acaoPlano(assinatura!.plano.id, plano.id)}</Link>}
         </article>;

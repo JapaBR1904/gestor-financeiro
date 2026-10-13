@@ -87,7 +87,7 @@ export default function NovaVendaPage() {
   return (
     <main className="app-shell">
       <Sidebar ativo="vendas" />
-      <section className="content">
+      <section className="content" id="conteudo" tabIndex={-1}>
         <header className="topbar">
           <div>
             <p className="eyebrow">Comercial</p>

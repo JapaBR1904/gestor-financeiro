@@ -44,7 +44,7 @@ export default function NovaDespesaPage() {
   return (
     <main className="app-shell">
       <Sidebar ativo="despesas" />
-      <section className="content">
+      <section className="content" id="conteudo" tabIndex={-1}>
         <header className="topbar">
           <div><p className="eyebrow">Financeiro</p><h1>Nova despesa</h1><p className="subtitle">Registre uma saída de dinheiro do negócio.</p></div>
           <Link className="secondary-button" href="/despesas">Voltar para despesas</Link>

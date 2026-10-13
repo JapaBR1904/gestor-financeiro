@@ -68,7 +68,7 @@ export default function EditarDespesaPage() {
   return (
     <main className="app-shell">
       <Sidebar ativo="despesas" />
-      <section className="content">
+      <section className="content" id="conteudo" tabIndex={-1}>
         <header className="topbar">
           <div><p className="eyebrow">Financeiro</p><h1>Editar despesa</h1><p className="subtitle">Corrija os dados do lançamento sem criar uma nova despesa.</p></div>
           <Link className="secondary-button" href={`/despesas/${params.id}`}>Cancelar</Link>

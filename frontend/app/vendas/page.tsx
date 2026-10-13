@@ -1,4 +1,5 @@
 "use client";
+import { Icone } from "../../components/Icone";
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -28,7 +29,7 @@ export default function VendasPage() {
   return (
     <main className="app-shell">
       <Sidebar ativo="vendas" />
-      <section className="content">
+      <section className="content" id="conteudo" tabIndex={-1}>
         <header className="topbar">
           <div><p className="eyebrow">Comercial</p><h1>Vendas</h1><p className="subtitle">Registre vendas e acompanhe os principais dados comerciais do negócio.</p></div>
           <Link className="primary-button" href="/vendas/nova">+ Nova venda</Link>
@@ -54,7 +55,7 @@ export default function VendasPage() {
                 const dataVenda = new Date(venda.criadoEm);
                 return (
                   <article className="record-card sale-record-card" key={venda.id}>
-                    <span className="record-icon record-icon-sale" aria-hidden="true">↗</span>
+                    <span className="record-icon record-icon-sale"><Icone nome="venda" /></span>
                     <div className="record-main">
                       <strong>Venda #{venda.id}</strong>
                       <span>{dataVenda.toLocaleDateString("pt-BR")} · {quantidadeItens} item{quantidadeItens === 1 ? "" : "s"}</span>

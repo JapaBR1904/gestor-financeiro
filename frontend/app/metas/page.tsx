@@ -142,7 +142,7 @@ export default function MetasPage() {
               {sucesso}
             </p>
           ) : null}
-          <section className="finance-summary">
+          <section className="finance-summary goal-summary" aria-label="Resumo das metas não arquivadas">
             {[
               [
                 "Em andamento",
@@ -157,10 +157,11 @@ export default function MetasPage() {
               <article className="summary-card" key={nome}>
                 <span>{nome}</span>
                 <strong>{numero ?? "—"}</strong>
-                <small>Metas não arquivadas</small>
+
               </article>
             ))}
           </section>
+          <p className="goal-summary-hint">Metas não arquivadas</p>
           {formulario && gestao ? (
             <section className="product-form-panel">
               <h2>Defina um objetivo</h2>

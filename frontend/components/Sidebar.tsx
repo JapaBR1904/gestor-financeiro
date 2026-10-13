@@ -82,7 +82,7 @@ export function Sidebar(props: { ativo?: "dashboard" | "vendas" | "produtos" | "
     const overflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const media = window.matchMedia("(min-width: 901px)");
-    const ajustar = () => { if (media.matches) { elemento?.close(); setAberto(false); } };
+    const ajustar = () => { if (media.matches) { if (fecharTimer.current) clearTimeout(fecharTimer.current); elemento?.close(); setAberto(false); setFechando(false); } };
     media.addEventListener("change", ajustar);
     return () => {
       document.body.style.overflow = overflow;
@@ -127,7 +127,13 @@ export function Sidebar(props: { ativo?: "dashboard" | "vendas" | "produtos" | "
   return <>
     <div className="mobile-nav-bar">{marca}<button ref={toggle} className="menu-toggle" aria-label="Abrir menu" aria-expanded={aberto} aria-controls="nexo-navegacao-mobile" onClick={() => setAberto(true)}><Icone nome="menu" /></button></div>
     <aside className="sidebar"><div className="sidebar-brand-row">{marca}</div>{navegacao}</aside>
-    <dialog ref={dialog} id="nexo-navegacao-mobile" className="navigation-drawer" aria-label="Navegação do Nexo" data-closing={fechando} onCancel={e => { e.preventDefault(); fechar(); }} onClick={e => { if (e.target === e.currentTarget) { const r = e.currentTarget.getBoundingClientRect(); if (e.clientX > r.right || e.clientX < r.left || e.clientY > r.bottom || e.clientY < r.top) fechar(); } }}>
+    <dialog ref={dialog} id="nexo-navegacao-mobile" className="navigation-drawer" aria-label="Navegação do Nexo" data-closing={fechando} onCancel={e => { e.preventDefault(); fechar(); }} onKeyDown={e => {
+      if (e.key !== "Tab") return;
+      const itens = Array.from(e.currentTarget.querySelectorAll<HTMLElement>('a[href], button:not(:disabled), [tabindex="0"]')).filter(item => item.getClientRects().length > 0);
+      const primeiro = itens[0], ultimo = itens[itens.length - 1];
+      if (e.shiftKey && document.activeElement === primeiro) { e.preventDefault(); ultimo?.focus(); }
+      else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primeiro?.focus(); }
+    }} onClick={e => { if (e.target === e.currentTarget) { const r = e.currentTarget.getBoundingClientRect(); if (e.clientX > r.right || e.clientX < r.left || e.clientY > r.bottom || e.clientY < r.top) fechar(); } }}>
       <div className="sidebar-brand-row">{marca}<button className="menu-toggle" aria-label="Fechar menu" onClick={fechar}><Icone nome="fechar" /></button></div>{navegacao}
     </dialog>
   </>;

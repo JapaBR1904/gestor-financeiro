@@ -1,4 +1,5 @@
 "use client";
+import { Marca } from "./Marca";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -26,8 +27,8 @@ export default function AssinaturaConteudo() {
     void carregar();
     return () => { ativo = false; };
   }, [checkoutId]);
-  return <main className="saas-shell subscription-shell">
-    <section className="saas-brandbar pricing-brandbar"><Link className="saas-brand" href="/"><span>N</span><div><strong>Nexo</strong><small>Minha assinatura</small></div></Link><Link className="secondary-button compact-button" href="/conta">Voltar à conta</Link></section>
+  return <main id="conteudo" tabIndex={-1} className="saas-shell subscription-shell">
+    <section className="saas-brandbar pricing-brandbar"><Link className="saas-brand" href="/"><span><Marca /></span><div><strong>Nexo</strong><small>Minha assinatura</small></div></Link><Link className="secondary-button compact-button" href="/conta">Voltar à conta</Link></section>
     <section className="subscription-heading"><h1>Minha assinatura</h1><p>Plano, recursos e histórico vinculados à organização.</p></section>
     {erro ? <p className="form-error-banner" role="alert">{erro}</p> : null}
     {mensagem ? <p className="auth-success-banner" role="status">{mensagem}</p> : null}

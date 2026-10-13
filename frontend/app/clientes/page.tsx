@@ -22,7 +22,7 @@ export default function ClientesPage() {
   return (
     <main className="app-shell">
       <Sidebar ativo="clientes" />
-      <section className="content">
+      <section className="content" id="conteudo" tabIndex={-1}>
         <header className="topbar">
           <div>
             <p className="eyebrow">Relacionamento</p>

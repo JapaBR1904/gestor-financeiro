@@ -40,7 +40,7 @@ export default function NovoClientePage() {
   return (
     <main className="app-shell">
       <Sidebar ativo="clientes" />
-      <section className="content">
+      <section className="content" id="conteudo" tabIndex={-1}>
         <header className="topbar">
           <div><p className="eyebrow">Relacionamento</p><h1>Novo cliente</h1><p className="subtitle">Cadastre os dados básicos do cliente com informações claras e padronizadas.</p></div>
           <Link className="secondary-button" href="/clientes">Voltar para clientes</Link>

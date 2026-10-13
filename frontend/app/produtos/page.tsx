@@ -49,7 +49,7 @@ export default function ProdutosPage() {
     <main className="app-shell">
       <Sidebar ativo="produtos" />
 
-      <section className="content">
+      <section className="content" id="conteudo" tabIndex={-1}>
         <header className="topbar">
           <div>
             <p className="eyebrow">Catálogo</p>

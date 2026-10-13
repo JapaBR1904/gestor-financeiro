@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import { Icone } from "./Icone";
 import { requisitosSenha } from "../lib/politica-senha";
 
 export default function PasswordFields({ senha, setSenha, confirmacao, setConfirmacao }: {
@@ -31,7 +32,7 @@ export default function PasswordFields({ senha, setSenha, confirmacao, setConfir
           <ul id={`${id}-requisitos`} className="auth-password-requirements" aria-label="Requisitos da senha">
             {requisitos.map((requisito) => (
               <li key={requisito.id} data-atendido={requisito.atendido}>
-                <span aria-hidden="true">{requisito.atendido ? "✓" : "○"}</span>
+                <span aria-hidden="true"><Icone nome={requisito.atendido ? "check" : "circulo"} /></span>
                 <span>{requisito.descricao}</span>
                 <span className="auth-requirement-status">{requisito.atendido ? "Atendido" : "Falta"}</span>
               </li>

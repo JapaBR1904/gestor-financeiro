@@ -25,3 +25,10 @@
 .report-more:hover { background: var(--surface-interactive); }
 @media (max-width: 1100px) { .report-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .sale-record-card { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 760px) { .report-grid { grid-template-columns: 1fr; } .report-summary-grid { gap: 12px; } .report-summary-grid .summary-card { padding: 18px; } .report-summary-grid .summary-card > strong { font-size: 1.35rem; } .sale-record-card { grid-template-columns: 1fr; } }
+.record-list { display: grid; }
+.record-card { display: grid; background: var(--surface); }
+.record-icon { display: grid; place-items: center; width: 38px; height: 38px; border-radius: var(--radius); color: var(--positive); background: var(--success-soft); }
+.record-main, .record-value { display: grid; gap: 5px; min-width: 0; }
+.record-main > span, .record-value > span { color: var(--text-secondary); font-size: var(--text-xs); }
+.record-value > strong { color: var(--positive); font-size: 1.125rem; font-variant-numeric: tabular-nums; }
+.record-badge { width: fit-content; padding: 4px 8px; border-radius: 4px; background: var(--surface-interactive); color: var(--text-secondary); font-size: var(--text-xs); }

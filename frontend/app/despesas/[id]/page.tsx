@@ -39,7 +39,7 @@ export default function DespesaDetalhePage() {
   return (
     <main className="app-shell">
       <Sidebar ativo="despesas" />
-      <section className="content">
+      <section className="content" id="conteudo" tabIndex={-1}>
         <header className="topbar">
           <div><p className="eyebrow">Histórico de despesas</p><h1>{despesa ? despesa.descricao : "Despesa"}</h1><p className="subtitle">Confira e mantenha os dados desse lançamento atualizados.</p></div>
           <div className="form-actions"><Link className="secondary-button" href="/despesas">Voltar</Link>{despesa ? <Link className="secondary-button" href={`/despesas/${params.id}/editar`}>Editar</Link> : null}</div>

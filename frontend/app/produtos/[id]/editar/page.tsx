@@ -194,7 +194,7 @@ export default function EditarProdutoPage() {
     return (
       <main className="app-shell">
         <Sidebar ativo="produtos" />
-        <section className="content">
+        <section className="content" id="conteudo" tabIndex={-1}>
           <article className="panel activity-panel">
             <div className="empty-state">
               <span className="empty-icon">P</span>
@@ -210,7 +210,7 @@ export default function EditarProdutoPage() {
     <main className="app-shell">
       <Sidebar ativo="produtos" />
 
-      <section className="content">
+      <section className="content" id="conteudo" tabIndex={-1}>
         <header className="topbar">
           <div>
             <p className="eyebrow">Catálogo</p>
