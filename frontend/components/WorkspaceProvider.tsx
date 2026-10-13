@@ -29,13 +29,13 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         setEstado({ usuario, config, assinatura, erro: "" });
     } catch (error) {
       if (pedido === sequencia.current)
-        setEstado((anterior) => ({
-          ...anterior,
+        setEstado({
+          usuario: null, config: null, assinatura: null,
           erro:
             error instanceof Error
               ? error.message
               : "Não foi possível carregar seu espaço.",
-        }));
+        });
     }
   }, []);
   useEffect(() => {
@@ -57,13 +57,15 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     const controle = sequencia;
-    void atualizar();
+    let ativo = true;
+    queueMicrotask(() => { if (ativo) void atualizar(); });
     const ouvir = () => {
       void atualizar();
     };
     window.addEventListener("nexo:workspace", ouvir);
     return () => {
       window.removeEventListener("nexo:workspace", ouvir);
+      ativo = false;
       controle.current++;
     };
   }, [caminho, atualizar]);
@@ -91,6 +93,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
               >
                 Tentar novamente
               </button>
+              <Link className="text-button" href="/login">Entrar novamente</Link>
             </>
           ) : (
             <>

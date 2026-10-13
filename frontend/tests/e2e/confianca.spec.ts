@@ -115,7 +115,7 @@ test("confiança: onboarding bloqueia sobrescrita até preferências carregarem"
   await expect(page.getByRole("button", { name: "Continuar", exact: true })).toBeDisabled();
   expect(gravacoes).toBe(0);
   await page.getByRole("button", { name: "Tentar novamente" }).click();
-  await expect(page.getByRole("button", { name: /Quero cuidar das minhas/ })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: /^Finanças pessoais/ })).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "Continuar", exact: true }).click();
   await expect(page.getByRole("button", { name: "Controlar gastos", exact: true })).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator("main").getByRole("alert")).toHaveCount(0);
@@ -176,4 +176,54 @@ test("financeiro: atualização, campos preservados em 503, edição e vazio fil
   await expect(page.getByRole("heading", { name: "Nenhum lançamento neste período" })).toBeVisible();
   await page.getByRole("button", { name: "Limpar filtros", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Seu primeiro lançamento começa aqui" })).toBeVisible();
+});
+
+test("organizações: falha após troca limpa contexto antigo e retry recupera o destino", async ({ page }) => {
+  let selecionada = false, falhar = false;
+  await page.route("**/api/organizacoes/minhas", route => route.fulfill({ status: 200, json: [{ id: 900001, nome: "Espaço de apresentação", papel: "proprietario" }, { id: 900002, nome: "Outro espaço sintético", papel: "proprietario" }] }));
+  await page.route("**/api/organizacoes/selecionar", async route => { selecionada = true; falhar = true; await route.fulfill({ status: 200, json: {} }); });
+  await page.route("**/api/auth/me", route => route.fulfill({ status: 200, json: { id: 900001, nome: "Pessoa de apresentação", email: "apresentacao@example.com", organizacaoId: selecionada ? 900002 : 900001, organizacaoNome: selecionada ? "Outro espaço sintético" : "Espaço de apresentação", papel: "proprietario" } }));
+  await page.route("**/api/saas", route => route.fulfill(falhar ? { status: 503, json: {} } : { status: 200, json: { perfilUso: "negocio", objetivos: [], onboardingConcluido: true, plano: "business", statusAssinatura: "ativa" } }));
+  await page.goto("/empresa");
+  await page.getByRole("button", { name: /Outro espaço sintético/ }).click();
+  await expect(page.locator("main").getByRole("alert")).toBeVisible();
+  await expect(page.locator(".workspace-bar")).toHaveCount(0);
+  await expect(page.locator(".finance-summary")).toHaveCount(0);
+  falhar = false;
+  await page.getByRole("button", { name: "Tentar novamente", exact: true }).click();
+  await expect(page.locator(".workspace-context")).toHaveText("Outro espaço sintético");
+});
+
+test("guia: objetivo orienta tarefa disponível e dispensa persiste por espaço", async ({ page }) => {
+  await page.goto("/");
+  await page.locator(".first-steps > summary").click();
+  await expect(page.getByRole("link", { name: "Revisar seu foco: Controlar custos" })).toHaveAttribute("href", "/pessoal");
+  await page.getByRole("button", { name: "Dispensar guia" }).click();
+  await page.reload();
+  await expect(page.locator(".first-steps")).toHaveCount(0);
+  await page.route("**/api/auth/me", route => route.fulfill({ status: 200, json: { id: 900001, nome: "Pessoa de apresentação", email: "apresentacao@example.com", organizacaoId: 900002, organizacaoNome: "Outro espaço sintético", papel: "proprietario" } }));
+  await page.reload();
+  await expect(page.locator(".first-steps")).toBeVisible();
+});
+
+test("IA: pergunta sem resumo por padrão, timeout e consentimento específico", async ({ page }) => {
+  const enviados: Array<{ pergunta: string; incluirResumo: boolean }> = [];
+  await page.route("**/api/ia/perguntar", async route => {
+    enviados.push(route.request().postDataJSON());
+    await route.fulfill(enviados.length === 1 ? { status: 504, json: {} } : { status: 200, json: { resposta: "Resposta sintética, sem serviço externo.", modelo: "teste" } });
+  });
+  await page.goto("/ia");
+  const consentimento = page.getByRole("checkbox", { name: /Autorizar o envio do resumo/ });
+  await expect(consentimento).not.toBeChecked();
+  await page.getByLabel("Sua pergunta", { exact: true }).fill("Como organizar custos?");
+  await page.getByRole("button", { name: "Perguntar ao assistente" }).click();
+  await expect(page.locator("main").getByRole("alert")).toContainText("indisponível");
+  expect(enviados[0].incluirResumo).toBe(false);
+  await expect(page.getByLabel("Sua pergunta", { exact: true })).toHaveValue("Como organizar custos?");
+  await consentimento.check();
+  await page.getByRole("button", { name: "Perguntar ao assistente" }).click();
+  await expect(page.locator(".ia-answer")).toContainText("resumo deste mês autorizado");
+  expect(enviados[1].incluirResumo).toBe(true);
+  await consentimento.uncheck();
+  await expect(page.locator(".ia-answer-context")).toContainText("resumo deste mês autorizado");
 });

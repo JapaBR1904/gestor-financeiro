@@ -13,12 +13,7 @@ import {
   renomearOrganizacao,
   selecionarOrganizacao,
 } from "../lib/equipe";
-import {
-  datasDoMes,
-  ResumoFinanceiro,
-  resumoFinanceiro,
-} from "../lib/financeiro";
-import { formatarMoeda } from "../lib/produtos";
+
 
 export function EmpresaConteudo() {
   const { usuario, assinatura, config, atualizar } = useWorkspace();
@@ -32,33 +27,20 @@ export function EmpresaConteudo() {
   const [sucesso, setSucesso] = useState("");
   const [revisao, setRevisao] = useState(0);
   const [organizacoes, setOrganizacoes] = useState<Organizacao[]>([]);
-  const [dados, setDados] = useState<ResumoFinanceiro | null>(null);
+  const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
   const [ocupado, setOcupado] = useState(false);
   const trava = useRef(false);
   useEffect(() => {
     let ativo = true;
-    const periodo = datasDoMes();
-    Promise.all([
-      minhasOrganizacoes(),
-      podeLer
-        ? resumoFinanceiro(periodo.inicio, periodo.fim)
-        : Promise.resolve(null),
-    ])
-      .then(([lista, resumo]) => {
-        if (ativo) {
-          setOrganizacoes(lista);
-          setDados(resumo);
-        }
-      })
-      .catch((e) => {
-        if (ativo)
-          setErro(
-            e instanceof Error
-              ? e.message
-              : "Não foi possível carregar a organização.",
-          );
-      });
+    Promise.resolve().then(async () => {
+      if (!ativo) return;
+      setCarregando(true);
+      setErro("");
+      try { const lista = await minhasOrganizacoes(); if (ativo) setOrganizacoes(lista); }
+      catch (e) { if (ativo) setErro(e instanceof Error ? e.message : "Não foi possível carregar a organização."); }
+      finally { if (ativo) setCarregando(false); }
+    });
     return () => {
       ativo = false;
     };
@@ -125,7 +107,7 @@ export function EmpresaConteudo() {
   return (
     <WorkspaceShell
       titulo="Organização"
-      descricao="Conheça o resultado do espaço atual e mantenha seus outros espaços separados."
+      descricao="Gerencie seus espaços e acessos. Cada organização mantém seus próprios dados e assinatura."
     >
       {sucesso ? (
         <p className="form-success" role="status">
@@ -134,7 +116,7 @@ export function EmpresaConteudo() {
       ) : null}
       {erro ? (
         <p className="form-error-banner" role="alert">
-          {erro}
+          {erro} <button className="text-button" onClick={() => setRevisao(r => r + 1)} disabled={carregando}>Tentar novamente</button>
         </p>
       ) : null}
       {!podeLer ? (
@@ -143,27 +125,13 @@ export function EmpresaConteudo() {
           continuam disponíveis abaixo, e os dados da empresa foram preservados.
         </p>
       ) : null}
-      <section className="finance-summary">
-        <article className="summary-card balance-card">
-          <span>Resultado deste mês</span>
-          <strong>{dados ? formatarMoeda(dados.saldo) : "—"}</strong>
-          <small>Entradas menos saídas</small>
-        </article>
-        <article className="summary-card">
-          <span>Entradas do mês</span>
-          <strong>{dados ? formatarMoeda(dados.receitas) : "—"}</strong>
-          <small>Dados do espaço atual</small>
-        </article>
-        <article className="summary-card">
-          <span>Usuários ativos</span>
-          <strong>{assinatura?.usuariosAtivos ?? "—"}</strong>
-          <small>
-            Limite do plano: {assinatura?.plano.limiteUsuarios ?? "—"}
-          </small>
-        </article>
+      <section className="panel organization-current" aria-label="Espaço atual">
+        <h2>{usuario?.organizacaoNome}</h2>
+        <p>Seu papel: <strong>{nomePapel(usuario?.papel ?? "membro")}</strong> · Plano {assinatura?.plano.nome ?? "—"} · {assinatura?.usuariosAtivos ?? "—"} de {assinatura?.plano.limiteUsuarios ?? "—"} usuários</p>
       </section>
       {gestao ? (
-        <section className="product-form-panel">
+        <details className="product-form-panel organization-settings">
+          <summary>Configurações do espaço</summary>
           <h2>Nome do espaço</h2>
           <form className="period-toolbar" onSubmit={renomear}>
             <label className="field">
@@ -181,7 +149,7 @@ export function EmpresaConteudo() {
               {ocupado ? "Salvando…" : "Salvar nome"}
             </button>
           </form>
-        </section>
+        </details>
       ) : null}
       <div className="product-two-columns">
         <section className="panel">
@@ -209,12 +177,13 @@ export function EmpresaConteudo() {
               </button>
             </div>
           ) : null}
-          <div className="organization-switcher">
+          {carregando ? <p role="status">Carregando seus espaços…</p> : null}
+          <div className="organization-switcher" aria-busy={carregando}>
             {organizacoes.map((org) => (
               <button
                 className={org.id === usuario?.organizacaoId ? "active" : ""}
                 key={org.id}
-                disabled={ocupado || org.id === usuario?.organizacaoId}
+                disabled={ocupado || carregando || org.id === usuario?.organizacaoId}
                 onClick={() => void escolher(org.id)}
               >
                 <strong>{org.nome}</strong>

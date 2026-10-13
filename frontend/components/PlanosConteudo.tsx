@@ -165,7 +165,7 @@ export default function PlanosConteudo() {
                       : "Gestão em equipe"}
                 </span>
                 {plano.id === "pro" ? (
-                  <span className="pricing-badge">Recomendado</span>
+                  <span className="pricing-badge" title="Para planejamento e análise individual">Planejamento individual</span>
                 ) : (
                   <Icone
                     nome={plano.id === "business" ? "equipe" : "movimentos"}
@@ -183,7 +183,7 @@ export default function PlanosConteudo() {
                 </div>
               </div>
               <ul className="pricing-features">
-                {plano.beneficios.map((recurso) => (
+                {plano.beneficios.slice(0, 5).map((recurso) => (
                   <li key={recurso}>
                     <Icone nome="check" />
                     {recurso}
@@ -191,8 +191,7 @@ export default function PlanosConteudo() {
                 ))}
               </ul>
               <p className="subscription-limit">
-                Limite: {plano.limiteUsuarios} usuário(s). Recursos adicionais
-                dependem do plano.
+                Limite: {plano.limiteUsuarios} usuário(s). Business inclui os recursos Pro; colaboração exclusiva do Business.
               </p>
               {atual || !habilitado ? (
                 <button className="secondary-button pricing-button" disabled>
@@ -217,17 +216,12 @@ export default function PlanosConteudo() {
         })}
       </section>
       {planos.length ? (
-        <section
+        <details
           className="plan-comparison"
           aria-labelledby="comparacao-planos"
         >
-          <div className="panel-header">
-            <div>
-              <p className="eyebrow">Um próximo passo, no seu ritmo</p>
-              <h2 id="comparacao-planos">O que acompanha cada plano</h2>
-            </div>
-            <Icone nome="painel" />
-          </div>
+          <summary id="comparacao-planos">Comparar todos os recursos</summary>
+          <div className="plan-benefits-details">{planos.map(plano => <div key={plano.id}><h2>{plano.nome}</h2><ul>{plano.beneficios.map(beneficio => <li key={beneficio}>{beneficio}</li>)}</ul></div>)}</div>
           <div className="plan-comparison-scroll">
             <table>
               <caption className="sr-only">
@@ -282,7 +276,7 @@ export default function PlanosConteudo() {
               </tbody>
             </table>
           </div>
-        </section>
+        </details>
       ) : null}
       {onboarding && assinatura ? (
         <button

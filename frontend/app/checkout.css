@@ -2,23 +2,23 @@
 .checkout-plan-summary {
   position: relative;
   overflow: hidden;
-  background: var(--gradient-highlight);
+  background: var(--surface);
   box-shadow: var(--shadow-md);
 }
 .checkout-plan-summary[data-plan="pro"] {
-  background: var(--gradient-pro);
+  background: var(--surface);
   border-color: color-mix(in srgb, var(--accent), var(--border) 60%);
 }
 .checkout-plan-summary[data-plan="business"] {
   border-top: 3px solid var(--cyan);
-  background: var(--gradient-highlight);
+  background: var(--surface);
 }
 .checkout-plan-summary h2 {
   font-size: 1.75rem;
 }
 .checkout-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
   gap: var(--space-5);
   width: min(1040px, 100%);
   margin-inline: auto;
@@ -130,7 +130,7 @@
 }
 .checkout-result[data-status="aprovado"] {
   border-color: color-mix(in srgb, var(--accent), var(--border) 60%);
-  background: var(--gradient-pro);
+  background: var(--surface);
   box-shadow: var(--shadow-accent-hover);
 }
 .checkout-result {
@@ -143,8 +143,8 @@
   animation: page-enter var(--duration-slow) var(--ease);
 }
 .checkout-result-icon {
-  box-shadow: 0 0 0 8px color-mix(in srgb, var(--accent), transparent 94%);
-  animation: checkout-confirmed var(--duration-slow) var(--ease) both;
+  box-shadow: none;
+  animation: notice-enter var(--duration-fast) var(--ease);
   display: grid;
   place-items: center;
   width: var(--space-7);
@@ -157,16 +157,7 @@
   background: var(--warning-soft);
   color: var(--warning);
 }
-@keyframes checkout-confirmed {
-  from {
-    opacity: 0;
-    transform: scale(0.86);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
+
 .checkout-result h2 {
   font-size: 1.625rem;
   letter-spacing: -0.04em;
@@ -201,3 +192,11 @@
     padding: 28px var(--space-5);
   }
 }
+
+.checkout-grid .checkout-plan-summary { order: 2; }
+.checkout-grid > section:not(.checkout-plan-summary) { order: 1; }
+@media (max-width: 900px) { .checkout-grid { grid-template-columns: 1fr; } .checkout-grid .checkout-plan-summary { order: 0; } }
+
+.checkout-benefits > summary { display: flex; align-items: center; gap: var(--space-2); min-height: 44px; color: var(--accent); cursor: pointer; font-size: var(--text-sm); }
+.checkout-benefits > summary::after { content: "+"; }
+.checkout-benefits[open] > summary::after { content: "−"; }

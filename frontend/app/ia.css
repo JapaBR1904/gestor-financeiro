@@ -1,124 +1,15 @@
-/* Assistente como ferramenta de decisão, integrado ao espaço financeiro. */
-.ia-intro {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: var(--space-5);
-}
-.ia-symbol {
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  flex-shrink: 0;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--gradient-premium);
-  color: var(--cyan-light);
-  box-shadow: var(--shadow-accent);
-  animation: ai-light 8s ease-in-out infinite alternate;
-}
-.ia-intro p {
-  color: var(--text-secondary);
-  font-size: var(--text-xs);
-  margin-top: var(--space-1);
-}
-@keyframes ai-light {
-  to {
-    transform: translateY(-2px);
-    opacity: 0.85;
-  }
-}
-.ia-unavailable .product-lock,
-.ia-workbench {
-  background:
-    radial-gradient(ellipse at 100% 0, var(--ambient-cyan), transparent 55%),
-    var(--gradient-highlight);
-  border-color: color-mix(in srgb, var(--accent), var(--border) 80%);
-  box-shadow: var(--shadow-lg);
-}
-.ia-question-form {
-  display: grid;
-  gap: var(--space-4);
-}
-.ia-question-form .subtitle {
-  margin: 0;
-  font-size: var(--text-xs);
-}
-.ia-answer {
-  margin-top: 28px;
-  padding: var(--space-5);
-  border: 1px solid var(--border-strong);
-  border-left: 3px solid var(--accent);
-  border-radius: var(--radius);
-  background: var(--gradient-highlight);
-  box-shadow: var(--shadow-md);
-  animation: page-enter var(--duration-slow) var(--ease);
-}
-.ia-answer > div {
-  white-space: pre-wrap;
-  line-height: 1.9;
-  margin-top: var(--space-4);
-  font-size: var(--text-base);
-  overflow-wrap: anywhere;
-}
-.ia-thinking {
-  position: relative;
-  overflow: hidden;
-  background: var(--gradient-pro);
-  box-shadow: var(--shadow-sm);
-  display: grid;
-  gap: var(--space-3);
-  margin-top: var(--space-5);
-  padding: var(--space-5);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-}
-.ia-thinking .skeleton {
-  height: var(--space-3);
-}
-.ia-thinking .skeleton:last-child {
-  width: 60%;
-}
-.ia-unavailable {
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(240px, 0.8fr);
-  gap: var(--space-5);
-}
-.ia-unavailable .product-lock {
-  gap: var(--space-5);
-}
-.ia-next-steps {
-  display: grid;
-  align-content: start;
-  gap: var(--space-4);
-}
-.ia-next-steps .quick-action {
-  background: var(--surface);
-}
-.ia-examples {
-  display: grid;
-  align-content: start;
-  gap: var(--space-3);
-}
-.ia-examples .quick-action {
-  width: 100%;
-  min-height: 66px;
-  font-size: var(--text-sm);
-}
-@media (max-width: 1024px) {
-  .ia-unavailable {
-    grid-template-columns: 1fr;
-  }
-  .ia-next-steps {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-@media (max-width: 760px) {
-  .ia-next-steps {
-    grid-template-columns: 1fr;
-  }
-  .ia-answer {
-    padding: 20px;
-  }
-}
+/* IA contextual, sem luzes ou movimento decorativo permanente. */
+.ia-workbench { max-width: 900px; }
+.ia-intro { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-5); }
+.ia-intro > svg { width: 20px; height: 20px; color: var(--cyan); }
+.ia-question-form { display: grid; gap: var(--space-4); }
+.ia-question-form .subtitle { margin: 0; font-size: var(--text-xs); }
+.ia-suggestions { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); }
+.ia-suggestions .text-button { justify-content: start; text-align: left; font-size: var(--text-xs); }
+.ia-unavailable { display: grid; justify-items: start; gap: var(--space-4); max-width: 75ch; }
+.ia-unavailable p { color: var(--text-secondary); }
+.ia-answer { max-width: 72ch; margin-top: var(--space-5); padding-top: var(--space-5); border-top: 1px solid var(--border); animation: notice-enter var(--duration-fast) var(--ease); }
+.ia-answer-context { margin-top: var(--space-3); font-size: var(--text-xs); color: var(--text-secondary); overflow-wrap: anywhere; }
+.ia-answer > div[role="status"] { white-space: pre-wrap; line-height: 1.8; margin-top: var(--space-4); overflow-wrap: anywhere; }
+.ia-answer-actions { display: flex; flex-wrap: wrap; gap: var(--space-4); margin-top: var(--space-3); }
+.ia-thinking { display: grid; gap: var(--space-3); margin-top: var(--space-5); padding: var(--space-4); border-radius: var(--radius); background: var(--surface-soft); color: var(--text-secondary); }

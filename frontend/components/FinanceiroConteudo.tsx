@@ -1,4 +1,5 @@
 "use client";
+import { PrimeirosPassos } from "./PrimeirosPassos";
 import Link from "next/link";
 import { Icone } from "./Icone";
 import { FormEvent, useEffect, useRef, useState } from "react";
@@ -542,6 +543,7 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
         ) : null}
       </div>
 
+      {!pessoal && !carregando && dados ? <PrimeirosPassos temMovimentos={dados.movimentacoes.length > 0} /> : null}
     </WorkspaceShell>
   );
 }

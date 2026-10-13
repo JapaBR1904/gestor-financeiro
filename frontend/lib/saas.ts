@@ -13,9 +13,9 @@ export type ConfiguracaoSaas = {
 };
 
 export const OBJETIVOS_POR_PERFIL: Record<PerfilUso, string[]> = {
-  pessoal: ["Controlar gastos", "Acompanhar saldo", "Criar metas", "Entender para onde meu dinheiro vai"],
-  negocio: ["Aumentar vendas", "Controlar custos", "Acompanhar lucro", "Organizar clientes", "Melhorar o fluxo de caixa"],
-  empresa: ["Acompanhar indicadores", "Gerenciar equipe", "Controlar áreas", "Planejar crescimento", "Padronizar a operação"],
+  pessoal: ["Controlar gastos", "Acompanhar saldo", "Criar metas"],
+  negocio: ["Controlar custos", "Acompanhar lucro", "Organizar clientes"],
+  empresa: ["Acompanhar indicadores", "Gerenciar equipe", "Padronizar a operação"],
 };
 
 export async function carregarConfiguracaoSaas(): Promise<ConfiguracaoSaas> {

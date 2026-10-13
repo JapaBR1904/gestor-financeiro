@@ -23,6 +23,7 @@ export function EquipeConteudo() {
   const [link, setLink] = useState("");
   const [revisao, setRevisao] = useState(0);
   const [ocupado, setOcupado] = useState(false);
+  const [formulario, setFormulario] = useState(false);
   const trava = useRef(false);
   const business = config?.plano === "business";
   useEffect(() => {
@@ -81,6 +82,7 @@ export function EquipeConteudo() {
     <WorkspaceShell
       titulo="Equipe e permissões"
       descricao="Um espaço compartilhado, com acesso definido para cada pessoa."
+      acoes={business && equipe?.podeGerenciar && !formulario ? <button className="primary-button" onClick={() => setFormulario(true)}>Convidar pessoa</button> : null}
     >
       {!config ? (
         <p role="status">Carregando seu plano…</p>
@@ -112,32 +114,8 @@ export function EquipeConteudo() {
             <p role="status">Carregando membros…</p>
           ) : equipe ? (
             <>
-              <section className="finance-summary">
-                <article className="summary-card">
-                  <span>Membros ativos</span>
-                  <strong>{ativos}</strong>
-                  <small>Até {equipe.limite} usuários, com você</small>
-                </article>
-                <article className="summary-card">
-                  <span>Convites pendentes</span>
-                  <strong>{pendentes.length}</strong>
-                  <small>Reservam uma vaga por 24 horas</small>
-                </article>
-                <article className="summary-card balance-card">
-                  <span>Vagas disponíveis</span>
-                  <strong>
-                    {Math.max(0, equipe.limite - ativos - pendentes.length)}
-                  </strong>
-                  <small>Seu papel: {nomePapel(equipe.papelAtual)}</small>
-                </article>
-              </section>
-              <p className="permission-note">
-                O proprietário gerencia assinatura e todos os acessos.
-                Administradores gerenciam a operação e convidam membros. Membros
-                consultam os dados e registram vendas, clientes e gastos;
-                alterações de estrutura ficam com a gestão.
-              </p>
-              {equipe.podeGerenciar ? (
+              <p className="team-capacity">{ativos} de {equipe.limite} usuários ativos · {pendentes.length} convite(s) pendente(s) · Seu papel: <strong>{nomePapel(equipe.papelAtual)}</strong></p>
+              {equipe.podeGerenciar && formulario ? (
                 <section className="product-form-panel">
                   <h2>Convidar pessoa</h2>
                   <form onSubmit={convidar}>
@@ -150,6 +128,7 @@ export function EquipeConteudo() {
                           required
                           maxLength={180}
                           autoComplete="email"
+                          autoFocus
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           disabled={ocupado}
@@ -170,7 +149,9 @@ export function EquipeConteudo() {
                         </select>
                       </label>
                     </div>
+                    <details className="role-help"><summary>Entenda os papéis</summary><p>O proprietário gerencia assinatura e todos os acessos. Administradores gerenciam a operação e convidam membros. Membros consultam dados e registram vendas, clientes e gastos; alterações de estrutura ficam com a gestão. Convites pendentes reservam uma vaga por 24 horas.</p></details>
                     <div className="product-form-actions">
+                      <button type="button" className="secondary-button" disabled={ocupado} onClick={() => { setFormulario(false); setLink(""); }}>Cancelar</button>
                       <button
                         className="primary-button"
                         disabled={
@@ -309,10 +290,8 @@ export function EquipeConteudo() {
                 })}
               </section>
               {equipe.podeGerenciar ? (
-                <section className="panel" style={{ marginTop: 20 }}>
-                  <div className="panel-header">
-                    <h2>Convites</h2>
-                  </div>
+                <details className="panel invitation-history" style={{ marginTop: 20 }}>
+                  <summary>Convites pendentes ({pendentes.length}) e histórico</summary>
                   {equipe.convites.length ? (
                     equipe.convites.map((convite) => (
                       <div className="member-row" key={convite.id}>
@@ -354,7 +333,7 @@ export function EquipeConteudo() {
                       Os convites criados aparecerão aqui.
                     </p>
                   )}
-                </section>
+                </details>
               ) : null}
             </>
           ) : null}

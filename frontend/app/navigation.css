@@ -162,7 +162,6 @@
   border-radius: 2px;
   background: var(--accent);
 }
-.menu-item.active .menu-icon { color: var(--nav-active-ink); }
 .menu-item .menu-icon {
   color: var(--nav-accent);
   transition:
@@ -183,7 +182,7 @@
 .nav-lock {
   margin-left: auto;
   color: var(--text-subtle);
-  font-size: 0.5625rem;
+  font-size: var(--text-xs);
   letter-spacing: 0.02em;
   padding: 2px var(--space-1);
   border: 1px solid var(--border);
@@ -472,3 +471,5 @@
 .analysis-navigation a { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 44px; padding: var(--space-2) var(--space-3); border-radius: var(--radius); color: var(--text-secondary); font-size: var(--text-sm); }
 .analysis-navigation a:hover { color: var(--accent); background: var(--surface-interactive); }
 .analysis-navigation a[aria-current] { color: var(--accent-ink); background: var(--accent-soft); font-weight: 650; }
+
+.menu-item.active .nav-lock { color: var(--nav-active-ink); border-color: var(--nav-active-ink); }

@@ -26,6 +26,7 @@ export function DocumentosConteudo() {
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState("");
   const [arquivo, setArquivo] = useState<File | null>(null);
+  const [uploadAberto, setUploadAberto] = useState(false);
   const [arrastando, setArrastando] = useState(false);
   const [descricao, setDescricao] = useState("");
   const [revisao, setRevisao] = useState(0);
@@ -89,17 +90,20 @@ export function DocumentosConteudo() {
     void acao(async () => {
       await enviarDocumento(arquivo, descricao);
       setArquivo(null);
+      setUploadAberto(false);
       setDescricao("");
       if (entradaArquivo.current) entradaArquivo.current.value = "";
       setRevisao((r) => r + 1);
       setSucesso("Documento salvo e disponível para a equipe.");
     });
   }
+  const mostrarUpload = uploadAberto || documentos?.length === 0;
   const total = documentos?.reduce((s, d) => s + d.tamanho, 0) ?? 0;
   return (
     <WorkspaceShell
       titulo="Documentos"
       descricao="Arquivos da empresa, organizados em um único lugar e compartilhados com sua equipe."
+      acoes={business && podeGerenciar && documentos !== null && !mostrarUpload ? <button className="primary-button" onClick={() => setUploadAberto(true)}>Adicionar documento</button> : null}
     >
       {!config ? (
         <p role="status">Carregando seu plano…</p>
@@ -127,9 +131,10 @@ export function DocumentosConteudo() {
               {sucesso}
             </p>
           ) : null}
-          {podeGerenciar ? (
+          {podeGerenciar && mostrarUpload ? (
             <section className="product-form-panel document-upload">
               <h2>Adicionar documento</h2>
+              <p className="subtitle">{tamanhoArquivo(total)} de 50 MB utilizados. Até 5 MB por arquivo.</p>
               <form onSubmit={enviar}>
                 <div className="form-grid">
                   <label
@@ -170,6 +175,7 @@ export function DocumentosConteudo() {
                       ref={entradaArquivo}
                       className="sr-only upload-native"
                       type="file"
+                      autoFocus
                       accept=".pdf,.txt,.csv,.png,.jpg,.jpeg"
                       required
                       onChange={(e) => setArquivo(e.target.files?.[0] ?? null)}
@@ -206,6 +212,7 @@ export function DocumentosConteudo() {
                   </p>
                 ) : null}
                 <div className="product-form-actions">
+                  {documentos?.length ? <button type="button" className="secondary-button" disabled={ocupado} onClick={() => { setUploadAberto(false); setArquivo(null); if (entradaArquivo.current) entradaArquivo.current.value = ""; }}>Cancelar</button> : null}
                   <button
                     className="primary-button"
                     disabled={ocupado}
@@ -216,30 +223,16 @@ export function DocumentosConteudo() {
                 </div>
               </form>
             </section>
-          ) : (
+          ) : !podeGerenciar ? (
             <p className="permission-note">
               Seu papel permite consultar e baixar documentos. Proprietários e
               administradores gerenciam os arquivos.
             </p>
-          )}
+          ) : null}
           <section className="panel">
             <div className="panel-header">
               <h2>Arquivos do espaço</h2>
               <span className="tag">{tamanhoArquivo(total)} de 50 MB</span>
-            </div>
-            <div
-              className="document-quota"
-              role="meter"
-              aria-label="Armazenamento utilizado"
-              aria-valuenow={total}
-              aria-valuemin={0}
-              aria-valuemax={50 * 1024 * 1024}
-            >
-              <span
-                style={{
-                  width: `${Math.min(100, (total / (50 * 1024 * 1024)) * 100)}%`,
-                }}
-              />
             </div>
             {documentos === null && !erro ? (
               <p role="status">Carregando arquivos…</p>

@@ -310,6 +310,7 @@ test("finanças, Pro, Business, convite, documentos e downgrade preservam dados"
   test.setTimeout(240_000);
   await login(page, 7);
   await page.goto("/empresa");
+  await page.locator(".organization-settings > summary").click();
   await page.getByLabel("Novo nome").fill("Ateliê de demonstração");
   await page.getByRole("button", { name: "Salvar nome", exact: true }).click();
   await expect(page.getByText("Nome do espaço atualizado.")).toBeVisible();
@@ -398,6 +399,7 @@ test("finanças, Pro, Business, convite, documentos e downgrade preservam dados"
   ]);
   expect(arquivo.suggestedFilename()).toBe("resumo.txt");
   await page.goto("/equipe");
+  await page.getByRole("button", { name: "Convidar pessoa", exact: true }).click();
   await page.getByLabel("E-mail da pessoa").fill(emails[8]);
   await page
     .getByRole("button", { name: "Criar convite", exact: true })
@@ -622,13 +624,13 @@ test("cadastro, confirmação, onboarding pessoal e recuperação mantêm o aces
     .click();
   await expect(page).toHaveURL(/\/onboarding$/);
   await page
-    .getByRole("button", { name: /^Quero cuidar das minhas finanças pessoais/ })
+    .getByRole("button", { name: /^Finanças pessoais/ })
     .click();
   await page.getByRole("button", { name: "Continuar", exact: true }).click();
   await page.getByRole("button", { name: /Controlar gastos/ }).click();
   await page.getByRole("button", { name: "Continuar", exact: true }).click();
   await page
-    .getByRole("button", { name: "Entrar no Nexo", exact: true })
+    .getByRole("button", { name: "Começar a usar", exact: true })
     .click();
   await expect(page).toHaveURL(/\/pessoal$/);
   await page.goto("/conta");
@@ -638,7 +640,7 @@ test("cadastro, confirmação, onboarding pessoal e recuperação mantêm o aces
   await page.goto("/onboarding");
   await expect(
     page.getByRole("button", {
-      name: /^Quero cuidar das minhas finanças pessoais/,
+      name: /^Finanças pessoais/,
     }),
   ).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "Continuar", exact: true }).click();
@@ -692,12 +694,12 @@ test("membro legado cria espaço próprio sem assumir a empresa", async ({
     .click();
   await expect(page).toHaveURL(/\/onboarding$/);
   await page
-    .getByRole("button", { name: /^Quero cuidar das minhas finanças pessoais/ })
+    .getByRole("button", { name: /^Finanças pessoais/ })
     .click();
   await page.getByRole("button", { name: "Continuar", exact: true }).click();
   await page.getByRole("button", { name: "Continuar", exact: true }).click();
   await page
-    .getByRole("button", { name: "Entrar no Nexo", exact: true })
+    .getByRole("button", { name: "Começar a usar", exact: true })
     .click();
   await expect(page).toHaveURL(/\/pessoal$/);
   await expect(page.locator(".workspace-bar")).toContainText("Meu espaço");
@@ -809,7 +811,7 @@ test("polish em sete larguras, drawer, teclado, gráfico e movimento reduzido", 
   await expect(page.getByRole("heading", { level: 1 })).toBeFocused();
   await page.getByRole("button", { name: "Voltar", exact: true }).click();
   await expect(
-    page.getByRole("button", { name: /^Quero usar em uma empresa maior/ }),
+    page.getByRole("button", { name: /^Minha empresa/ }),
   ).toHaveAttribute("aria-pressed", "true");
 });
 
@@ -885,6 +887,7 @@ test("telas de acesso em sete larguras e estados visuais da IA sem serviço exte
   });
   await page.unrouteAll({ behavior: "wait" });
   await page.goto("/documentos");
+  await page.getByRole("button", { name: "Adicionar documento", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "Adicionar documento" }),
   ).toBeVisible();

@@ -4,7 +4,7 @@ import { avisarWorkspace } from "../lib/workspace";
 import Link from "next/link";
 import { Icone } from "./Icone";
 import { useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import {
   abrirCheckout,
   Assinatura,
@@ -45,7 +45,6 @@ function CheckoutConteudo({
   cancelar: boolean;
   onboarding: boolean;
 }) {
-  const router = useRouter();
   const chave = useRef<string | null>(null);
   const ocupado = useRef(false);
   const [checkout, setCheckout] = useState<Checkout | null>(null);
@@ -87,14 +86,6 @@ function CheckoutConteudo({
       ativo = false;
     };
   }, [plano, cancelar]);
-  useEffect(() => {
-    if (checkout?.status !== "aprovado") return;
-    const timer = window.setTimeout(
-      () => router.replace(`/conta/assinatura?checkout=${checkout.id}`),
-      4000,
-    );
-    return () => window.clearTimeout(timer);
-  }, [checkout, router]);
   async function confirmar() {
     if (!checkout || ocupado.current) return;
     if (checkout.tipo !== "upgrade" && !consentimento)
@@ -244,14 +235,14 @@ function CheckoutConteudo({
               <strong>{precoPlano(checkout.plano.valorMensal)}</strong>
               <span>/mês</span>
             </div>
-            <ul className="pricing-features">
+            <details className="checkout-benefits"><summary>O que está incluído</summary><ul className="pricing-features">
               {checkout.plano.beneficios.map((r) => (
                 <li key={r}>
                   <Icone nome="check" />
                   {r}
                 </li>
               ))}
-            </ul>
+            </ul></details>
             <div className="checkout-total">
               <span>Total simulado:</span>
               <strong>{precoPlano(checkout.total)}</strong>

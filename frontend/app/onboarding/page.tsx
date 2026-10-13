@@ -18,28 +18,24 @@ const opcoes: Array<{
   titulo: string;
   descricao: string;
   detalhe: string;
-  icone: string;
 }> = [
   {
     id: "negocio",
-    titulo: "Quero organizar meu negócio",
+    titulo: "Meu negócio",
     descricao: "Para autônomos, MEIs e pequenos negócios que vendem produtos ou serviços.",
     detalhe: "Vendas, despesas, produtos, clientes e resultado em um só lugar.",
-    icone: "↗",
   },
   {
     id: "pessoal",
-    titulo: "Quero cuidar das minhas finanças pessoais",
+    titulo: "Finanças pessoais",
     descricao: "Para acompanhar entradas, gastos, saldo e metas com uma visão simples.",
     detalhe: "Uma experiência mais direta, focada no seu dinheiro do dia a dia.",
-    icone: "◉",
   },
   {
     id: "empresa",
-    titulo: "Quero usar em uma empresa maior",
+    titulo: "Minha empresa",
     descricao: "Para equipes que precisam dividir acessos e acompanhar uma operação mais completa.",
     detalhe: "Permissões, equipe e visão gerencial entram conforme o plano evolui.",
-    icone: "◇",
   },
 ];
 
@@ -140,20 +136,21 @@ export default function OnboardingPage() {
           <div className="saas-heading"><p className="eyebrow">Bem-vindo ao Nexo</p><h1 tabIndex={-1}>Como você pretende usar o Nexo?</h1><p>Essa escolha prepara sua experiência inicial. Você pode alterar depois nas configurações.</p></div>
           <div className="use-case-grid">
             {opcoes.map((opcao) => (
-              <button className={`use-case-card${perfil === opcao.id ? " selected" : ""}`} key={opcao.id} aria-pressed={perfil === opcao.id} type="button" disabled={!preferenciasCarregadas} onClick={() => escolherPerfil(opcao.id)}>
+              <button className={`use-case-card${perfil === opcao.id ? " selected" : ""}`} key={opcao.id} aria-pressed={perfil === opcao.id} type="button" disabled={!preferenciasCarregadas} aria-label={opcao.id === "pessoal" ? "Finanças pessoais" : opcao.id === "empresa" ? "Minha empresa" : "Meu negócio"} onClick={() => escolherPerfil(opcao.id)}>
                 <span className="use-case-icon"><Icone nome={opcao.id === "pessoal" ? "movimentos" : opcao.id === "empresa" ? "empresa" : "venda"} /></span>
-                <span className="use-case-copy"><strong>{opcao.titulo}</strong><span>{opcao.descricao}</span><small>{opcao.detalhe}</small></span>
+                <span className="use-case-copy"><strong>{opcao.titulo}</strong><span>{opcao.descricao}</span></span>
                 <span className="use-case-check">{perfil === opcao.id ? <Icone nome="check" /> : null}</span>
               </button>
             ))}
           </div>
+          {perfil ? <p className="profile-detail">{opcoes.find(o => o.id === perfil)?.detalhe}</p> : null}
           <div className="saas-actions"><button className="primary-button saas-primary" type="button" disabled={!perfil || !preferenciasCarregadas} onClick={continuarPerfil}>Continuar</button></div>
         </section>
       ) : null}
 
       {etapa === 2 ? (
         <section className="onboarding-card" key={etapa}>
-          <div className="saas-heading"><p className="eyebrow">Personalização</p><h1 tabIndex={-1}>O que você mais quer melhorar agora?</h1><p>Escolha quantos objetivos quiser. Isso vai ajudar o Nexo a destacar as informações mais úteis.</p></div>
+          <div className="saas-heading"><p className="eyebrow">Personalização</p><h1 tabIndex={-1}>O que você mais quer melhorar agora?</h1><p>Escolha um foco para os próximos passos do dashboard. Você também pode continuar sem selecionar.</p></div>
           <div className="goal-choice-grid">
             {objetivosDisponiveis.map((objetivo) => (
               <button className={`goal-choice${objetivos.includes(objetivo) ? " selected" : ""}`} key={objetivo} aria-pressed={objetivos.includes(objetivo)} type="button" onClick={() => alternarObjetivo(objetivo)}>
@@ -169,9 +166,9 @@ export default function OnboardingPage() {
         <section className="onboarding-card onboarding-plan-step" key={etapa}>
           <div className="saas-heading"><p className="eyebrow">Tudo pronto</p><h1 tabIndex={-1}>Continue com seu plano e evolua quando precisar</h1><p>Suas preferências serão salvas no espaço atual. Compare os planos se precisar de mais recursos.</p></div>
           <div className="onboarding-plan-preview"><div className="plan-preview-main"><span className="plan-mini-label">Plano atual</span><strong>{config ? nomePlano(config.plano) : "Seu plano"}</strong><p>Seu plano acompanha este espaço. Comece agora e compare opções quando precisar.</p></div><div className="plan-preview-price"><strong>{assinatura ? assinatura.plano.valorMensal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "—"}</strong><span>/mês</span></div></div>
-          <div className="onboarding-benefits"><span><Icone nome="check" />Dashboard financeiro</span><span><Icone nome="check" />Vendas e despesas</span><span><Icone nome="check" />Produtos e clientes</span><span><Icone nome="check" />Relatórios essenciais</span></div>
+          <p className="profile-detail">{perfil === "pessoal" ? "Comece por entradas e gastos. Metas e análises adicionais acompanham seu plano." : perfil === "empresa" ? "Os dados e a assinatura pertencem a este espaço. Equipe e documentos ficam no Business, conforme suas permissões." : "Registre vendas, clientes e despesas sem duplicar lançamentos financeiros."} Seu foco: {objetivos.length ? objetivos.join(" · ") : "acompanhar seu dinheiro"}.</p>
           {erro ? <p className="form-error-banner" role="alert">{erro}</p> : null}
-          <div className="saas-actions split-actions"><button className="secondary-button" type="button" onClick={() => setEtapa(2)} disabled={salvando || !preferenciasCarregadas}>Voltar</button><button className="secondary-button" type="button" onClick={verPlanos} disabled={salvando || !preferenciasCarregadas}>Conhecer planos</button><button className="primary-button saas-primary" type="button" onClick={entrarNoNexo} disabled={salvando || !preferenciasCarregadas}>{salvando ? "Salvando..." : "Entrar no Nexo"}</button></div>
+          <div className="saas-actions split-actions"><button className="secondary-button" type="button" onClick={() => setEtapa(2)} disabled={salvando || !preferenciasCarregadas}>Voltar</button><button className="secondary-button" type="button" onClick={verPlanos} disabled={salvando || !preferenciasCarregadas}>Conhecer planos</button><button className="primary-button saas-primary" type="button" onClick={entrarNoNexo} disabled={salvando || !preferenciasCarregadas}>{salvando ? "Salvando..." : "Começar a usar"}</button></div>
         </section>
       ) : null}
     </main>
