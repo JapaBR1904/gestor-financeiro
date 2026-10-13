@@ -1,15 +1,15 @@
 .checkout-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.5rem; }
 .checkout-grid > section { display: grid; align-content: start; gap: 1rem; }
-.checkout-warning { padding: 1rem; border: 1px solid #f5d38a; border-radius: 12px; background: #fffbeb; color: #713f12; }
+.checkout-warning { padding: 1rem; border: 1px solid var(--border-strong); border-radius: 12px; background: var(--accent-soft); color: var(--warning); }
 .checkout-warning h2 { font-size: 1.2rem; }
 .checkout-consent, .checkout-methods label { display: flex; gap: 0.6rem; align-items: start; line-height: 1.5; }
 .checkout-consent input, .checkout-methods input { flex: 0 0 auto; width: 1.1rem; height: 1.1rem; margin-top: 0.25rem; }
-.checkout-methods { display: grid; gap: 0.8rem; padding: 1rem; border: 1px solid #cbd5e1; border-radius: 12px; }
-.checkout-methods legend { font-weight: 700; padding: 0 0.3rem; }
-.subscription-limit { color: #475569; font-size: 0.9rem; line-height: 1.5; }
+.checkout-methods { display: grid; gap: 0.8rem; padding: 1rem; border: 1px solid var(--border); border-radius: 12px; }
+.checkout-methods legend { font-weight: 600; padding: 0 0.3rem; }
+.subscription-limit { color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; }
 .subscription-history { display: grid; gap: 1rem; list-style: none; padding: 0; margin: 0; }
-.subscription-history li { display: grid; gap: 0.3rem; padding-bottom: 1rem; border-bottom: 1px solid #e2e8f0; }
-.subscription-shell :is(button, input, select, a):focus-visible, .pricing-shell :is(button, a):focus-visible { outline: 3px solid #2563eb; outline-offset: 3px; }
+.subscription-history li { display: grid; gap: 0.3rem; padding-bottom: 1rem; border-bottom: 1px solid var(--accent-soft); }
+.subscription-shell :is(button, input, select, a):focus-visible, .pricing-shell :is(button, a):focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 .subscription-shell button:disabled, .pricing-shell button:disabled { opacity: 0.65; cursor: not-allowed; }
 .subscription-shell p, .pricing-shell p { overflow-wrap: anywhere; }
 @media (max-width: 760px) { .checkout-grid { grid-template-columns: 1fr; } }

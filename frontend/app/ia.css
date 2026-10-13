@@ -1,8 +1,5 @@
 .nexo-ia-shell {
-  background:
-    radial-gradient(circle at 18% 0%, rgba(99, 102, 241, .13), transparent 32%),
-    radial-gradient(circle at 86% 8%, rgba(37, 99, 235, .09), transparent 30%),
-    linear-gradient(180deg, #f8fbff 0%, #f6f8fc 100%);
+  background: var(--surface-interactive);
 }
 
 .ia-heading,
@@ -30,7 +27,7 @@
 .ia-heading p:last-child {
   max-width: 700px;
   margin: 0;
-  color: #64748b;
+  color: var(--text-secondary);
   line-height: 1.6;
 }
 
@@ -39,12 +36,12 @@
   align-items: center;
   gap: .55rem;
   padding: .55rem .8rem;
-  border: 1px solid rgba(16, 185, 129, .18);
+  border: 1px solid var(--border);
   border-radius: 999px;
-  background: rgba(236, 253, 245, .9);
-  color: #047857;
+  background: var(--border);
+  color: var(--accent);
   font-size: .78rem;
-  font-weight: 800;
+  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -52,8 +49,8 @@
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: #10b981;
-  box-shadow: 0 0 0 4px rgba(16, 185, 129, .12);
+  background: var(--accent);
+  box-shadow: var(--shadow-sm);
 }
 
 .ia-grid {
@@ -65,10 +62,10 @@
 
 .ia-main-card,
 .ia-side-card {
-  border: 1px solid rgba(148, 163, 184, .18);
+  border: 1px solid var(--border);
   border-radius: 22px;
-  background: rgba(255, 255, 255, .95);
-  box-shadow: 0 20px 55px rgba(15, 23, 42, .07);
+  background: var(--border);
+  box-shadow: var(--shadow-sm);
 }
 
 .ia-main-card { padding: 1.35rem; }
@@ -86,8 +83,8 @@
   gap: .16rem;
 }
 
-.ia-card-heading strong { color: #172033; }
-.ia-card-heading small { color: #64748b; }
+.ia-card-heading strong { color: var(--ink); }
+.ia-card-heading small { color: var(--text-secondary); }
 
 .ia-spark {
   width: 38px;
@@ -96,24 +93,24 @@
   place-items: center;
   flex: 0 0 38px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #2563eb, #4f46e5);
-  color: #fff;
+  background: var(--surface-interactive);
+  color: var(--surface);
   font-size: 1rem;
-  box-shadow: 0 9px 22px rgba(37, 99, 235, .22);
+  box-shadow: var(--shadow-sm);
 }
 
 .ia-form {
   margin-top: 1rem;
-  border: 1px solid rgba(148, 163, 184, .24);
+  border: 1px solid var(--border);
   border-radius: 18px;
   overflow: hidden;
-  background: #fbfdff;
+  background: var(--surface);
   transition: border-color .18s ease, box-shadow .18s ease;
 }
 
 .ia-form:focus-within {
-  border-color: rgba(37, 99, 235, .38);
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, .07);
+  border-color: var(--border);
+  box-shadow: var(--shadow-sm);
 }
 
 .ia-form textarea {
@@ -124,12 +121,12 @@
   border: 0;
   outline: 0;
   background: transparent;
-  color: #172033;
+  color: var(--ink);
   font: inherit;
   line-height: 1.6;
 }
 
-.ia-form textarea::placeholder { color: #94a3b8; }
+.ia-form textarea::placeholder { color: var(--text-secondary); }
 
 .ia-form-footer {
   display: flex;
@@ -137,18 +134,18 @@
   justify-content: space-between;
   gap: 1rem;
   padding: .8rem;
-  border-top: 1px solid rgba(148, 163, 184, .14);
-  background: rgba(248, 250, 252, .9);
+  border-top: 1px solid var(--border);
+  background: var(--border);
 }
 
-.ia-form-footer small { color: #94a3b8; }
+.ia-form-footer small { color: var(--text-secondary); }
 
 .ia-response {
   margin-top: 1rem;
   padding: 1rem;
-  border: 1px solid rgba(37, 99, 235, .14);
+  border: 1px solid var(--border);
   border-radius: 18px;
-  background: linear-gradient(180deg, #f8fbff, #f4f8ff);
+  background: var(--surface-interactive);
 }
 
 .ia-response-title .ia-spark {
@@ -161,7 +158,7 @@
 
 .ia-response p {
   margin: .9rem 0 0;
-  color: #334155;
+  color: var(--accent);
   line-height: 1.7;
   white-space: pre-wrap;
 }
@@ -183,10 +180,10 @@
   gap: .8rem;
   width: 100%;
   padding: .8rem .85rem;
-  border: 1px solid rgba(148, 163, 184, .17);
+  border: 1px solid var(--border);
   border-radius: 13px;
-  background: #fff;
-  color: #475569;
+  background: var(--surface);
+  color: var(--text-secondary);
   text-align: left;
   font: inherit;
   font-size: .82rem;
@@ -197,26 +194,26 @@
 
 .ia-example-list button:hover {
   transform: translateY(-1px);
-  border-color: rgba(37, 99, 235, .28);
-  background: #f8fbff;
+  border-color: var(--border);
+  background: var(--surface);
 }
 
 .ia-example-list button span {
-  color: #2563eb;
-  font-weight: 900;
+  color: var(--accent);
+  font-weight: 600;
 }
 
 .ia-beta-note {
   margin-top: 1rem;
   padding: .9rem;
   border-radius: 14px;
-  background: #f8fafc;
-  color: #64748b;
+  background: var(--surface);
+  color: var(--text-secondary);
   font-size: .78rem;
   line-height: 1.55;
 }
 
-.ia-beta-note strong { color: #334155; }
+.ia-beta-note strong { color: var(--accent); }
 .ia-beta-note p { margin: .25rem 0 0; }
 
 @media (max-width: 900px) {

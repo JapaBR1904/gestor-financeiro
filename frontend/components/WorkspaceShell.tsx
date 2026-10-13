@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { Sidebar } from "./Sidebar";
 import { useWorkspace } from "../lib/workspace";
+import { Icone } from "./Icone";
 export function WorkspaceShell({
   titulo,
   descricao,
@@ -17,9 +18,9 @@ export function WorkspaceShell({
   return (
     <main className="app-shell">
       <Sidebar />
-      <section className="content">
+      <section className="content" id="conteudo" tabIndex={-1}>
         <div className="workspace-bar">
-          <span>{usuario?.organizacaoNome ?? "Seu espaço"}</span>
+          <Link href="/empresa" className="workspace-context" aria-label="Organização atual"><Icone nome="empresa" /><span>{usuario?.organizacaoNome ?? "Seu espaço"}</span></Link>
           <div>
             <Link href="/conta/assinatura" className="plan-pill">
               {config?.plano === "business"
@@ -30,9 +31,9 @@ export function WorkspaceShell({
                     ? "Free"
                     : "…"}
             </Link>
-            <span className="user-avatar" title={usuario?.nome}>
+            <Link href="/conta" className="user-avatar" title={usuario?.nome} aria-label="Minha conta">
               {usuario?.nome.slice(0, 1).toUpperCase() ?? "N"}
-            </span>
+            </Link>
           </div>
         </div>
         <header className="topbar">

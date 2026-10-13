@@ -1,5 +1,11 @@
 import type { SVGProps } from "react";
 const desenhos = {
+  chevrons: "m9 8 3-3 3 3 M9 16l3 3 3-3",
+  seta: "M4 12h16 M14 6l6 6-6 6",
+  fechar: "m6 6 12 12 M6 18 18 6",
+  check: "m5 12 4 4L19 6",
+  cadeado: "M6 10h12v11H6z M8 10V6a4 4 0 0 1 8 0v4 M12 14v3",
+  upload: "M12 16V3m-5 5 5-5 5 5 M4 16v5h16v-5",
   painel: "M3 3h7v7H3z M14 3h7v4h-7z M14 11h7v10h-7z M3 14h7v7H3z",
   movimentos: "M8 3v16m-4-4 4 4 4-4 M16 21V5m-4 4 4-4 4 4",
   relatorio: "M5 3h14v18H5z M9 7h6 M9 11h6 M9 15h3",

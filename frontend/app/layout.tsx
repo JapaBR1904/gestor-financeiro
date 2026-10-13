@@ -1,19 +1,26 @@
 import type { Metadata } from "next";
+import localFont from "next/font/local";
 import "./globals.css";
+import "./navigation.css";
 import "./features.css";
 import "./auth.css";
 import "./auth-suggestions.css";
-import "./polish.css";
 import "./tables.css";
 import "./refinement.css";
-import "./signature.css";
 import "./saas.css";
 import "./checkout.css";
-import "./saas-extra.css";
 import "./pro.css";
 import "./ia.css";
 import "./product.css";
 import { WorkspaceProvider } from "../components/WorkspaceProvider";
+
+const manrope = localFont({
+  src: "./fonts/manrope-latin-variable.woff2",
+  variable: "--font-nexo",
+  weight: "200 800",
+  display: "swap",
+  fallback: ["system-ui", "sans-serif"],
+});
 
 export const metadata: Metadata = {
   title: "Nexo",
@@ -22,8 +29,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="pt-BR">
-      <body><WorkspaceProvider>{children}</WorkspaceProvider></body>
+    <html lang="pt-BR" className={manrope.variable}>
+      <body><a href="#conteudo" className="skip-link">Pular para o conteúdo</a><WorkspaceProvider>{children}</WorkspaceProvider></body>
     </html>
   );
 }

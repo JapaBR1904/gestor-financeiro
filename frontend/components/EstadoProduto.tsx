@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Icone } from "./Icone";
 export function BloqueioPlano({
   plano,
   titulo,
@@ -31,7 +32,7 @@ export function VazioProduto({
 }) {
   return (
     <div className="product-empty">
-      <span aria-hidden="true">◌</span>
+      <span aria-hidden="true"><Icone nome="movimentos" /></span>
       <h3>{titulo}</h3>
       <p>{texto}</p>
       {acao}
