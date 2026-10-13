@@ -79,7 +79,7 @@ export default function RelatoriosPage() {
                 {relatorio.produtosMaisVendidos.length === 0 ? <div className="empty-state compact-empty-state"><strong>Ainda não há vendas.</strong></div> : (
                   <div className="report-list">
                     {itensVisiveis(relatorio.produtosMaisVendidos, "produtos").map((produto, indice) => (
-                      <div className="report-row" key={produto.nome}>
+                      <div className="report-row" key={`${produto.produtoId}-${produto.nome}`}>
                         <span className="ranking-badge">{indice + 1}</span>
                         <div className="report-row-main"><strong>{produto.nome}</strong><small>{produto.quantidadeVendida} unidade(s)</small><span className="report-progress"><span style={{ width: `${(produto.quantidadeVendida / limites.produtos) * 100}%` }} /></span></div>
                         <strong>{formatarMoeda(produto.faturamento)}</strong>
@@ -127,7 +127,7 @@ export default function RelatoriosPage() {
                 {relatorio.melhoresClientes.length === 0 ? <div className="empty-state compact-empty-state"><strong>Ainda não há vendas vinculadas a clientes.</strong></div> : (
                   <div className="report-list">
                     {itensVisiveis(relatorio.melhoresClientes, "clientes").map((cliente, indice) => (
-                      <div className="report-row" key={cliente.nome}>
+                      <div className="report-row" key={cliente.clienteId}>
                         <span className="ranking-badge">{indice + 1}</span>
                         <div className="report-row-main"><strong>{cliente.nome}</strong><small>{cliente.quantidadeVendas} compra(s)</small><span className="report-progress"><span style={{ width: `${(cliente.totalComprado / limites.clientes) * 100}%` }} /></span></div>
                         <strong>{formatarMoeda(cliente.totalComprado)}</strong>

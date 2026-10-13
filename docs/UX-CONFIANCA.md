@@ -34,3 +34,11 @@ O runner passou a aceitar porta de frontend de teste explícita para não encerr
 ## Semântica definida para checkpoint 2, antes dos cálculos
 
 Produtos: identidade composta por ID do produto e nome registrado no item da venda. Renomear o catálogo não reescreve vendas; snapshots de nomes distintos continuam separados. Produtos diferentes com o mesmo nome deixam de se juntar. Clientes: ID estável e nome atual, pois não existe snapshot de nome de cliente. Clientes removidos/sem vínculo não entram no ranking de clientes; as vendas continuam nos totais. Um cliente legitimamente chamado “Sem cliente identificado” deve aparecer. Todo o histórico comercial e fórmulas de faturamento, custo, lucro bruto e resultado permanecem iguais, com BigDecimal.
+
+## Checkpoint 2 — relatório
+
+Reprodução integrada, em transações sintéticas revertidas: antes, 1 venda fazia 5 consultas e 100 vendas faziam 104; homônimos/snapshots esperados em 3 grupos eram reduzidos a 2. Depois: **4 consultas para 1 e 100 vendas**, com projeção em batch dos itens e clientes carregados junto às vendas. Os tempos medidos nessa passagem (132/163 ms antes, 157/47 ms depois) incluem aquecimento e não constituem benchmark estatístico de latência; o resultado estável é o número de consultas.
+
+Adicionados IDs aos rankings e às chaves React. Ranking completo disponível, com os cinco primeiros mantidos na apresentação e expansão para os demais. Consultas filtram organização; itens conferem também organização da venda e produto. Cliente sem vínculo não entra no ranking, mas sua venda segue nos totais. Precisão, fórmulas e fontes financeiras preservadas.
+
+Os testes de relatório cobrem homônimos, centavos, nomes históricos do produto, cliente atual/inativo/sem vínculo e outra organização. Detectado também um problema antigo no SQL: a FK composta de cliente usa `ON DELETE SET NULL` nas duas colunas, incompatível com organização obrigatória. A aplicação inativa clientes; não foi alterada essa regra nem aplicada migração. Exclusão física com vendas fica como backlog que exige análise/migração autorizada. Nenhum registro existente foi apagado; a tentativa com fixture foi revertida.

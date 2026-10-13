@@ -1,9 +1,9 @@
 import { apiFetch } from "./api";
 
-export type ProdutoRanking = { nome: string; quantidadeVendida: number; faturamento: number };
+export type ProdutoRanking = { produtoId: number; nome: string; quantidadeVendida: number; faturamento: number };
 export type FormaPagamentoResumo = { formaPagamento: string; total: number };
 export type CategoriaDespesaResumo = { categoria: string; total: number };
-export type ClienteRanking = { nome: string; quantidadeVendas: number; totalComprado: number };
+export type ClienteRanking = { clienteId: number; nome: string; quantidadeVendas: number; totalComprado: number };
 
 export type RelatorioResumo = {
   quantidadeVendas: number;

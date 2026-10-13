@@ -2,7 +2,6 @@ package br.com.nexo.relatorio;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -12,7 +11,6 @@ import br.com.nexo.despesa.Despesa;
 import br.com.nexo.despesa.DespesaRepository;
 import br.com.nexo.organizacao.OrganizacaoService;
 import br.com.nexo.venda.Venda;
-import br.com.nexo.venda.VendaItem;
 import br.com.nexo.venda.VendaItemRepository;
 import br.com.nexo.venda.VendaRepository;
 import org.springframework.stereotype.Service;
@@ -41,7 +39,7 @@ public class RelatorioService {
     public RelatorioResumo gerar(Long organizacaoId) {
         organizacaoService.buscarPorId(organizacaoId);
 
-        List<Venda> vendas = vendaRepository.findByOrganizacaoIdOrderByCriadoEmDesc(organizacaoId);
+        List<Venda> vendas = vendaRepository.listarParaRelatorio(organizacaoId);
         List<Despesa> despesas = despesaRepository.findByOrganizacaoIdOrderByDataDespesaDescIdDesc(organizacaoId);
 
         BigDecimal faturamento = vendas.stream()
@@ -62,23 +60,27 @@ public class RelatorioService {
         BigDecimal lucroBruto = faturamento.subtract(custoVendas).setScale(2, RoundingMode.HALF_UP);
         BigDecimal saldoFinanceiro = faturamento.subtract(totalDespesas).setScale(2, RoundingMode.HALF_UP);
 
-        Map<String, ProdutoAcumulado> produtos = new LinkedHashMap<>();
+        Map<IdentidadeProduto, ProdutoAcumulado> produtos = new LinkedHashMap<>();
         Map<String, BigDecimal> formasPagamento = new LinkedHashMap<>();
-        Map<String, ClienteAcumulado> clientes = new LinkedHashMap<>();
+        Map<Long, ClienteAcumulado> clientes = new LinkedHashMap<>();
 
         for (Venda venda : vendas) {
             formasPagamento.merge(venda.getFormaPagamento(), venda.getTotalVenda(), BigDecimal::add);
 
-            String clienteNome = venda.getCliente() == null ? "Sem cliente identificado" : venda.getCliente().getNome();
-            ClienteAcumulado cliente = clientes.computeIfAbsent(clienteNome, nome -> new ClienteAcumulado(nome));
-            cliente.quantidadeVendas++;
-            cliente.totalComprado = cliente.totalComprado.add(venda.getTotalVenda());
-
-            for (VendaItem item : vendaItemRepository.findByVendaIdOrderByIdAsc(venda.getId())) {
-                ProdutoAcumulado produto = produtos.computeIfAbsent(item.getProdutoNome(), nome -> new ProdutoAcumulado(nome));
-                produto.quantidadeVendida += item.getQuantidade();
-                produto.faturamento = produto.faturamento.add(item.getSubtotal());
+            var pessoa = venda.getCliente();
+            if (pessoa != null && organizacaoId.equals(pessoa.getOrganizacao().getId())) {
+                ClienteAcumulado cliente = clientes.computeIfAbsent(pessoa.getId(), id -> new ClienteAcumulado(id, pessoa.getNome()));
+                cliente.quantidadeVendas++;
+                cliente.totalComprado = cliente.totalComprado.add(venda.getTotalVenda());
             }
+        }
+
+        // ID separa homônimos; o nome do item continua sendo o snapshot daquela venda.
+        for (var item : vendaItemRepository.listarParaRelatorio(organizacaoId)) {
+            var identidade = new IdentidadeProduto(item.getProdutoId(), item.getNome());
+            ProdutoAcumulado produto = produtos.computeIfAbsent(identidade, chave -> new ProdutoAcumulado(chave.id(), chave.nome()));
+            produto.quantidadeVendida += item.getQuantidade();
+            produto.faturamento = produto.faturamento.add(item.getSubtotal());
         }
 
         Map<String, BigDecimal> despesasPorCategoria = new LinkedHashMap<>();
@@ -88,8 +90,7 @@ public class RelatorioService {
 
         List<ProdutoRanking> produtosMaisVendidos = produtos.values().stream()
                 .sorted(Comparator.comparingInt((ProdutoAcumulado item) -> item.quantidadeVendida).reversed())
-                .limit(5)
-                .map(item -> new ProdutoRanking(item.nome, item.quantidadeVendida, item.faturamento.setScale(2, RoundingMode.HALF_UP)))
+                .map(item -> new ProdutoRanking(item.id, item.nome, item.quantidadeVendida, item.faturamento.setScale(2, RoundingMode.HALF_UP)))
                 .toList();
 
         List<FormaPagamentoResumo> pagamentos = formasPagamento.entrySet().stream()
@@ -103,10 +104,8 @@ public class RelatorioService {
                 .toList();
 
         List<ClienteRanking> melhoresClientes = clientes.values().stream()
-                .filter(item -> !"Sem cliente identificado".equals(item.nome))
                 .sorted(Comparator.comparing((ClienteAcumulado item) -> item.totalComprado).reversed())
-                .limit(5)
-                .map(item -> new ClienteRanking(item.nome, item.quantidadeVendas, item.totalComprado.setScale(2, RoundingMode.HALF_UP)))
+                .map(item -> new ClienteRanking(item.id, item.nome, item.quantidadeVendas, item.totalComprado.setScale(2, RoundingMode.HALF_UP)))
                 .toList();
 
         return new RelatorioResumo(
@@ -124,26 +123,30 @@ public class RelatorioService {
         );
     }
 
+    private record IdentidadeProduto(Long id, String nome) {}
+
     private static class ProdutoAcumulado {
+        private final Long id;
         private final String nome;
         private int quantidadeVendida;
         private BigDecimal faturamento = BigDecimal.ZERO;
 
-        private ProdutoAcumulado(String nome) { this.nome = nome; }
+        private ProdutoAcumulado(Long id, String nome) { this.id = id; this.nome = nome; }
     }
 
     private static class ClienteAcumulado {
+        private final Long id;
         private final String nome;
         private int quantidadeVendas;
         private BigDecimal totalComprado = BigDecimal.ZERO;
 
-        private ClienteAcumulado(String nome) { this.nome = nome; }
+        private ClienteAcumulado(Long id, String nome) { this.id = id; this.nome = nome; }
     }
 
-    public record ProdutoRanking(String nome, int quantidadeVendida, BigDecimal faturamento) {}
+    public record ProdutoRanking(Long produtoId, String nome, int quantidadeVendida, BigDecimal faturamento) {}
     public record FormaPagamentoResumo(String formaPagamento, BigDecimal total) {}
     public record CategoriaDespesaResumo(String categoria, BigDecimal total) {}
-    public record ClienteRanking(String nome, int quantidadeVendas, BigDecimal totalComprado) {}
+    public record ClienteRanking(Long clienteId, String nome, int quantidadeVendas, BigDecimal totalComprado) {}
 
     public record RelatorioResumo(
             int quantidadeVendas,
