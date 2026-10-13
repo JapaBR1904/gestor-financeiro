@@ -28,7 +28,7 @@
     radial-gradient(ellipse at 0 0, var(--ambient-blue), transparent 65%),
     var(--nav-bg);
   border-right: 1px solid var(--border);
-  box-shadow: 8px 0 32px color-mix(in srgb, var(--nav-bg), transparent 90%);
+  box-shadow: none;
   overflow-y: auto;
   scrollbar-width: thin;
 }
@@ -67,7 +67,7 @@
 .brand small {
   display: block;
   color: var(--text-secondary);
-  font-size: 0.6875rem;
+  font-size: var(--text-xs);
 }
 .sidebar-organization {
   display: flex;
@@ -100,7 +100,7 @@
   white-space: nowrap;
 }
 .sidebar-organization small {
-  font-size: 0.6875rem;
+  font-size: var(--text-xs);
   color: var(--text-subtle);
 }
 .menu {
@@ -119,9 +119,9 @@
 .nav-group-label {
   padding: 0 var(--space-3) var(--space-1);
   color: var(--text-subtle);
-  font-size: 0.625rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-size: var(--text-xs);
+  letter-spacing: 0;
+  text-transform: none;
   font-weight: 600;
 }
 .menu-item {
@@ -129,12 +129,12 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  min-height: 36px;
+  min-height: 44px;
   padding: var(--space-2) var(--space-3);
   color: var(--text-secondary);
   background: transparent;
   border-radius: var(--radius-sm);
-  font-size: 0.75rem;
+  font-size: var(--text-sm);
   text-align: left;
   transition:
     background var(--duration-fast),
@@ -145,14 +145,11 @@
 .menu-item:hover {
   background: var(--surface-interactive);
   color: var(--ink);
-  transform: translateX(2px);
+
 }
 .menu-item.active {
   background: var(--nav-active);
-  box-shadow:
-    inset 0 0 0 1px var(--nav-border),
-    0 4px 14px color-mix(in srgb, var(--nav-bg), transparent 70%);
-  color: var(--accent-ink);
+  color: var(--nav-active-ink);
   font-weight: 650;
 }
 .menu-item.active::before {
@@ -164,8 +161,8 @@
   width: 3px;
   border-radius: 2px;
   background: var(--accent);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--accent), transparent 30%);
 }
+.menu-item.active .menu-icon { color: var(--nav-active-ink); }
 .menu-item .menu-icon {
   color: var(--nav-accent);
   transition:
@@ -173,7 +170,7 @@
     transform var(--duration);
 }
 .menu-item:hover .menu-icon {
-  transform: translateY(-1px);
+
   color: var(--on-accent);
 }
 .menu-icon {
@@ -225,7 +222,7 @@
 }
 .plan-card small {
   color: var(--text-subtle);
-  font-size: 0.6875rem;
+  font-size: var(--text-xs);
 }
 .sidebar .plan-card[data-plan="pro"],
 .navigation-drawer .plan-card[data-plan="pro"] {
@@ -260,7 +257,7 @@
   text-overflow: ellipsis;
 }
 .sidebar-user small {
-  font-size: 0.6875rem;
+  font-size: var(--text-xs);
   color: var(--text-subtle);
 }
 .logout-button {
@@ -325,7 +322,7 @@
   background: var(--accent-soft);
   border: 1px solid var(--border);
   border-radius: 20px;
-  font-size: 0.6875rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   color: var(--accent-ink);
 }
@@ -346,7 +343,7 @@
   display: none;
 }
 .navigation-drawer {
-  width: min(320px, calc(100vw - 40px));
+  width: min(320px, calc(100vw - 32px));
   max-width: none;
   height: 100dvh;
   max-height: none;
@@ -362,7 +359,7 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  animation: drawer-enter var(--duration-slow) var(--ease);
+  animation: drawer-enter var(--duration) var(--ease);
 }
 .navigation-drawer::backdrop {
   background: var(--overlay);
@@ -386,15 +383,18 @@
 }
 @keyframes drawer-enter {
   from {
-    transform: translateX(-100%);
+    transform: translateX(-16px);
+    opacity: 0;
   }
   to {
     transform: translateX(0);
+    opacity: 1;
   }
 }
 @keyframes drawer-leave {
   to {
-    transform: translateX(-100%);
+    transform: translateX(-16px);
+    opacity: 0;
   }
 }
 @keyframes backdrop-leave {
@@ -406,13 +406,9 @@
   .sidebar {
     padding-inline: var(--space-3);
   }
-  .menu-item {
-    gap: var(--space-2);
-    padding-inline: 10px;
-    font-size: 0.6875rem;
-  }
+
 }
-@media (max-width: 900px) {
+@media (max-width: 1023px) {
   .sidebar {
     display: none;
   }
@@ -467,3 +463,12 @@
   font-size: var(--text-sm);
   line-height: 1.6;
 }
+
+.nav-group-toggle { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 44px; border-radius: var(--radius); background: transparent; text-align: left; }
+.nav-group-toggle:hover { background: var(--nav-hover); color: var(--nav-text); }
+.nav-group-toggle svg { width: 16px; height: 16px; }
+.menu-item.active .menu-icon { color: var(--nav-active-ink); }
+.analysis-navigation { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-5); padding-bottom: var(--space-3); border-bottom: 1px solid var(--border); }
+.analysis-navigation a { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 44px; padding: var(--space-2) var(--space-3); border-radius: var(--radius); color: var(--text-secondary); font-size: var(--text-sm); }
+.analysis-navigation a:hover { color: var(--accent); background: var(--surface-interactive); }
+.analysis-navigation a[aria-current] { color: var(--accent-ink); background: var(--accent-soft); font-weight: 650; }

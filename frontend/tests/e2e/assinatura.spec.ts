@@ -90,8 +90,9 @@ test("seis transições, persistência após reload e novo login", async ({
     // Link do Next mantém a sessão e verifica o contexto global sem F5/logout.
     await page.locator(".saas-brand").click();
     await expect(page.locator(".workspace-bar .plan-pill")).toHaveText(destino);
+    await page.getByRole("link", { name: "Análises", exact: true }).click();
     await expect(
-      page.locator('.sidebar a[href="/metas"] .nav-lock'),
+      page.locator('.analysis-navigation a[href="/metas"] .nav-lock'),
     ).toHaveCount(destino === "Free" ? 1 : 0);
     await expect(
       page.locator('.sidebar a[href="/equipe"] .nav-lock'),
@@ -536,7 +537,7 @@ test("finanças, Pro, Business, convite, documentos e downgrade preservam dados"
       await page.goto(rota);
       await expect(page.locator("main")).toBeVisible();
       await expect(
-        page.locator(largura <= 900 ? ".mobile-nav-bar" : ".sidebar"),
+        page.locator(largura < 1024 ? ".mobile-nav-bar" : ".sidebar"),
       ).toBeVisible();
       await expect(page.getByText(/^Carregando/)).toHaveCount(0);
       await expect(
@@ -746,7 +747,7 @@ test("polish em sete larguras, drawer, teclado, gráfico e movimento reduzido", 
     await expect(
       page.getByRole("heading", { name: "Visão geral", exact: true }),
     ).toBeVisible();
-    if (largura <= 900) {
+    if (largura < 1024) {
       const abrir = page.getByRole("button", {
         name: "Abrir menu",
         exact: true,

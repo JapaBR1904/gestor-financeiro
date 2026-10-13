@@ -9,49 +9,23 @@ import { useWorkspace } from "../lib/workspace";
 import { nomePlano, planoPermite } from "../lib/planos";
 
 const grupos = [
-  {
-    nome: "Visão financeira",
-    itens: [
-      { href: "/", nome: "Visão geral", icone: "painel" },
-      { href: "/pessoal", nome: "Lançamentos", icone: "movimentos" },
-      { href: "/relatorios", nome: "Relatórios", icone: "relatorio" },
-    ],
-  },
-  {
-    nome: "Operação",
-    itens: [
-      { href: "/vendas", nome: "Vendas", icone: "venda" },
-      { href: "/despesas", nome: "Despesas", icone: "despesa" },
-      { href: "/produtos", nome: "Produtos", icone: "produto" },
-      { href: "/clientes", nome: "Clientes", icone: "clientes" },
-    ],
-  },
-  {
-    nome: "Planejamento",
-    itens: [
-      { href: "/metas", nome: "Metas", icone: "meta", plano: "pro" },
-      {
-        href: "/fluxo-caixa",
-        nome: "Fluxo e comparativos",
-        icone: "fluxo",
-        plano: "pro",
-      },
-      { href: "/ia", nome: "Assistente IA", icone: "ia", plano: "pro" },
-    ],
-  },
-  {
-    nome: "Empresa",
-    itens: [
-      { href: "/empresa", nome: "Organização", icone: "empresa" },
-      { href: "/equipe", nome: "Equipe", icone: "equipe", plano: "business" },
-      {
-        href: "/documentos",
-        nome: "Documentos",
-        icone: "documento",
-        plano: "business",
-      },
-    ],
-  },
+  { nome: "Financeiro", itens: [
+    { href: "/", nome: "Visão geral", icone: "painel" },
+    { href: "/pessoal", nome: "Lançamentos", icone: "movimentos" },
+    { href: "/relatorios", nome: "Análises", icone: "relatorio" },
+  ] },
+  { nome: "Operação", itens: [
+    { href: "/vendas", nome: "Vendas", icone: "venda" },
+    { href: "/despesas", nome: "Despesas", icone: "despesa" },
+    { href: "/produtos", nome: "Produtos", icone: "produto" },
+    { href: "/clientes", nome: "Clientes", icone: "clientes" },
+  ] },
+  { nome: "Gestão", itens: [
+    { href: "/empresa", nome: "Organização", icone: "empresa" },
+    { href: "/equipe", nome: "Equipe", icone: "equipe", plano: "business" },
+    { href: "/documentos", nome: "Documentos", icone: "documento", plano: "business" },
+  ] },
+  { nome: "Ferramentas", itens: [{ href: "/ia", nome: "Assistente IA", icone: "ia", plano: "pro" }] },
 ] as const;
 export function Sidebar(props: {
   ativo?:
@@ -74,6 +48,7 @@ export function Sidebar(props: {
   const desktop = useRef<HTMLElement>(null);
   const fecharTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const toggle = useRef<HTMLButtonElement>(null);
+  const [gruposAbertos, setGruposAbertos] = useState<Record<string, boolean>>({});
 
   function fechar() {
     if (fechando) return;
@@ -81,7 +56,7 @@ export function Sidebar(props: {
     const duracao = window.matchMedia("(prefers-reduced-motion: reduce)")
       .matches
       ? 0
-      : 140;
+      : 120;
     fecharTimer.current = setTimeout(() => {
       dialog.current?.close();
       setAberto(false);
@@ -95,7 +70,7 @@ export function Sidebar(props: {
     elemento?.showModal();
     const overflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    const media = window.matchMedia("(min-width: 901px)");
+    const media = window.matchMedia("(min-width: 1024px)");
     const ajustar = () => {
       if (media.matches) {
         if (fecharTimer.current) clearTimeout(fecharTimer.current);
@@ -194,50 +169,27 @@ export function Sidebar(props: {
             (grupo) =>
               config?.perfilUso !== "pessoal" || grupo.nome !== "Operação",
           )
-          .map((grupo) => (
-            <div className="nav-group" key={grupo.nome}>
-              <span className="nav-group-label">{grupo.nome}</span>
+          .map((grupo) => {
+            const grupoAtivo = grupo.itens.some(item => pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href + "/")));
+            const recolhivel = grupo.nome === "Operação" || grupo.nome === "Gestão";
+            const expandido = grupoAtivo || !recolhivel || Boolean(gruposAbertos[grupo.nome]);
+            return <div className="nav-group" key={grupo.nome}>
+              {recolhivel ? <button className="nav-group-label nav-group-toggle" aria-expanded={expandido} onClick={() => setGruposAbertos(atual => ({ ...atual, [grupo.nome]: !expandido }))}>{grupo.nome}<Icone nome="chevrons" /></button> : <span className="nav-group-label">{grupo.nome}</span>}
+              <div hidden={!expandido}>
               {grupo.itens.map((item) => {
-                const preferida =
-                  props.ativo === "dashboard"
-                    ? "/"
-                    : props.ativo
-                      ? `/${props.ativo}`
-                      : null;
-                const ativo =
-                  pathname === item.href ||
-                  (!pathname && preferida === item.href) ||
-                  (item.href !== "/" && pathname.startsWith(item.href + "/"));
+                const analiseAtiva = item.nome === "Análises" && ["/relatorios", "/fluxo-caixa", "/metas"].some(rota => pathname === rota);
+                const ativo = analiseAtiva || pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href + "/")) || (!pathname && props.ativo === "dashboard" && item.href === "/");
                 const minimo = "plano" in item ? item.plano : null;
-                const bloqueado =
-                  minimo && config && !planoPermite(config.plano, minimo);
-                return (
-                  <Link
-                    className={`menu-item${ativo ? " active" : ""}`}
-                    href={item.href}
-                    key={item.href}
-                    aria-current={ativo ? "page" : undefined}
-                    onClick={() => {
-                      if (aberto) fechar();
-                    }}
-                  >
-                    <span className="menu-icon">
-                      <Icone nome={item.icone} />
-                    </span>
-                    <span>{item.nome}</span>
-                    {bloqueado ? (
-                      <span
-                        className="nav-lock"
-                        title={`Disponível no ${nomePlano(minimo)}`}
-                      >
-                        {nomePlano(minimo)}
-                      </span>
-                    ) : null}
-                  </Link>
-                );
+                const bloqueado = minimo && config && !planoPermite(config.plano, minimo);
+                const destino = item.nome === "Análises" && config?.perfilUso === "pessoal" && planoPermite(config.plano, "pro") ? "/fluxo-caixa" : item.href;
+                return <Link className={`menu-item${ativo ? " active" : ""}`} href={destino} key={item.href} aria-current={ativo ? "page" : undefined} onClick={() => { if (aberto) fechar(); }}>
+                  <span className="menu-icon"><Icone nome={item.icone} /></span><span>{item.nome}</span>
+                  {bloqueado ? <span className="nav-lock" title={`Disponível no ${nomePlano(minimo)}`}>{nomePlano(minimo)}</span> : null}
+                </Link>;
               })}
-            </div>
-          ))}
+              </div>
+            </div>;
+          })}
       </nav>
       <div className="sidebar-footer">
       {erroSaida ? <p className="sidebar-feedback" role="alert">{erroSaida} Você continua nesta sessão. Use Sair para tentar novamente.</p> : null}

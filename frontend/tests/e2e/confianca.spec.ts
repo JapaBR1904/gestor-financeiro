@@ -121,3 +121,30 @@ test("confiança: onboarding bloqueia sobrescrita até preferências carregarem"
   await expect(page.locator("main").getByRole("alert")).toHaveCount(0);
   expect(gravacoes).toBe(0);
 });
+
+test("navegação: sete larguras, drawer com grupos recolhidos, foco e redução de movimento", async ({ page }) => {
+  for (const width of [1440,1280,1024,768,430,390,360]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/");
+    await expect(page.getByRole("heading", { name: "Visão geral", exact: true })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    const menu = width < 1024 ? page.getByRole("dialog", { name: "Navegação do Nexo" }) : page.locator(".sidebar");
+    const abrir = page.getByRole("button", { name: "Abrir menu" });
+    if (width < 1024) await abrir.click();
+    const operacao = menu.getByRole("button", { name: "Operação", exact: true });
+    await expect(operacao).toHaveAttribute("aria-expanded", "false");
+    await expect(menu.getByRole("link", { name: "Vendas", exact: true })).not.toBeVisible();
+    await operacao.click();
+    await expect(menu.getByRole("link", { name: "Vendas", exact: true })).toBeVisible();
+    await operacao.click();
+    if (width < 1024) {
+      for (let i=0;i<18;i++) { await page.keyboard.press("Tab"); expect(await menu.evaluate(e => e.contains(document.activeElement))).toBe(true); }
+      await page.keyboard.press("Escape");
+      await expect(menu).not.toBeVisible();
+      await expect(abrir).toBeFocused();
+      await expect(page.locator("body")).not.toHaveCSS("overflow","hidden");
+    }
+  }
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(page.locator(".content")).toHaveCSS("animation-name", "none");
+});

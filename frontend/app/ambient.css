@@ -1,69 +1,9 @@
-/* Dois campos de luz compartilhados; sem listeners, partículas ou filtros animados. */
-body {
-  position: relative;
-  isolation: isolate;
-}
-.nexo-ambient {
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
-  z-index: -1;
-  pointer-events: none;
-}
-.nexo-ambient::before,
-.nexo-ambient::after {
-  content: "";
-  position: absolute;
-  width: 900px;
-  height: 700px;
-  background: radial-gradient(ellipse, var(--ambient-blue), transparent 68%);
-  animation: ambient-drift 24s ease-in-out infinite alternate;
-}
-.nexo-ambient::before {
-  top: -280px;
-  right: -190px;
-}
-.nexo-ambient::after {
-  left: 8%;
-  bottom: -360px;
-  background: radial-gradient(ellipse, var(--ambient-cyan), transparent 66%);
-  animation-duration: 30s;
-  animation-delay: -12s;
-}
+/* Acolhimento estático; a área autenticada usa o fundo neutro do produto. */
+.nexo-ambient { display: none; pointer-events: none; }
 .auth-shell,
-.saas-shell {
-  background: transparent;
-}
-@keyframes ambient-drift {
-  from {
-    transform: translate3d(0, 0, 0) scale(1);
-    opacity: 0.7;
-  }
-  to {
-    transform: translate3d(-35px, 25px, 0) scale(1.1);
-    opacity: 1;
-  }
-}
-@media (max-width: 760px) {
-  .nexo-ambient::before,
-  .nexo-ambient::after {
-    width: 560px;
-    height: 540px;
-    animation: none;
-    opacity: 0.65;
-  }
-  .nexo-ambient::before {
-    top: -180px;
-    right: -200px;
-  }
-  .nexo-ambient::after {
-    left: -220px;
-    bottom: -280px;
-  }
+.onboarding-shell {
+  background: radial-gradient(ellipse at 100% 0, var(--ambient-blue), transparent 65%), var(--background);
 }
 @media (prefers-reduced-motion: reduce) {
-  .nexo-ambient::before,
-  .nexo-ambient::after {
-    animation: none;
-  }
+  .nexo-ambient::before, .nexo-ambient::after { animation: none; }
 }

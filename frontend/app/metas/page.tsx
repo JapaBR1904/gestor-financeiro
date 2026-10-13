@@ -1,4 +1,5 @@
 "use client";
+import { NavegacaoAnalises } from "../../components/NavegacaoAnalises";
 import Link from "next/link";
 import { Icone } from "../../components/Icone";
 import { FormEvent, useEffect, useRef, useState } from "react";
@@ -110,6 +111,7 @@ export default function MetasPage() {
         ) : null
       }
     >
+      <NavegacaoAnalises />
       {!config ? (
         <p role="status">Carregando seu plano…</p>
       ) : !liberado ? (

@@ -1,4 +1,5 @@
 "use client";
+import { NavegacaoAnalises } from "../../components/NavegacaoAnalises";
 import { Icone } from "../../components/Icone";
 
 import { useEffect, useMemo, useState } from "react";
@@ -56,6 +57,7 @@ export default function RelatoriosPage() {
 
   return (
     <WorkspaceShell titulo="Relatórios" descricao="Histórico completo da operação comercial: vendas, custos dos produtos, despesas e clientes." acoes={<Link className="secondary-button" href="/fluxo-caixa">Análise por período</Link>}>
+        <NavegacaoAnalises />
         <p className="permission-note">Estes indicadores reúnem as vendas e despesas comerciais de todo o histórico. Para incluir lançamentos pessoais e filtrar datas, abra <Link href="/pessoal">Lançamentos</Link>.</p>
 
         {erro ? <p className="form-error-banner" role="alert">{erro} <button className="text-button" disabled={carregando} onClick={() => { setErro(""); setCarregando(true); setRevisao(r => r + 1); }}>Tentar novamente</button></p> : null}

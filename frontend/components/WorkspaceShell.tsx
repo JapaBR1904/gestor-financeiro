@@ -20,14 +20,10 @@ export function WorkspaceShell({
       <Sidebar />
       <section className="content" id="conteudo" tabIndex={-1}>
         <div className="workspace-bar">
-          <Link
-            href="/empresa"
-            className="workspace-context"
-            aria-label="Organização atual"
-          >
+          <div className="workspace-context" aria-label="Organização atual">
             <Icone nome="empresa" />
             <span>{usuario?.organizacaoNome ?? "Seu espaço"}</span>
-          </Link>
+          </div>
           <div>
             <Link
               href="/conta/assinatura"
@@ -55,7 +51,6 @@ export function WorkspaceShell({
         </div>
         <header className="topbar">
           <div>
-            <p className="eyebrow">Seu dinheiro, com clareza</p>
             <h1>{titulo}</h1>
             {descricao ? <p className="subtitle">{descricao}</p> : null}
           </div>

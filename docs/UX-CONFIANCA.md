@@ -42,3 +42,13 @@ Reprodução integrada, em transações sintéticas revertidas: antes, 1 venda f
 Adicionados IDs aos rankings e às chaves React. Ranking completo disponível, com os cinco primeiros mantidos na apresentação e expansão para os demais. Consultas filtram organização; itens conferem também organização da venda e produto. Cliente sem vínculo não entra no ranking, mas sua venda segue nos totais. Precisão, fórmulas e fontes financeiras preservadas.
 
 Os testes de relatório cobrem homônimos, centavos, nomes históricos do produto, cliente atual/inativo/sem vínculo e outra organização. Detectado também um problema antigo no SQL: a FK composta de cliente usa `ON DELETE SET NULL` nas duas colunas, incompatível com organização obrigatória. A aplicação inativa clientes; não foi alterada essa regra nem aplicada migração. Exclusão física com vendas fica como backlog que exige análise/migração autorizada. Nenhum registro existente foi apagado; a tentativa com fixture foi revertida.
+
+## Navegação e direção visual
+
+Financeiro agrupa Visão geral, Lançamentos e Análises. Análises mantém URLs de Fluxo de caixa, Metas e Relatórios comerciais e seus gates Pro, sem bloquear o relatório essencial do Free. Operação aparece apenas para negócio/empresa. Operação e Gestão são recolhíveis; a rota ativa mantém seu grupo expandido. Sidebar navy preservada, seleção azul suave e sem glow. Contexto de organização no cabeçalho é texto; o seletor único continua na sidebar. Drawer abaixo de 1024 px, itens de 44 px, foco nativo/trap/Escape/retorno ao botão e scroll preservados.
+
+Tokens centralizados: fundo neutro, superfícies claras, borda de controle mais contrastante, texto AA, ação azul e ciano pontual. Manrope local permanece. Conteúdo até 1280 px, sidebar 232 px, escala espacial existente. Movimento: 120/180/220 ms, entrada de 4 px, drawer de 16 px; botões não saltam. Fundo de acolhimento estático, sem aurora contínua em telas autenticadas; skeleton usa apenas opacidade durante espera. Não foi adicionada dependência.
+
+Fontes: lançamentos manuais se somam a vendas/despesas comerciais no resumo financeiro, sem replicar registros. Análises usam intervalo escolhido; Relatórios comerciais usam todo o histórico comercial e excluem movimentos manuais. Essa distinção permanece explícita na interface.
+
+Checkpoint 3 validado: TypeScript, lint e build passaram; seis cenários Playwright passaram, incluindo os cinco de confiança e navegação nas sete larguras, grupos recolhidos, foco contido, Escape/retorno e reduced-motion. Capturas sintéticas de dashboard desktop/mobile em `docs/design/ux-navegacao`; o layout financeiro ainda será refinado no próximo checkpoint.

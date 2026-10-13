@@ -1,4 +1,5 @@
 "use client";
+import { NavegacaoAnalises } from "./NavegacaoAnalises";
 import { FormEvent, useEffect, useState } from "react";
 import { WorkspaceShell } from "./WorkspaceShell";
 import { useWorkspace } from "../lib/workspace";
@@ -69,6 +70,7 @@ export function AnaliseConteudo() {
       titulo="Fluxo de caixa"
       descricao="Compare períodos, acompanhe o saldo acumulado e identifique os gastos que mais pesam."
     >
+      <NavegacaoAnalises />
       {!config ? (
         <p role="status">Carregando seu plano…</p>
       ) : !pro ? (

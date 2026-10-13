@@ -43,7 +43,6 @@
   z-index: -1;
   border: 1px solid color-mix(in srgb, var(--cyan-light), transparent 70%);
   border-radius: 50%;
-  animation: constellation-drift 20s ease-in-out infinite alternate;
 }
 .auth-constellation span {
   position: absolute;
@@ -63,11 +62,7 @@
   color: var(--cyan-light);
   opacity: 0.25;
 }
-@keyframes constellation-drift {
-  to {
-    transform: translate3d(-18px, 18px, 0) rotate(12deg);
-  }
-}
+
 .auth-story-label {
   display: flex;
   align-items: center;
