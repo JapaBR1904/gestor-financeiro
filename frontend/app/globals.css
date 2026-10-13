@@ -1,21 +1,21 @@
 /* Nexo: tokens globais e componentes compartilhados. */
 :root {
-  --background: #f4f5f1;
+  --background: #eef3fb;
   --surface: #ffffff;
   --surface-raised: #ffffff;
-  --overlay: #10291f66;
-  --shadow-button: 0 1px 2px #103d311a;
-  --surface-soft: #f8f9f6;
-  --surface-interactive: #edf2ec;
-  --ink: #1d302b;
-  --text-secondary: #52675f;
-  --text-subtle: #5b6c64;
-  --border: #dde4dc;
-  --border-strong: #b9c9bf;
-  --accent: #176b53;
-  --accent-hover: #10543f;
-  --accent-soft: #e7f2eb;
-  --accent-ink: #103d31;
+  --overlay: #06152a99;
+  --shadow-button: 0 1px 2px #1d5dec26;
+  --surface-soft: #f6f9fe;
+  --surface-interactive: #eaf0fa;
+  --ink: #12223f;
+  --text-secondary: #4c5f7d;
+  --text-subtle: #566783;
+  --border: #dce5f2;
+  --border-strong: #afc0dc;
+  --accent: #2257d6;
+  --accent-hover: #1744b2;
+  --accent-soft: #e9f0ff;
+  --accent-ink: #123778;
   --success: #176b46;
   --success-soft: #edf7ef;
   --warning: #805817;
@@ -25,10 +25,31 @@
   --positive: #176b46;
   --negative: #a33f36;
   --on-accent: #ffffff;
-  --shadow-sm: 0 1px 2px #17352a06, 0 3px 10px #17352a04;
-  --shadow-md: 0 4px 16px #17352a08, 0 1px 3px #17352a06;
-  --shadow-lg: 0 18px 48px #102e2417, 0 3px 8px #102e2408;
-  --focus-ring: 0 0 0 3px #176b531c;
+  --shadow-sm: 0 2px 4px #102c5607, 0 6px 16px #102c5608;
+  --shadow-md: 0 8px 24px #102c560e, 0 2px 6px #102c5608;
+  --shadow-lg: 0 24px 64px #102c561f, 0 4px 12px #102c560d;
+  --focus-ring: 0 0 0 3px #2257d61c;
+  /* Identidade azul: luz e profundidade com valores centralizados. */
+  --cyan: #087e9b;
+  --cyan-light: #86e2f8;
+  --ambient-blue: #4b83ff26;
+  --ambient-cyan: #34c4e31f;
+  --gradient-primary: linear-gradient(135deg, #2866e8, #1c4bc5);
+  --gradient-primary-hover: linear-gradient(135deg, #2058cf, #153ea8);
+  --gradient-premium: linear-gradient(135deg, #0b1b38, #153567);
+  --gradient-highlight: linear-gradient(135deg, #ffffff, #eef4ff);
+  --shadow-accent: 0 7px 20px #2257d633, inset 0 1px #ffffff33;
+  --shadow-accent-hover: 0 12px 28px #2257d640, inset 0 1px #ffffff40;
+  --shadow-premium: 0 16px 38px #12377829, inset 0 1px #ffffff1a;
+  --nav-bg: #0b1931;
+  --nav-surface: #132643;
+  --nav-hover: #1c3558;
+  --nav-text: #f3f7ff;
+  --nav-secondary: #c1d0e8;
+  --nav-subtle: #a3b7d7;
+  --nav-border: #2b4265;
+  --nav-accent: #8bc6ff;
+  --nav-active: linear-gradient(110deg, #2453aa66, #1c426b66);
   --radius-sm: 6px;
   --radius: 10px;
   --radius-lg: 14px;
@@ -161,7 +182,7 @@ svg {
   font-size: 0.6875rem;
   letter-spacing: 0.11em;
   text-transform: uppercase;
-  color: var(--text-subtle);
+  color: var(--accent);
   font-weight: 600;
 }
 .subtitle {
@@ -196,14 +217,15 @@ svg {
 }
 .primary-button {
   color: var(--on-accent);
-  background: var(--accent);
+  background: var(--gradient-primary);
   border-color: var(--accent);
-  box-shadow: var(--shadow-button);
+  box-shadow: var(--shadow-accent);
 }
 .primary-button:hover:not(:disabled) {
-  background: var(--accent-hover);
+  background: var(--gradient-primary-hover);
   border-color: var(--accent-hover);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-accent-hover);
+  transform: translateY(-2px);
 }
 .secondary-button {
   color: var(--ink);
@@ -214,6 +236,8 @@ svg {
 .secondary-button:hover:not(:disabled) {
   background: var(--surface-interactive);
   border-color: var(--accent);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 .ghost-button {
   color: var(--text-secondary);
@@ -528,10 +552,9 @@ input[type="radio"] {
 }
 .ingredient-row {
   display: grid;
-  grid-template-columns: minmax(160px, 1.4fr) repeat(
-      5,
-      minmax(92px, 0.7fr)
-    ) minmax(120px, 0.9fr) auto;
+  grid-template-columns:
+    minmax(160px, 1.4fr) repeat(5, minmax(92px, 0.7fr))
+    minmax(120px, 0.9fr) auto;
   align-items: end;
   gap: var(--space-3);
   padding: 20px;

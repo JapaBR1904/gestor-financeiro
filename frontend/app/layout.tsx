@@ -12,6 +12,7 @@ import "./checkout.css";
 import "./pro.css";
 import "./ia.css";
 import "./product.css";
+import "./ambient.css";
 import { WorkspaceProvider } from "../components/WorkspaceProvider";
 
 const manrope = localFont({
@@ -27,10 +28,18 @@ export const metadata: Metadata = {
   description: "Gestão simples para pequenos negócios",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR" className={manrope.variable}>
-      <body><a href="#conteudo" className="skip-link">Pular para o conteúdo</a><WorkspaceProvider>{children}</WorkspaceProvider></body>
+      <body>
+        <div className="nexo-ambient" aria-hidden="true" />
+        <a href="#conteudo" className="skip-link">
+          Pular para o conteúdo
+        </a>
+        <WorkspaceProvider>{children}</WorkspaceProvider>
+      </body>
     </html>
   );
 }

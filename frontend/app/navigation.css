@@ -1,4 +1,21 @@
 /* Navegação e contexto do espaço; o drawer usa o foco nativo de dialog. */
+/* Tokens locais mantêm contraste em todas as partes da navegação escura. */
+.sidebar,
+.navigation-drawer,
+.mobile-nav-bar {
+  --ink: var(--nav-text);
+  --text-secondary: var(--nav-secondary);
+  --text-subtle: var(--nav-subtle);
+  --surface: var(--nav-surface);
+  --surface-soft: var(--nav-bg);
+  --surface-interactive: var(--nav-hover);
+  --border: var(--nav-border);
+  --border-strong: var(--nav-accent);
+  --accent: var(--nav-accent);
+  --accent-ink: var(--nav-text);
+  --accent-soft: var(--nav-hover);
+  color: var(--ink);
+}
 .sidebar {
   position: sticky;
   top: 0;
@@ -7,8 +24,11 @@
   flex-direction: column;
   padding: 22px 14px 14px;
   gap: var(--space-4);
-  background: var(--surface-soft);
+  background:
+    radial-gradient(ellipse at 0 0, var(--ambient-blue), transparent 65%),
+    var(--nav-bg);
   border-right: 1px solid var(--border);
+  box-shadow: 8px 0 32px color-mix(in srgb, var(--nav-bg), transparent 90%);
   overflow-y: auto;
   scrollbar-width: thin;
 }
@@ -30,8 +50,9 @@
   height: 36px;
   display: grid;
   place-items: center;
-  background: var(--accent-ink);
+  background: var(--gradient-primary);
   color: var(--on-accent);
+  box-shadow: var(--shadow-accent);
   border-radius: var(--radius);
 }
 .brand-mark svg {
@@ -117,14 +138,20 @@
   text-align: left;
   transition:
     background var(--duration-fast),
-    color var(--duration-fast);
+    color var(--duration-fast),
+    transform var(--duration) var(--ease),
+    box-shadow var(--duration);
 }
 .menu-item:hover {
   background: var(--surface-interactive);
   color: var(--ink);
+  transform: translateX(2px);
 }
 .menu-item.active {
-  background: var(--accent-soft);
+  background: var(--nav-active);
+  box-shadow:
+    inset 0 0 0 1px var(--nav-border),
+    0 4px 14px color-mix(in srgb, var(--nav-bg), transparent 70%);
   color: var(--accent-ink);
   font-weight: 650;
 }
@@ -137,6 +164,17 @@
   width: 3px;
   border-radius: 2px;
   background: var(--accent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent), transparent 30%);
+}
+.menu-item .menu-icon {
+  color: var(--nav-accent);
+  transition:
+    color var(--duration),
+    transform var(--duration);
+}
+.menu-item:hover .menu-icon {
+  transform: translateY(-1px);
+  color: var(--on-accent);
 }
 .menu-icon {
   display: grid;
@@ -189,6 +227,19 @@
   color: var(--text-subtle);
   font-size: 0.6875rem;
 }
+.sidebar .plan-card[data-plan="pro"],
+.navigation-drawer .plan-card[data-plan="pro"] {
+  background: var(--nav-active);
+  border-color: var(--nav-accent);
+}
+.sidebar .plan-card[data-plan="business"],
+.navigation-drawer .plan-card[data-plan="business"] {
+  background: linear-gradient(
+    120deg,
+    var(--nav-surface),
+    color-mix(in srgb, var(--cyan), var(--nav-bg) 85%)
+  );
+}
 .sidebar-user {
   display: flex;
   align-items: center;
@@ -224,8 +275,8 @@
   background: transparent;
 }
 .logout-button:hover {
-  background: var(--danger-soft);
-  color: var(--danger);
+  background: var(--nav-hover);
+  color: var(--on-accent);
 }
 .workspace-bar {
   display: flex;
@@ -254,6 +305,15 @@
   display: flex;
   align-items: center;
   gap: 14px;
+}
+.plan-pill[data-plan="business"] {
+  background: var(--gradient-premium);
+  border-color: var(--nav-border);
+  color: var(--nav-text);
+}
+.plan-pill[data-plan="pro"] {
+  border-color: color-mix(in srgb, var(--accent), transparent 65%);
+  box-shadow: 0 2px 8px var(--ambient-blue);
 }
 .plan-pill {
   display: inline-flex;

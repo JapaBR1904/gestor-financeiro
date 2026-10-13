@@ -1,11 +1,12 @@
 # Sistema visual do Nexo
 
-Direção: verde profundo, superfícies claras e acolhedoras, tipografia editorial contida e leitura financeira precisa. Profundidade por contraste, borda e sombras leves; movimento apenas para navegação, estados e elementos interativos.
+Direção atual: fintech azul com identidade AI-native. Navegação navy, azul elétrico e cyan como luz ambiente, superfícies claras com profundidade e acentos financeiros verde/vermelho. Manrope, organização, componentes, semântica e responsividade da revisão anterior foram preservados.
 
 ## Organização
 
 - `frontend/app/globals.css`: tokens, reset, tipografia, botões, campos e superfícies compartilhadas.
-- `navigation.css`: navegação, contexto da organização e drawer mobile nativo de `dialog`.
+- `navigation.css`: navegação navy com tokens locais de contraste, contexto da organização e drawer mobile nativo de `dialog`.
+- `ambient.css`: dois campos de luz azul/cyan, apenas CSS; movimentos lentos em transform/opacity, estáticos no mobile e em reduced-motion.
 - `product.css`: módulos financeiros, metas, estados vazios, organização e Business.
 - `tables.css` e `refinement.css`: históricos comerciais e relatórios.
 - `auth.css`, `saas.css`, `checkout.css`, `pro.css` e `ia.css`: composição dos respectivos fluxos.
@@ -22,7 +23,11 @@ Tokens de movimento: 140, 220 e 320 ms. Entrada de conteúdo, mensagens e progre
 
 APIs, autorização, planos, contratos de autenticação e provedores de e-mail são preservados. Revisão visual usa apenas o banco dedicado `nexo_test`, contas sintéticas e serviços locais, sem publicação.
 
-## Checkpoint da base
+## Histórico da revisão anterior
+
+Os checkpoints abaixo descrevem a passagem anterior, mantida como base estrutural. A nova direção e sua validação estão registradas ao final.
+
+### Checkpoint da base
 
 TypeScript, lint, build de todas as rotas e 25 testes unitários passaram. Primeira inspeção no Chromium em 1440 e 390 px verificou a fonte carregada, ausência de overflow horizontal e fechamento por Escape com retorno de foco no menu mobile. A passagem completa das telas e demais larguras continua nos próximos blocos.
 
@@ -153,3 +158,14 @@ Lista relativa à base `95d456d2bc77c9d397968f4bb56f273405b05023`. `A`: adiciona
 - `A — docs/design/dashboard-mobile.png`
 - `A — docs/design/planos-desktop.png`
 - `A — docs/design/login-desktop.png`
+
+
+## Identidade azul recuperada — 2026-10-13
+
+Referência estudada: `git show 95d456d2bc77c9d397968f4bb56f273405b05023:frontend/app/polish.css`. Não houve checkout/restauração desse arquivo. As ideias recuperadas são luzes radiais azuis, navegação navy, seleção luminosa, botões em gradiente e profundidade nas superfícies; a estrutura antiga, a fonte Inter e os tamanhos antigos não foram restaurados.
+
+Os tokens permanecem em `globals.css`: fundo, texto, bordas, accent, cyan, cores financeiras, gradientes, sombras e paleta de navegação. A sidebar/drawer/topbar mobile recebem tokens locais claros para preservar contraste sobre navy; o plano atual distingue Pro e Business. A troca de badge anima uma entrada curta sem depender de reload.
+
+Os efeitos ambientais usam um único contêiner semântico oculto, dois pseudo-elementos, overflow limitado e `pointer-events: none`. Não há partículas JavaScript, listeners, canvas ou filtros animados. No celular os campos de luz ficam estáticos. Reduced-motion continua desativando animações e transições em todos os componentes.
+
+Checkpoint da nova base: 30 testes frontend, TypeScript, lint e build passaram. Inspeção no Chromium de login, dashboard, planos, equipe e IA em 1440/390 px: sem overflow ou violações A/AA detectadas, incluindo navegação navy. O JAR local foi iniciado apenas com `SPRING_PROFILES_ACTIVE=dev`, sem flag de simulação; startup e API confirmaram disponibilidade para o proprietário. As telas e o drawer foram revistos pelas screenshots antes do checkpoint.

@@ -211,6 +211,7 @@ export function Sidebar(props: {
       <div className="sidebar-footer">
         <Link
           className="plan-card"
+          data-plan={config?.plano}
           href="/planos"
           onClick={() => {
             if (aberto) fechar();

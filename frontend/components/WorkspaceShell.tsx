@@ -29,7 +29,12 @@ export function WorkspaceShell({
             <span>{usuario?.organizacaoNome ?? "Seu espaço"}</span>
           </Link>
           <div>
-            <Link href="/conta/assinatura" className="plan-pill">
+            <Link
+              href="/conta/assinatura"
+              className="plan-pill"
+              data-plan={config?.plano}
+              key={config?.plano}
+            >
               {config?.plano === "business"
                 ? "Business"
                 : config?.plano === "pro"
