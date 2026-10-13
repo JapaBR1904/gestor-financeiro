@@ -20,10 +20,20 @@ export default function RelatoriosPage() {
   const [expandidas, setExpandidas] = useState<Record<Secao, boolean>>({ produtos: false, recebimentos: false, despesas: false, clientes: false });
 
   useEffect(() => {
-    carregarRelatorioResumo()
-      .then(setRelatorio)
-      .catch((error) => setErro(error instanceof Error ? error.message : "Não foi possível carregar os relatórios."))
-      .finally(() => setCarregando(false));
+    let ativo = true;
+    Promise.resolve().then(async () => {
+      if (!ativo) return;
+      setCarregando(true);
+      setErro("");
+      setRelatorio(null);
+      try {
+        const dados = await carregarRelatorioResumo();
+        if (ativo) { setRelatorio(dados); setErro(""); }
+      } catch (error) {
+        if (ativo) setErro(error instanceof Error ? error.message : "Não foi possível carregar os relatórios.");
+      } finally { if (ativo) setCarregando(false); }
+    });
+    return () => { ativo = false; };
   }, [usuario?.organizacaoId, revisao]);
 
   const limites = useMemo(() => {
@@ -48,7 +58,7 @@ export default function RelatoriosPage() {
     <WorkspaceShell titulo="Relatórios" descricao="Histórico completo da operação comercial: vendas, custos dos produtos, despesas e clientes." acoes={<Link className="secondary-button" href="/fluxo-caixa">Análise por período</Link>}>
         <p className="permission-note">Estes indicadores reúnem as vendas e despesas comerciais de todo o histórico. Para incluir lançamentos pessoais e filtrar datas, abra <Link href="/pessoal">Lançamentos</Link>.</p>
 
-        {erro ? <p className="form-error-banner" role="alert">{erro} <button className="text-button" onClick={() => setRevisao(r => r + 1)}>Tentar novamente</button></p> : null}
+        {erro ? <p className="form-error-banner" role="alert">{erro} <button className="text-button" disabled={carregando} onClick={() => { setErro(""); setCarregando(true); setRevisao(r => r + 1); }}>Tentar novamente</button></p> : null}
 
         {carregando ? (
           <article className="panel"><div className="empty-state"><strong>Carregando relatórios...</strong></div></article>

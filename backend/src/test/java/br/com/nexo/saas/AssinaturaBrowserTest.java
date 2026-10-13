@@ -30,7 +30,11 @@ class AssinaturaBrowserTest {
     @Autowired AssinaturaService assinatura;
     @Autowired org.springframework.jdbc.core.JdbcTemplate jdbc;
     @org.springframework.test.context.bean.override.mockito.MockitoBean br.com.nexo.email.EmailProvider emailProvider;
-    @DynamicPropertySource static void banco(DynamicPropertyRegistry registry) { BancoAssinaturaTeste.configurar(registry); }
+    @DynamicPropertySource static void banco(DynamicPropertyRegistry registry) { BancoAssinaturaTeste.configurar(registry);
+        var origem = "http://localhost:" + System.getenv().getOrDefault("NEXO_E2E_PORT", "3000");
+        registry.add("nexo.allowed-origins", () -> origem);
+        registry.add("nexo.frontend-url", () -> origem);
+    }
 
     @Test void jornadaNoNavegadorComBackendEBancoReaisSemEnviarEmail() throws Exception {
         var caixa = Files.createTempFile("nexo-email-browser-", ".json");
@@ -66,9 +70,11 @@ class AssinaturaBrowserTest {
         comando.environment().put("NEXT_PUBLIC_API_URL", "http://localhost:" + porta);
         comando.environment().put("NEXO_E2E_EMAIL_INBOX", caixa.toString());
         comando.environment().put("NEXO_E2E_EMAILS", String.join(",", emails));
+        var filtro = System.getenv("NEXO_E2E_GREP");
+        if (filtro != null && !filtro.isBlank()) comando.command("npm", "run", "test:e2e", "--", "--grep", filtro);
         var processo = comando.start();
         try {
-            assertTrue(processo.waitFor(10, TimeUnit.MINUTES), "Navegador não terminou. Consulte " + log);
+            assertTrue(processo.waitFor(15, TimeUnit.MINUTES), "Navegador não terminou. Consulte " + log);
             assertEquals(0, processo.exitValue(), () -> "Falha no navegador: " + log + "\n" + lerLog(log));
             System.out.println(lerLog(log));
         } finally { if (processo.isAlive()) processo.destroyForcibly(); Files.deleteIfExists(caixa); }

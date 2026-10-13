@@ -18,6 +18,7 @@ export function AnaliseConteudo() {
   const { config, usuario } = useWorkspace();
   const [dados, setDados] = useState<AnaliseFinanceira | null>(null);
   const [erro, setErro] = useState("");
+  const [carregando, setCarregando] = useState(true);
   const [periodo, setPeriodo] = useState<{
     inicio: string;
     fim: string;
@@ -29,32 +30,31 @@ export function AnaliseConteudo() {
     if (!pro) return;
     let ativo = true;
     const escolhido = periodo ?? datasDoMes();
-    analiseFinanceira(escolhido.inicio, escolhido.fim)
-      .then((resumo) => {
-        if (ativo) {
-          setDados(resumo);
-          setCampos({ inicio: resumo.atual.inicio, fim: resumo.atual.fim });
-          setErro("");
-        }
-      })
-      .catch((error) => {
-        if (ativo)
-          setErro(
-            error instanceof Error
-              ? error.message
-              : "Não foi possível carregar a análise.",
-          );
-      });
+    Promise.resolve().then(async () => {
+      if (!ativo) return;
+      setCarregando(true);
+      setDados(null);
+      setErro("");
+      setCampos(escolhido);
+      try {
+        const resumo = await analiseFinanceira(escolhido.inicio, escolhido.fim);
+        if (ativo) { setDados(resumo); setErro(""); }
+      } catch (error) {
+        if (ativo) setErro(error instanceof Error ? error.message : "Não foi possível carregar a análise.");
+      } finally { if (ativo) setCarregando(false); }
+    });
     return () => {
       ativo = false;
     };
   }, [pro, periodo, usuario?.organizacaoId]);
   function filtrar(e: FormEvent) {
     e.preventDefault();
+    setCarregando(true);
+    setDados(null);
     setPeriodo({ ...campos });
   }
   async function exportar() {
-    if (!dados || exportando) return;
+    if (!dados || exportando || carregando || campos.inicio !== dados.atual.inicio || campos.fim !== dados.atual.fim) return;
     setExportando(true);
     try {
       await exportarFinanceiro(dados.atual.inicio, dados.atual.fim);
@@ -106,7 +106,7 @@ export function AnaliseConteudo() {
             <button
               className="secondary-button"
               type="button"
-              disabled={exportando || !dados}
+              disabled={exportando || carregando || !dados || campos.inicio !== dados.atual.inicio || campos.fim !== dados.atual.fim}
               onClick={exportar}
             >
               {exportando ? "Exportando…" : "Exportar CSV"}
@@ -117,17 +117,16 @@ export function AnaliseConteudo() {
               {erro}
               <button
                 className="text-button"
-                onClick={() =>
-                  setPeriodo(periodo ? { ...periodo } : datasDoMes())
-                }
+                disabled={carregando}
+                onClick={() => { setCarregando(true); setDados(null); setPeriodo(periodo ? { ...periodo } : datasDoMes()); }}
               >
                 Tentar novamente
               </button>
             </p>
           ) : null}
-          {!dados && !erro ? (
-            <p role="status">Carregando a análise…</p>
-          ) : dados ? (
+          {carregando ? (
+            <p role="status" aria-busy="true">Atualizando a análise…</p>
+          ) : dados && !erro ? (
             <>
               <section className="finance-summary">
                 {[

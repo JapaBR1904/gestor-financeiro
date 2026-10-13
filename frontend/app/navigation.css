@@ -456,3 +456,14 @@
     gap: 10px;
   }
 }
+
+.sidebar-feedback {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--nav-accent);
+  border-radius: var(--radius);
+  color: var(--nav-text);
+  background: var(--nav-surface);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+}

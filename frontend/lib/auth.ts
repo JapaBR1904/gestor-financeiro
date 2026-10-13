@@ -11,6 +11,10 @@ export type UsuarioAutenticado = {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
 
+class ErroAutenticacao extends Error {
+  constructor(mensagem: string, readonly status: number) { super(mensagem); }
+}
+
 async function requisicao<T>(caminho: string, dados?: unknown): Promise<T> {
   let response: Response;
   try {
@@ -36,7 +40,7 @@ async function requisicao<T>(caminho: string, dados?: unknown): Promise<T> {
     const corpo = await response.json();
     if (response.status < 500) mensagem = Object.values(corpo.campos ?? {})[0] as string || corpo.mensagem || mensagem;
   } catch {}
-  throw new Error(mensagem);
+  throw new ErroAutenticacao(mensagem, response.status);
 }
 
 export function cadastrar(dados: { nome: string; email: string; senha: string; confirmacaoSenha: string }) {
@@ -69,4 +73,10 @@ export function carregarUsuarioAtual(): Promise<UsuarioAutenticado> {
   return requisicao("/me");
 }
 
-export function logout() { return requisicao("/logout", {}); }
+export async function logout() {
+  try { await requisicao("/logout", {}); }
+  catch (erro) {
+    // 401 comprova que a sessão já expirou; falha de rede não comprova logout.
+    if (!(erro instanceof ErroAutenticacao && erro.status === 401)) throw erro;
+  }
+}

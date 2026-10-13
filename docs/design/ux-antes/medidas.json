@@ -1,0 +1,67 @@
+{
+  "dados": "Fixtures sintéticas de apresentação; todas as APIs interceptadas; nenhuma sessão ou banco acessado.",
+  "cpu": 4,
+  "perf": [
+    {
+      "nome": "dashboard",
+      "width": 1440,
+      "ms": 1001,
+      "overflow": false
+    },
+    {
+      "nome": "lancamentos",
+      "width": 1440,
+      "ms": 487,
+      "overflow": false
+    },
+    {
+      "nome": "ia",
+      "width": 1440,
+      "ms": 304,
+      "overflow": false
+    },
+    {
+      "nome": "planos",
+      "width": 1440,
+      "ms": 421,
+      "overflow": false
+    },
+    {
+      "nome": "organizacao",
+      "width": 1440,
+      "ms": 353,
+      "overflow": false
+    },
+    {
+      "nome": "dashboard",
+      "width": 390,
+      "ms": 516,
+      "overflow": false
+    },
+    {
+      "nome": "lancamentos",
+      "width": 390,
+      "ms": 419,
+      "overflow": false
+    },
+    {
+      "nome": "ia",
+      "width": 390,
+      "ms": 319,
+      "overflow": false
+    },
+    {
+      "nome": "planos",
+      "width": 390,
+      "ms": 265,
+      "overflow": false
+    },
+    {
+      "nome": "organizacao",
+      "width": 390,
+      "ms": 332,
+      "overflow": false
+    }
+  ],
+  "unexpected": []
+}

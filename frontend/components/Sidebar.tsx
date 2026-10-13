@@ -66,6 +66,8 @@ export function Sidebar(props: {
   const router = useRouter();
   const { config, usuario } = useWorkspace();
   const [saindo, setSaindo] = useState(false);
+  const [erroSaida, setErroSaida] = useState("");
+  const travaSaida = useRef(false);
   const [aberto, setAberto] = useState(false);
   const [fechando, setFechando] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -135,15 +137,19 @@ export function Sidebar(props: {
   }, [pathname, aberto]);
 
   async function sair() {
-    if (saindo) return;
+    if (travaSaida.current) return;
+    travaSaida.current = true;
     setSaindo(true);
+    setErroSaida("");
     try {
       await logout();
-    } catch {
-      /* Uma sessão expirada também pode sair. */
-    } finally {
       router.replace("/login");
       router.refresh();
+    } catch (erro) {
+      setErroSaida(erro instanceof Error ? erro.message : "Não foi possível encerrar a sessão. Tente novamente.");
+    } finally {
+      travaSaida.current = false;
+      setSaindo(false);
     }
   }
   const marca = (
@@ -234,6 +240,7 @@ export function Sidebar(props: {
           ))}
       </nav>
       <div className="sidebar-footer">
+      {erroSaida ? <p className="sidebar-feedback" role="alert">{erroSaida} Você continua nesta sessão. Use Sair para tentar novamente.</p> : null}
         <Link
           className="plan-card"
           data-plan={config?.plano}
