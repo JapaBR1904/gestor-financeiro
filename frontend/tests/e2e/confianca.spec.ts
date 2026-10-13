@@ -148,3 +148,32 @@ test("navegação: sete larguras, drawer com grupos recolhidos, foco e redução
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(page.locator(".content")).toHaveCSS("animation-name", "none");
 });
+
+test("financeiro: atualização, campos preservados em 503, edição e vazio filtrado", async ({ page }) => {
+  let chamadas = 0;
+  await page.route("**/api/financeiro/resumo?*", async route => {
+    chamadas++;
+    const periodo = new URL(route.request().url()).searchParams;
+    const mov = chamadas === 1 ? [{ id: 31, origem: "manual", tipo: "receita", descricao: "Receita sintética", valor: 42, data: periodo.get("fim"), categoria: "Serviços", conta: "Principal" }] : [];
+    await route.fulfill({ status: 200, json: { inicio: periodo.get("inicio"), fim: periodo.get("fim"), receitas: mov.length ? 42 : 0, despesas: 0, saldo: mov.length ? 42 : 0, movimentacoes: mov } });
+  });
+  let gravacoes = 0;
+  await page.route("**/api/financeiro/movimentacoes/31", async route => { gravacoes++; await route.fulfill(gravacoes === 1 ? { status: 503, json: {} } : { status: 200, json: {} }); });
+  await page.goto("/pessoal");
+  await page.getByLabel("Ações de Receita sintética", { exact: true }).click();
+  await page.getByRole("button", { name: "Editar", exact: true }).click();
+  await page.getByLabel("Descrição", { exact: true }).fill("Receita corrigida");
+  await page.getByRole("button", { name: "Salvar lançamento" }).click();
+  await expect(page.locator("main").getByRole("alert")).toContainText("indisponível");
+  await expect(page.getByLabel("Descrição", { exact: true })).toHaveValue("Receita corrigida");
+  await expect(page.getByLabel("Valor (R$)", { exact: true })).toHaveValue("42");
+  await page.getByRole("button", { name: "Salvar lançamento" }).click();
+  await expect(page.getByRole("heading", { name: "Editar lançamento" })).toHaveCount(0);
+  await page.getByLabel("De", { exact: true }).fill("2026-01-01");
+  await page.getByLabel("Até", { exact: true }).fill("2026-01-15");
+  await expect(page.getByRole("button", { name: "Exportar CSV" })).toBeDisabled();
+  await page.getByRole("button", { name: "Aplicar período" }).click();
+  await expect(page.getByRole("heading", { name: "Nenhum lançamento neste período" })).toBeVisible();
+  await page.getByRole("button", { name: "Limpar filtros", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Seu primeiro lançamento começa aqui" })).toBeVisible();
+});

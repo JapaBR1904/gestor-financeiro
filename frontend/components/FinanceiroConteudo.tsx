@@ -49,25 +49,19 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
   useEffect(() => {
     let ativo = true;
     const escolhido = periodo ?? datasDoMes();
-    resumoFinanceiro(escolhido.inicio, escolhido.fim)
-      .then((resumo) => {
-        if (ativo) {
-          setDados(resumo);
-          setCampos({ inicio: resumo.inicio, fim: resumo.fim });
-          setErro("");
-        }
-      })
-      .catch((error) => {
-        if (ativo)
-          setErro(
-            error instanceof Error
-              ? error.message
-              : "Não foi possível carregar as movimentações.",
-          );
-      })
-      .finally(() => {
-        if (ativo) setCarregando(false);
-      });
+    Promise.resolve().then(async () => {
+      if (!ativo) return;
+      setCarregando(true);
+      setDados(null);
+      setErro("");
+      setCampos(escolhido);
+      try {
+        const resumo = await resumoFinanceiro(escolhido.inicio, escolhido.fim);
+        if (ativo) { setDados(resumo); setErro(""); }
+      } catch (error) {
+        if (ativo) setErro(error instanceof Error ? error.message : "Não foi possível carregar as movimentações.");
+      } finally { if (ativo) setCarregando(false); }
+    });
     return () => {
       ativo = false;
     };
@@ -147,7 +141,7 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
     }
   }
   async function exportar() {
-    if (ocupado || !dados) return;
+    if (ocupado || carregando || !dados || campos.inicio !== dados.inicio || campos.fim !== dados.fim) return;
     setOcupado(true);
     try {
       await exportarFinanceiro(dados.inicio, dados.fim);
@@ -162,7 +156,7 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
   }
   const movimentos = pessoal
     ? (dados?.movimentacoes ?? [])
-    : (dados?.movimentacoes ?? []).slice(0, 7);
+    : (dados?.movimentacoes ?? []).slice(0, 5);
   const categorias = new Map<string, number>();
   for (const item of dados?.movimentacoes ?? [])
     if (item.tipo === "despesa")
@@ -179,20 +173,23 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
           : "O que entrou, o que saiu e o resultado do seu período."
       }
       acoes={
-        <button
+        podeGerenciar && !formulario ? <button
           className="primary-button"
           onClick={novo}
           disabled={!usuario || carregando || ocupado}
         >
           + Novo lançamento
-        </button>
+        </button> : null
       }
     >
+      <details className="period-details" open={pessoal || undefined}>
+        <summary>{periodo ? "Período selecionado" : "Este mês"}{dados ? ` · ${new Date(`${dados.inicio}T12:00:00`).toLocaleDateString("pt-BR")} a ${new Date(`${dados.fim}T12:00:00`).toLocaleDateString("pt-BR")}` : ""}<span>Alterar período</span></summary>
       <form
         className="period-toolbar"
         onSubmit={(event) => {
           event.preventDefault();
           setCarregando(true);
+          setDados(null);
           setPeriodo({ ...campos });
         }}
       >
@@ -223,7 +220,7 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
           <button
             type="button"
             className="secondary-button"
-            disabled={ocupado || carregando}
+            disabled={ocupado || carregando || !dados || campos.inicio !== dados.inicio || campos.fim !== dados.fim}
             onClick={exportar}
           >
             Exportar CSV
@@ -234,6 +231,7 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
           </Link>
         )}
       </form>
+      </details>
       {erro ? (
         <p className="form-error-banner" role="alert">
           {erro}{" "}
@@ -250,26 +248,11 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
           {sucesso}
         </p>
       ) : null}
-      <section className="finance-summary" aria-label="Resumo financeiro">
+      <section className={`finance-summary${dados && Math.max(Math.abs(dados.saldo), dados.receitas, dados.despesas) >= 1_000_000 ? " long-values" : ""}`} aria-label="Resumo financeiro" aria-busy={carregando}>
         {[
-          {
-            nome: "Entradas",
-            valor: dados?.receitas,
-            texto: "Receitas e vendas",
-            classe: "income-card",
-          },
-          {
-            nome: "Saídas",
-            valor: dados?.despesas,
-            texto: "Gastos do período",
-            classe: "expense-card",
-          },
-          {
-            nome: "Saldo do período",
-            valor: dados?.saldo,
-            texto: "Entradas menos saídas",
-            classe: "balance-card",
-          },
+          { nome: "Saldo do período", valor: dados?.saldo, texto: "Entradas menos saídas", classe: "balance-card" },
+          { nome: "Entradas", valor: dados?.receitas, texto: "Receitas e vendas", classe: "income-card" },
+          { nome: "Saídas", valor: dados?.despesas, texto: "Gastos do período", classe: "expense-card" },
         ].map((item) => (
           <article className={`summary-card ${item.classe}`} key={item.nome}>
             <span className="summary-label">
@@ -424,7 +407,7 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
             </h2>
             {!pessoal ? (
               <Link className="text-button" href="/pessoal">
-                Ver todas →
+                Ver todos
               </Link>
             ) : null}
           </div>
@@ -438,12 +421,10 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
             </p>
           ) : movimentos.length === 0 ? (
             <VazioProduto
-              titulo="Um bom começo é registrar o primeiro movimento"
-              texto="Adicione receitas e gastos. Vendas e despesas comerciais também aparecerão aqui, sem duplicação."
+              titulo={periodo ? "Nenhum lançamento neste período" : "Seu primeiro lançamento começa aqui"}
+              texto={periodo ? "Experimente outro intervalo para encontrar suas movimentações." : "Registre uma entrada ou saída para acompanhar o período. Vendas e despesas comerciais aparecem sem duplicação."}
               acao={
-                <button className="secondary-button" onClick={novo}>
-                  Adicionar lançamento
-                </button>
+                periodo ? <button className="secondary-button" onClick={() => { setPeriodo(null); setCarregando(true); }}>Limpar filtros</button> : podeGerenciar ? <button className="text-button" onClick={novo}>Adicionar lançamento</button> : null
               }
             />
           ) : (
@@ -452,8 +433,7 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
                 <thead>
                   <tr>
                     <th>Descrição</th>
-                    <th className="optional">Data</th>
-                    <th className="category-column">Categoria</th>
+                    {pessoal ? <><th className="optional">Data</th><th className="category-column">Categoria</th></> : null}
                     <th className="amount">Valor</th>
                     {pessoal && podeGerenciar ? <th>Ações</th> : null}
                   </tr>
@@ -464,7 +444,7 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
                       <td>
                         {item.descricao}
                         <small>
-                          {item.conta} ·{" "}
+                          {!pessoal ? `${new Date(`${item.data}T12:00:00`).toLocaleDateString("pt-BR")} · ` : `${item.conta} · `}
                           {item.origem === "manual"
                             ? "Lançamento"
                             : item.origem === "venda"
@@ -472,14 +452,14 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
                               : "Despesa comercial"}
                         </small>
                       </td>
-                      <td className="optional" data-label="Data">
+                      {pessoal ? <><td className="optional" data-label="Data">
                         {new Date(`${item.data}T12:00:00`).toLocaleDateString(
                           "pt-BR",
                         )}
                       </td>
                       <td className="category-column" data-label="Categoria">
                         <span className="tag">{item.categoria}</span>
-                      </td>
+                      </td></> : null}
                       <td
                         className={`amount ${item.tipo === "receita" ? "positive" : "negative"}`}
                       >
@@ -488,7 +468,7 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
                       </td>
                       {pessoal && podeGerenciar ? (
                         <td className="actions-cell">
-                          <div className="table-actions">
+                          <details className="row-actions"><summary aria-label={`Ações de ${item.descricao}`}>Ações</summary><div className="table-actions">
                             {item.origem === "manual" ? (
                               <>
                                 <button
@@ -518,7 +498,7 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
                                 Abrir
                               </Link>
                             )}
-                          </div>
+                          </div></details>
                         </td>
                       ) : null}
                     </tr>
@@ -533,10 +513,10 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
             <div className="panel-header">
               <h2>Para onde vai o dinheiro</h2>
             </div>
-            {categorias.size ? (
+            {carregando ? <div className="product-empty" role="status">Atualizando categorias…</div> : erro && !dados ? <p className="product-empty">Categorias indisponíveis. Tente carregar o período novamente.</p> : categorias.size ? (
               Array.from(categorias)
                 .sort((a, b) => b[1] - a[1])
-                .slice(0, 6)
+                .slice(0, 5)
                 .map(([nome, valor]) => (
                   <div className="category-row" key={nome}>
                     <span>{nome}</span>
@@ -556,40 +536,12 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
                 texto="Suas principais categorias aparecerão conforme registrar saídas."
               />
             )}
+            {!carregando && categorias.size > 5 ? <p className="category-other">Outras categorias: <strong>{formatarMoeda(Array.from(categorias).sort((a,b) => b[1]-a[1]).slice(5).reduce((total, [,valor]) => total + valor, 0))}</strong></p> : null}
+            {!carregando && dados ? <Link className="text-button" href="/fluxo-caixa">Ver análise por período</Link> : null}
           </section>
         ) : null}
       </div>
-      {!pessoal ? (
-        <section className="panel" style={{ marginTop: 20 }}>
-          <div className="panel-header">
-            <div>
-              <p className="eyebrow">Próximos passos</p>
-              <h2>Transforme números em decisões</h2>
-            </div>
-          </div>
-          <div className="quick-actions">
-            <Link className="quick-action" href="/metas">
-              <Icone nome="meta" />
-              <strong>Definir metas</strong>
-              <span>Acompanhe o progresso dos seus objetivos.</span>
-            </Link>
-            <Link className="quick-action" href="/fluxo-caixa">
-              <Icone nome="fluxo" />
-              <strong>Comparar períodos</strong>
-              <span>Entenda a evolução de entradas e gastos.</span>
-            </Link>
-            <Link className="quick-action" href="/planos">
-              <Icone nome="painel" />
-              <strong>
-                {config?.plano === "business"
-                  ? "Seu Business"
-                  : "Conhecer os planos"}
-              </strong>
-              <span>Veja os recursos disponíveis para seu momento.</span>
-            </Link>
-          </div>
-        </section>
-      ) : null}
+
     </WorkspaceShell>
   );
 }

@@ -52,3 +52,11 @@ Tokens centralizados: fundo neutro, superfícies claras, borda de controle mais 
 Fontes: lançamentos manuais se somam a vendas/despesas comerciais no resumo financeiro, sem replicar registros. Análises usam intervalo escolhido; Relatórios comerciais usam todo o histórico comercial e excluem movimentos manuais. Essa distinção permanece explícita na interface.
 
 Checkpoint 3 validado: TypeScript, lint e build passaram; seis cenários Playwright passaram, incluindo os cinco de confiança e navegação nas sete larguras, grupos recolhidos, foco contido, Escape/retorno e reduced-motion. Capturas sintéticas de dashboard desktop/mobile em `docs/design/ux-navegacao`; o layout financeiro ainda será refinado no próximo checkpoint.
+
+## Checkpoint 4 — financeiro e listas
+
+Saldo vem antes de entradas/saídas, com destaque azul suave; indicadores estáticos não têm hover de botão ou entrada escalonada. Dashboard mostra cinco movimentos, com descrição/data/origem/valor, e cinco categorias; o restante é somado em “Outras categorias”. Período e intervalo são visíveis; ajustes ficam sob “Alterar período”. Os três cards permanentes de propaganda foram removidos. Dados e CSV deixam de aparecer como atuais durante consulta pendente ou erro.
+
+Lançamentos mantêm colunas essenciais no desktop e layout adaptado no celular; ações por linha usam disclosure com nome acessível. Empty state diferencia período filtrado de início de uso. Campos são preservados quando salvar falha. Relatórios indicam todo o histórico comercial e revelam metodologia/rankings sob demanda. Metas ativas vêm primeiro e concluídas ficam em seção recolhível, sem mudar progresso/arquivo. Metas passaram a reutilizar o tratamento comum de rede/500/401, com os mesmos endpoints e contratos.
+
+Validação: 30 testes frontend, TypeScript/lint/build passaram. Oito cenários Playwright passaram: sete cenários isolados de confiança/navegação/edição e a jornada com backend/PostgreSQL reais envolvendo lançamentos, Pro, Business, convite, documentos, duas organizações e downgrade com dados preservados. Capturas sintéticas desktop/mobile em `docs/design/ux-financeiro`.

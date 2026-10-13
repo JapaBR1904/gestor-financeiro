@@ -96,6 +96,98 @@ export default function MetasPage() {
       setSucesso("Meta criada.");
     });
   }
+  function renderizarMeta(m: Meta) {
+              const progresso = Math.max(
+                0,
+                Math.min(100, (m.valorAtual / m.valorMeta) * 100),
+              );
+              return (
+                <article className={`pro-goal-card${m.status === "concluida" ? " completed" : ""}`} key={m.id}>
+                  <div className="pro-goal-top">
+                    <div>
+                      <span className="tag goal-status"><Icone nome={m.status === "concluida" ? "check" : "meta"} />
+                        {m.status === "concluida"
+                          ? "Concluída"
+                          : "Em andamento"}
+                      </span>
+                      <h2>{m.titulo}</h2>
+                      <p>
+                        {valor(m, m.valorAtual)} de {valor(m, m.valorMeta)}
+                        {m.prazo
+                          ? ` · prazo ${new Date(`${m.prazo}T12:00:00`).toLocaleDateString("pt-BR")}`
+                          : ""}
+                      </p>
+                    </div>
+                    <strong className="goal-percentage">{Math.round(progresso)}<span>%</span></strong>
+                  </div>
+                  <div
+                    className="premium-progress"
+                    role="progressbar"
+                    aria-label={`Progresso de ${m.titulo}`}
+                    aria-valuenow={Math.round(progresso)}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                  >
+                    <span style={{ width: `${progresso}%` }} />
+                  </div>
+                  {gestao ? (
+                    <form
+                      className="pro-goal-actions"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        void executar(async () => {
+                          await atualizarProgressoMeta(
+                            m.id,
+                            Number(edicoes[m.id] ?? m.valorAtual),
+                          );
+                          setRevisao((r) => r + 1);
+                          setSucesso("Progresso atualizado.");
+                        });
+                      }}
+                    >
+                      <label className="field">
+                        <span>Atualizar progresso</span>
+                        <input
+                          aria-label="Atualizar progresso"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          max="999999999999.99"
+                          required
+                          value={edicoes[m.id] ?? m.valorAtual}
+                          onChange={(e) =>
+                            setEdicoes({ ...edicoes, [m.id]: e.target.value })
+                          }
+                        />
+                      </label>
+                      <button className="secondary-button" disabled={ocupado}>
+                        Salvar progresso
+                      </button>
+                      <button
+                        className="text-button danger-text"
+                        type="button"
+                        disabled={ocupado}
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              "Arquivar esta meta? Seu histórico será preservado.",
+                            )
+                          )
+                            void executar(async () => {
+                              await arquivarMeta(m.id);
+                              setRevisao((r) => r + 1);
+                              setSucesso("Meta arquivada.");
+                            });
+                        }}
+                      >
+                        Arquivar
+                      </button>
+                    </form>
+                  ) : null}
+                </article>
+              );
+
+  }
   return (
     <WorkspaceShell
       titulo="Metas e comparativos"
@@ -252,97 +344,10 @@ export default function MetasPage() {
               texto="Crie uma meta com valor e prazo. Você registra o progresso, e o Nexo marca a conclusão quando o objetivo é atingido."
             />
           ) : (
-            metas?.map((m) => {
-              const progresso = Math.max(
-                0,
-                Math.min(100, (m.valorAtual / m.valorMeta) * 100),
-              );
-              return (
-                <article className={`pro-goal-card${m.status === "concluida" ? " completed" : ""}`} key={m.id}>
-                  <div className="pro-goal-top">
-                    <div>
-                      <span className="tag goal-status"><Icone nome={m.status === "concluida" ? "check" : "meta"} />
-                        {m.status === "concluida"
-                          ? "Concluída"
-                          : "Em andamento"}
-                      </span>
-                      <h2>{m.titulo}</h2>
-                      <p>
-                        {valor(m, m.valorAtual)} de {valor(m, m.valorMeta)}
-                        {m.prazo
-                          ? ` · prazo ${new Date(`${m.prazo}T12:00:00`).toLocaleDateString("pt-BR")}`
-                          : ""}
-                      </p>
-                    </div>
-                    <strong className="goal-percentage">{Math.round(progresso)}<span>%</span></strong>
-                  </div>
-                  <div
-                    className="premium-progress"
-                    role="progressbar"
-                    aria-label={`Progresso de ${m.titulo}`}
-                    aria-valuenow={Math.round(progresso)}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                  >
-                    <span style={{ width: `${progresso}%` }} />
-                  </div>
-                  {gestao ? (
-                    <form
-                      className="pro-goal-actions"
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        void executar(async () => {
-                          await atualizarProgressoMeta(
-                            m.id,
-                            Number(edicoes[m.id] ?? m.valorAtual),
-                          );
-                          setRevisao((r) => r + 1);
-                          setSucesso("Progresso atualizado.");
-                        });
-                      }}
-                    >
-                      <label className="field">
-                        <span>Atualizar progresso</span>
-                        <input
-                          aria-label="Atualizar progresso"
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          max="999999999999.99"
-                          required
-                          value={edicoes[m.id] ?? m.valorAtual}
-                          onChange={(e) =>
-                            setEdicoes({ ...edicoes, [m.id]: e.target.value })
-                          }
-                        />
-                      </label>
-                      <button className="secondary-button" disabled={ocupado}>
-                        Salvar progresso
-                      </button>
-                      <button
-                        className="text-button danger-text"
-                        type="button"
-                        disabled={ocupado}
-                        onClick={() => {
-                          if (
-                            window.confirm(
-                              "Arquivar esta meta? Seu histórico será preservado.",
-                            )
-                          )
-                            void executar(async () => {
-                              await arquivarMeta(m.id);
-                              setRevisao((r) => r + 1);
-                              setSucesso("Meta arquivada.");
-                            });
-                        }}
-                      >
-                        Arquivar
-                      </button>
-                    </form>
-                  ) : null}
-                </article>
-              );
-            })
+            <>
+              {metas?.filter(m => m.status === "ativa").map(renderizarMeta)}
+              {metas?.some(m => m.status === "concluida") ? <details className="completed-goals"><summary>Metas concluídas ({metas.filter(m => m.status === "concluida").length})</summary>{metas.filter(m => m.status === "concluida").map(renderizarMeta)}</details> : null}
+            </>
           )}
           <Link className="text-button" href="/fluxo-caixa">
             Ver fluxo e comparativos do período →

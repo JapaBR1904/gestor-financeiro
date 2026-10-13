@@ -419,7 +419,7 @@ test("finanças, Pro, Business, convite, documentos e downgrade preservam dados"
   await login(page, 8);
   await page.goto("/pessoal");
   await expect(
-    page.getByText("Um bom começo é registrar o primeiro movimento"),
+    page.getByText("Seu primeiro lançamento começa aqui"),
   ).toBeVisible();
   await page.goto(link);
   await expect(
@@ -487,7 +487,7 @@ test("finanças, Pro, Business, convite, documentos e downgrade preservam dados"
   await page.getByRole("button", { name: /^Organização sintética/ }).click();
   await expect(
     page.getByRole("heading", {
-      name: "Um bom começo é registrar o primeiro movimento",
+      name: "Seu primeiro lançamento começa aqui",
       exact: true,
     }),
   ).toBeVisible();

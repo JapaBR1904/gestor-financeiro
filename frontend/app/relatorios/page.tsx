@@ -56,9 +56,10 @@ export default function RelatoriosPage() {
   }
 
   return (
-    <WorkspaceShell titulo="Relatórios" descricao="Histórico completo da operação comercial: vendas, custos dos produtos, despesas e clientes." acoes={<Link className="secondary-button" href="/fluxo-caixa">Análise por período</Link>}>
+    <WorkspaceShell titulo="Relatórios comerciais" descricao="Histórico completo da operação comercial: vendas, custos dos produtos, despesas e clientes." acoes={<Link className="secondary-button" href="/fluxo-caixa">Análise por período</Link>}>
         <NavegacaoAnalises />
-        <p className="permission-note">Estes indicadores reúnem as vendas e despesas comerciais de todo o histórico. Para incluir lançamentos pessoais e filtrar datas, abra <Link href="/pessoal">Lançamentos</Link>.</p>
+        <p className="permission-note"><strong>Todo o histórico comercial.</strong> Vendas e despesas comerciais, sem lançamentos manuais. Para incluir movimentos manuais e escolher datas, abra <Link href="/pessoal">Lançamentos</Link>.</p>
+        <details className="calculation-details"><summary>Como é calculado</summary><p>Faturamento soma as vendas. Lucro bruto desconta o custo registrado nos itens da venda; resultado comercial desconta despesas comerciais. Produtos usam ID e nome na venda; clientes usam ID e nome atual. Pessoas e produtos homônimos permanecem separados.</p></details>
 
         {erro ? <p className="form-error-banner" role="alert">{erro} <button className="text-button" disabled={carregando} onClick={() => { setErro(""); setCarregando(true); setRevisao(r => r + 1); }}>Tentar novamente</button></p> : null}
 
@@ -75,6 +76,7 @@ export default function RelatoriosPage() {
               <article className="summary-card"><span>Lucro bruto</span><strong>{formatarMoeda(relatorio.lucroBruto)}</strong><small>Faturamento menos custo dos produtos</small></article>
             </section>
 
+            <details className="report-details"><summary>Ver rankings comerciais</summary>
             <section className="report-grid">
               <article className="panel report-card">
                 <div className="report-card-header"><div><p className="eyebrow">Produtos</p><h2>Mais vendidos</h2></div><span className="report-card-icon"><Icone nome="produto" /></span></div>
@@ -87,7 +89,7 @@ export default function RelatoriosPage() {
                         <strong>{formatarMoeda(produto.faturamento)}</strong>
                       </div>
                     ))}
-                    {relatorio.produtosMaisVendidos.length > 5 ? <button className="report-more" onClick={() => toggle("produtos")} type="button">{expandidas.produtos ? "Mostrar menos" : "••• Ver todos"}</button> : null}
+                    {relatorio.produtosMaisVendidos.length > 5 ? <button className="report-more" onClick={() => toggle("produtos")} type="button">{expandidas.produtos ? "Mostrar menos" : "Ver todos"}</button> : null}
                   </div>
                 )}
               </article>
@@ -103,7 +105,7 @@ export default function RelatoriosPage() {
                         <strong>{formatarMoeda(item.total)}</strong>
                       </div>
                     ))}
-                    {relatorio.formasPagamento.length > 5 ? <button className="report-more" onClick={() => toggle("recebimentos")} type="button">{expandidas.recebimentos ? "Mostrar menos" : "••• Ver todos"}</button> : null}
+                    {relatorio.formasPagamento.length > 5 ? <button className="report-more" onClick={() => toggle("recebimentos")} type="button">{expandidas.recebimentos ? "Mostrar menos" : "Ver todos"}</button> : null}
                   </div>
                 )}
               </article>
@@ -119,7 +121,7 @@ export default function RelatoriosPage() {
                         <strong>{formatarMoeda(item.total)}</strong>
                       </div>
                     ))}
-                    {relatorio.despesasPorCategoria.length > 5 ? <button className="report-more" onClick={() => toggle("despesas")} type="button">{expandidas.despesas ? "Mostrar menos" : "••• Ver todos"}</button> : null}
+                    {relatorio.despesasPorCategoria.length > 5 ? <button className="report-more" onClick={() => toggle("despesas")} type="button">{expandidas.despesas ? "Mostrar menos" : "Ver todos"}</button> : null}
                   </div>
                 )}
               </article>
@@ -135,11 +137,12 @@ export default function RelatoriosPage() {
                         <strong>{formatarMoeda(cliente.totalComprado)}</strong>
                       </div>
                     ))}
-                    {relatorio.melhoresClientes.length > 5 ? <button className="report-more" onClick={() => toggle("clientes")} type="button">{expandidas.clientes ? "Mostrar menos" : "••• Ver todos"}</button> : null}
+                    {relatorio.melhoresClientes.length > 5 ? <button className="report-more" onClick={() => toggle("clientes")} type="button">{expandidas.clientes ? "Mostrar menos" : "Ver todos"}</button> : null}
                   </div>
                 )}
               </article>
             </section>
+            </details>
           </div>
         )}
     </WorkspaceShell>

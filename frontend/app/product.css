@@ -8,67 +8,13 @@
 .finance-summary .summary-card > strong {
   margin: 7px 0;
 }
-.finance-summary .summary-card {
-  padding: var(--space-5);
-  gap: 9px;
-  position: relative;
-  overflow: hidden;
-  transition:
-    border-color var(--duration),
-    box-shadow var(--duration);
-  animation: page-enter var(--duration-slow) var(--ease) backwards;
-}
-.finance-summary .summary-card:nth-child(2) {
-  animation-delay: 35ms;
-}
-.finance-summary .summary-card:nth-child(3) {
-  animation-delay: 70ms;
-}
-.finance-summary .summary-card:hover {
-  box-shadow: var(--shadow-md);
-  border-color: var(--border-strong);
-}
-.finance-summary .income-card {
-  background: linear-gradient(135deg, var(--surface), var(--success-soft));
-  border-color: color-mix(in srgb, var(--success), var(--border) 85%);
-}
-.finance-summary .expense-card {
-  background: linear-gradient(135deg, var(--surface), var(--danger-soft));
-  border-color: color-mix(in srgb, var(--danger), var(--border) 85%);
-}
-.income-card > strong,
-.income-card .summary-label svg {
-  color: var(--positive);
-}
-.expense-card > strong,
-.expense-card .summary-label svg {
-  color: var(--negative);
-}
-.finance-summary .balance-card {
-  background:
-    radial-gradient(ellipse at 100% 0, var(--ambient-cyan), transparent 70%),
-    var(--gradient-premium);
-  color: var(--on-accent);
-  border-color: var(--nav-border);
-  box-shadow: var(--shadow-premium);
-}
-.finance-summary .balance-card::after {
-  content: "";
-  position: absolute;
-  width: 150px;
-  height: 150px;
-  right: -55px;
-  bottom: -115px;
-  border: 1px solid color-mix(in srgb, var(--cyan-light), transparent 65%);
-  border-radius: 50%;
-  box-shadow:
-    0 0 0 20px color-mix(in srgb, var(--cyan-light), transparent 95%),
-    0 0 0 40px color-mix(in srgb, var(--cyan-light), transparent 97%);
-  pointer-events: none;
-}
-.finance-summary .balance-card :is(span, small) {
-  color: color-mix(in srgb, var(--on-accent), transparent 20%);
-}
+/* Indicadores estáticos: hierarquia por posição e cor, sem hover de botão. */
+.finance-summary .summary-card { padding: var(--space-5); gap: var(--space-2); }
+.finance-summary .income-card, .finance-summary .expense-card { background: var(--surface); }
+.income-card > strong, .income-card .summary-label svg { color: var(--positive); }
+.expense-card > strong, .expense-card .summary-label svg { color: var(--negative); }
+.finance-summary .balance-card { background: var(--accent-soft); color: var(--ink); border-color: var(--border); }
+.finance-summary .balance-card :is(span, small) { color: var(--text-secondary); }
 .summary-label {
   display: flex;
   align-items: center;
@@ -83,7 +29,7 @@
   background: color-mix(in srgb, currentColor, transparent 94%);
 }
 .balance-card .summary-label svg {
-  color: var(--cyan-light);
+  color: var(--accent);
 }
 .product-empty {
   display: grid;
@@ -275,21 +221,19 @@
   stroke-width: 2.5;
   fill: none;
   stroke-linejoin: round;
-  animation: chart-enter var(--duration-slow) var(--ease) both;
+  animation: chart-enter var(--duration) var(--ease) both;
 }
 .financial-chart .chart-area {
   fill: var(--accent-soft);
   transform-origin: bottom;
-  animation: chart-enter var(--duration-slow) var(--ease) both;
+  animation: chart-enter var(--duration) var(--ease) both;
 }
 @keyframes chart-enter {
   from {
     opacity: 0;
-    transform: translateY(6px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 .financial-chart .chart-grid {
@@ -330,10 +274,9 @@
 .category-track span {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, var(--accent), var(--cyan));
+  background: var(--accent);
   border-radius: inherit;
   transform-origin: left;
-  animation: progress-enter var(--duration-slow) var(--ease) both;
 }
 .comparison-list {
   display: grid;
@@ -381,7 +324,7 @@
 }
 .pro-goal-card.completed {
   border-color: var(--border-strong);
-  background: linear-gradient(135deg, var(--surface), var(--success-soft));
+  background: var(--success-soft);
   border-top-color: var(--success);
 }
 .pro-goal-card h2 {
@@ -402,10 +345,9 @@
 .premium-progress > span {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, var(--accent), var(--cyan));
+  background: var(--accent);
   border-radius: inherit;
   transform-origin: left;
-  animation: progress-enter var(--duration-slow) var(--ease) both;
   transition: width var(--duration-slow) var(--ease);
 }
 .pro-goal-actions {
@@ -948,3 +890,23 @@
 .organization-actions .quick-action > :is(strong, span) {
   grid-column: 2;
 }
+
+.period-details { margin-bottom: var(--space-5); }
+.period-details > summary { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); min-height: 44px; width: fit-content; cursor: pointer; color: var(--text-secondary); font-size: var(--text-sm); }
+.period-details > summary > span { color: var(--accent); margin-left: var(--space-2); font-weight: 600; }
+.period-details .period-toolbar { margin: var(--space-3) 0 0; }
+.category-other { margin-top: var(--space-3); color: var(--text-secondary); font-size: var(--text-sm); }
+.finance-summary > .balance-card { order: -1; }
+@media (max-width: 760px) { .finance-summary.long-values { grid-template-columns: 1fr; } }
+
+.row-actions > summary, .calculation-details > summary, .report-details > summary, .completed-goals > summary { min-height: 44px; display: flex; align-items: center; gap: var(--space-2); cursor: pointer; color: var(--accent); font-size: var(--text-sm); font-weight: 600; }
+.row-actions > summary::after, .calculation-details > summary::after, .report-details > summary::after, .completed-goals > summary::after { content: "+"; }
+.row-actions[open] > summary::after, .calculation-details[open] > summary::after, .report-details[open] > summary::after, .completed-goals[open] > summary::after { content: "−"; }
+.row-actions .table-actions { flex-wrap: wrap; }
+.calculation-details { margin-bottom: var(--space-5); }
+.calculation-details p { max-width: 75ch; color: var(--text-secondary); margin-block: var(--space-3); }
+.completed-goals { margin-top: var(--space-5); }
+.report-details .report-grid { margin-top: var(--space-3); }
+.product-two-columns > .panel { align-self: start; }
+.finance-summary .balance-card > strong { font-size: var(--text-number); }
+@media (max-width: 760px) { .finance-summary.long-values .summary-card > strong { font-size: 1.5rem; } }
