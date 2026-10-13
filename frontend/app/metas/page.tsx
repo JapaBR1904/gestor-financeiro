@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { Icone } from "../../components/Icone";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { WorkspaceShell } from "../../components/WorkspaceShell";
 import { useWorkspace } from "../../lib/workspace";
@@ -254,10 +255,10 @@ export default function MetasPage() {
                 Math.min(100, (m.valorAtual / m.valorMeta) * 100),
               );
               return (
-                <article className="pro-goal-card" key={m.id}>
+                <article className={`pro-goal-card${m.status === "concluida" ? " completed" : ""}`} key={m.id}>
                   <div className="pro-goal-top">
                     <div>
-                      <span className="tag">
+                      <span className="tag goal-status"><Icone nome={m.status === "concluida" ? "check" : "meta"} />
                         {m.status === "concluida"
                           ? "Concluída"
                           : "Em andamento"}
@@ -270,7 +271,7 @@ export default function MetasPage() {
                           : ""}
                       </p>
                     </div>
-                    <strong>{Math.round(progresso)}%</strong>
+                    <strong className="goal-percentage">{Math.round(progresso)}<span>%</span></strong>
                   </div>
                   <div
                     className="premium-progress"

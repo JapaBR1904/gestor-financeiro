@@ -10,6 +10,8 @@ import {
   exportarFinanceiro,
 } from "../lib/financeiro";
 import { formatarMoeda } from "../lib/produtos";
+import { GraficoSaldo } from "./GraficoSaldo";
+import { Icone } from "./Icone";
 import { planoPermite } from "../lib/planos";
 
 export function AnaliseConteudo() {
@@ -62,16 +64,6 @@ export function AnaliseConteudo() {
       setExportando(false);
     }
   }
-  const saldos = dados?.evolucao.map((d) => d.saldo) ?? [];
-  const minimo = Math.min(0, ...saldos);
-  const maximo = Math.max(1, ...saldos);
-  const amplitude = maximo - minimo;
-  const pontos = saldos
-    .map(
-      (saldo, i) =>
-        `${15 + (i / Math.max(1, saldos.length - 1)) * 610},${140 - ((saldo - minimo) / amplitude) * 115}`,
-    )
-    .join(" ");
   return (
     <WorkspaceShell
       titulo="Fluxo de caixa"
@@ -155,8 +147,8 @@ export function AnaliseConteudo() {
                     anterior: dados.anterior.saldo,
                   },
                 ].map((item) => (
-                  <article className="summary-card" key={item.nome}>
-                    <span>{item.nome}</span>
+                  <article className={`summary-card ${item.nome === "Saldo" ? "balance-card" : ""}`} key={item.nome}>
+                    <span className="summary-label">{item.nome}<Icone nome={item.nome === "Entradas" ? "venda" : item.nome === "Saídas" ? "despesa" : "fluxo"} /></span>
                     <strong>{formatarMoeda(item.valor)}</strong>
                     <small>Anterior: {formatarMoeda(item.anterior)}</small>
                   </article>
@@ -173,34 +165,7 @@ export function AnaliseConteudo() {
                       texto="Adicione lançamentos ou escolha outro período para analisar a evolução."
                     />
                   ) : (
-                    <>
-                      <svg
-                        className="financial-chart"
-                        viewBox="0 0 640 160"
-                        role="img"
-                        aria-label="Evolução diária do saldo acumulado"
-                      >
-                        {[25, 60, 100, 140].map((y) => (
-                          <line
-                            key={y}
-                            className="chart-grid"
-                            x1="15"
-                            x2="625"
-                            y1={y}
-                            y2={y}
-                          />
-                        ))}
-                        <polygon
-                          className="chart-area"
-                          points={`15,145 ${pontos} 625,145`}
-                        />
-                        <polyline className="chart-line" points={pontos} />
-                      </svg>
-                      <div className="chart-caption">
-                        <span>{dados.atual.inicio}</span>
-                        <span>{dados.atual.fim}</span>
-                      </div>
-                    </>
+                    <GraficoSaldo dias={dados.evolucao} />
                   )}
                 </section>
                 <section className="panel">
@@ -230,8 +195,8 @@ export function AnaliseConteudo() {
                       },
                     ].map((item) => (
                       <div className="comparison-row" key={item.nome}>
-                        <span>{item.nome}</span>
-                        <strong>
+                        <span className="summary-label">{item.nome}<Icone nome={item.nome === "Entradas" ? "venda" : item.nome === "Saídas" ? "despesa" : "fluxo"} /></span>
+                        <strong className={item.atual === item.anterior ? "" : (item.nome === "Despesas" ? item.atual < item.anterior : item.atual > item.anterior) ? "positive" : "negative"}>
                           {item.atual - item.anterior >= 0 ? "+" : ""}
                           {formatarMoeda(item.atual - item.anterior)}
                         </strong>

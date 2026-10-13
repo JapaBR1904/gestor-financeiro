@@ -78,7 +78,7 @@ test("limites por plano, cancelamento da assinatura e links essenciais", async (
   await atual(page, "Free"); await mudar(page, "Pro");
   await page.goto("/metas"); await expect(page.getByRole("heading", { name: "Metas e comparativos", exact: true })).toBeVisible();
   await atual(page, "Pro"); await mudar(page, "Business");
-  await page.goto("/equipe"); await expect(page.getByText("Pessoa Teste", { exact: true })).toBeVisible();
+  await page.goto("/equipe"); await expect(page.locator(".member-info").getByText("Pessoa Teste", { exact: true })).toBeVisible();
   await page.goto("/conta/assinatura");
   await page.getByRole("link", { name: "Solicitar cancelamento" }).click();
   await page.getByRole("checkbox", { name: "Entendi a mudança e quero continuar" }).check();
@@ -184,7 +184,7 @@ test("finanças, Pro, Business, convite, documentos e downgrade preservam dados"
   for (const [largura, altura, nome] of [[1440, 900, "desktop"], [1024, 768, "notebook"], [768, 1024, "tablet"], [390, 844, "mobile"]] as const) {
     await page.setViewportSize({ width: largura, height: altura });
     for (const rota of ["/", "/pessoal", "/fluxo-caixa", "/metas", "/equipe", "/documentos", "/conta", "/produtos", "/clientes", "/vendas", "/despesas", "/relatorios"]) {
-      await page.goto(rota); await expect(page.locator("main")).toBeVisible(); await expect(page.locator(".sidebar")).toBeVisible(); await expect(page.getByText(/^Carregando/)).toHaveCount(0); await expect(page.getByText("Carregando seu espaço…", { exact: true })).toHaveCount(0); await semOverflow(page); await page.screenshot({ path: testInfo.outputPath(`${nome}-${rota.replaceAll("/", "") || "dashboard"}.png`), fullPage: true });
+      await page.goto(rota); await expect(page.locator("main")).toBeVisible(); await expect(page.locator(largura <= 900 ? ".mobile-nav-bar" : ".sidebar")).toBeVisible(); await expect(page.getByText(/^Carregando/)).toHaveCount(0); await expect(page.getByText("Carregando seu espaço…", { exact: true })).toHaveCount(0); await semOverflow(page); await page.waitForTimeout(350); await page.screenshot({ path: testInfo.outputPath(`${nome}-${rota.replaceAll("/", "") || "dashboard"}.png`), fullPage: true });
     }
   }
 });

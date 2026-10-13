@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { Icone } from "./Icone";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { WorkspaceShell } from "./WorkspaceShell";
 import { useWorkspace } from "../lib/workspace";
@@ -271,8 +272,8 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
           },
         ].map((item) => (
           <article className={`summary-card ${item.classe}`} key={item.nome}>
-            <span>{item.nome}</span>
-            <strong>
+            <span className="summary-label">{item.nome}<Icone nome={item.nome === "Entradas" ? "venda" : item.nome === "Saídas" ? "despesa" : "fluxo"} /></span>
+            <strong className={carregando ? "summary-loading" : ""} aria-busy={carregando}>
               {carregando || item.valor === undefined
                 ? "—"
                 : formatarMoeda(item.valor)}
@@ -433,7 +434,7 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
             />
           ) : (
             <div className="finance-table-wrap">
-              <table className="finance-table">
+              <table className="finance-table movements-table">
                 <thead>
                   <tr>
                     <th>Descrição</th>
@@ -457,12 +458,12 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
                               : "Despesa comercial"}
                         </small>
                       </td>
-                      <td className="optional">
+                      <td className="optional" data-label="Data">
                         {new Date(`${item.data}T12:00:00`).toLocaleDateString(
                           "pt-BR",
                         )}
                       </td>
-                      <td className="category-column">
+                      <td className="category-column" data-label="Categoria">
                         <span className="tag">{item.categoria}</span>
                       </td>
                       <td
@@ -472,7 +473,7 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
                         {formatarMoeda(item.valor)}
                       </td>
                       {pessoal && podeGerenciar ? (
-                        <td>
+                        <td className="actions-cell">
                           <div className="table-actions">
                             {item.origem === "manual" ? (
                               <>
@@ -554,15 +555,15 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
           </div>
           <div className="quick-actions">
             <Link className="quick-action" href="/metas">
-              <strong>Definir metas</strong>
+              <Icone nome="meta" /><strong>Definir metas</strong>
               <span>Acompanhe o progresso dos seus objetivos.</span>
             </Link>
             <Link className="quick-action" href="/fluxo-caixa">
-              <strong>Comparar períodos</strong>
+              <Icone nome="fluxo" /><strong>Comparar períodos</strong>
               <span>Entenda a evolução de entradas e gastos.</span>
             </Link>
             <Link className="quick-action" href="/planos">
-              <strong>
+              <Icone nome="painel" /><strong>
                 {config?.plano === "business"
                   ? "Seu Business"
                   : "Conhecer os planos"}
