@@ -9,14 +9,23 @@ type EmailInputProps = {
   invalid?: boolean;
 };
 
-export function EmailInput({ value, onChange, placeholder = "voce@empresa.com", invalid = false }: EmailInputProps) {
+export function EmailInput({
+  value,
+  onChange,
+  placeholder = "voce@empresa.com",
+  invalid = false,
+}: EmailInputProps) {
   const arroba = value.indexOf("@");
   const usuario = arroba >= 0 ? value.slice(0, arroba) : value;
-  const dominioDigitado = arroba >= 0 ? value.slice(arroba + 1).toLowerCase() : "";
+  const dominioDigitado =
+    arroba >= 0 ? value.slice(arroba + 1).toLowerCase() : "";
 
-  const sugestoes = arroba >= 0 && usuario.trim()
-    ? DOMINIOS.filter((dominio) => !dominioDigitado || dominio.startsWith(dominioDigitado))
-    : [];
+  const sugestoes =
+    arroba >= 0 && usuario.trim()
+      ? DOMINIOS.filter(
+          (dominio) => !dominioDigitado || dominio.startsWith(dominioDigitado),
+        )
+      : [];
 
   function completarDominio(dominio: string) {
     onChange(`${usuario}@${dominio}`);
@@ -35,7 +44,10 @@ export function EmailInput({ value, onChange, placeholder = "voce@empresa.com", 
       />
 
       {sugestoes.length > 0 ? (
-        <div className="email-suggestions" aria-label="Sugestões de domínio de e-mail">
+        <div
+          className="email-suggestions"
+          aria-label="Sugestões de domínio de e-mail"
+        >
           {sugestoes.map((dominio) => (
             <button
               className="email-suggestion"

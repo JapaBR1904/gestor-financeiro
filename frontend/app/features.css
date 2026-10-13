@@ -21,7 +21,10 @@
 
 .product-list-head,
 .product-list-row {
-  grid-template-columns: minmax(220px, 1.6fr) repeat(4, minmax(105px, 0.72fr)) minmax(190px, 1.1fr);
+  grid-template-columns: minmax(220px, 1.6fr) repeat(
+      4,
+      minmax(105px, 0.72fr)
+    ) minmax(190px, 1.1fr);
 }
 
 .product-actions .secondary-button {
@@ -107,8 +110,8 @@
 
 .dashboard-column-bar {
   width: min(84px, 72%);
-  min-height: 8px;
-  border-radius: 12px 12px 4px 4px;
+  min-height: var(--space-2);
+  border-radius: var(--space-3) var(--space-3) var(--space-1) var(--space-1);
   box-shadow: var(--shadow-sm);
   transition: height 0.25s ease;
 }
@@ -148,7 +151,9 @@
   border: 1px solid var(--accent-soft);
   border-radius: 10px;
   background: var(--surface);
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
 }
 
 .dashboard-product-row:hover {
@@ -228,7 +233,10 @@
 .sales-history-head,
 .sales-history-row {
   display: grid;
-  grid-template-columns: minmax(115px, 0.7fr) minmax(150px, 0.9fr) minmax(180px, 1.1fr) minmax(105px, 0.65fr) minmax(120px, 0.75fr) minmax(120px, auto);
+  grid-template-columns: minmax(115px, 0.7fr) minmax(150px, 0.9fr) minmax(
+      180px,
+      1.1fr
+    ) minmax(105px, 0.65fr) minmax(120px, 0.75fr) minmax(120px, auto);
   gap: 1rem;
   align-items: center;
 }
@@ -267,7 +275,10 @@
 @media (max-width: 1180px) {
   .product-list-head,
   .product-list-row {
-    grid-template-columns: minmax(210px, 1.5fr) repeat(4, minmax(95px, 0.7fr)) minmax(160px, 1fr);
+    grid-template-columns: minmax(210px, 1.5fr) repeat(
+        4,
+        minmax(95px, 0.7fr)
+      ) minmax(160px, 1fr);
     gap: 0.75rem;
   }
 

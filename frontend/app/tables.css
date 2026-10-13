@@ -1,27 +1,157 @@
 /* Históricos adaptados a cards em telas menores, preservando cada campo. */
-.sales-history-list, .product-list, .ingredient-detail-list { gap: 0; }
-.sales-history-head, .product-list-head, .ingredient-detail-head { padding: 12px 14px; background: var(--surface-soft); color: var(--text-subtle); font-size: .6875rem; font-weight: 500; letter-spacing: .05em; }
-.sales-history-row, .product-list-row, .ingredient-detail-row { min-width: 0; padding: 18px 14px; border-top: 0; border-bottom: 1px solid var(--border); background: var(--surface); transition: background var(--duration-fast); }
-.sales-history-row:hover, .product-list-row:hover, .ingredient-detail-row:hover { background: var(--surface-soft); }
-.sales-history-row:last-child, .product-list-row:last-child, .ingredient-detail-row:last-child { border-bottom: 0; }
-.sales-history-row > div, .product-list-row > div { min-width: 0; overflow-wrap: anywhere; }
-.sales-history-row strong, .product-list-row strong { color: var(--ink); font-size: var(--text-sm); font-weight: 500; }
-.sales-history-row [data-label="Forma de pagamento"] strong, .sales-history-row [data-label="Categoria"] strong { display: inline-flex; padding: 4px 8px; border-radius: 4px; background: var(--surface-interactive); font-size: var(--text-xs); }
-.sales-history-total strong { font-weight: 600; font-variant-numeric: tabular-nums; }
-.sales-history-row:has([data-label="Venda"]) .sales-history-total strong { color: var(--positive); }
-.sales-history-row:has([data-label="Despesa"]) .sales-history-total strong { color: var(--negative); }
-.sales-history-row:has([data-label="Cliente"]) { grid-template-columns: minmax(200px, 1.4fr) minmax(160px, 1fr) minmax(100px, .55fr) minmax(120px, auto); }
-.sales-history-row:has([data-label="Cliente"]) > div:empty { display: none; }
-.product-list-row > [data-label="Venda"], .product-list-row > [data-label="Custo"], .product-list-row > [data-label="Lucro estimado"] { font-variant-numeric: tabular-nums; font-weight: 600; }
-.product-list-row > [data-label="Lucro estimado"] { color: var(--positive); }
-.sales-history-action .secondary-button, .product-actions .secondary-button { min-height: 40px; padding: 9px 12px; font-size: var(--text-xs); }
-.ranking-badge { display: grid; place-items: center; width: 30px; height: 30px; border-radius: var(--radius-sm); color: var(--accent); background: var(--accent-soft); font-size: var(--text-xs); }
-.quick-actions-visual { grid-template-columns: 1fr; }
-.quick-action-visual.quick-action { grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: 12px; }
-.quick-action-icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: var(--radius); background: var(--accent-soft); color: var(--accent); }
-.quick-action-copy { display: grid; gap: 3px; }
-.quick-action-arrow { color: var(--text-subtle); transition: transform var(--duration-fast); }
-.quick-action-visual:hover .quick-action-arrow { transform: translateX(3px); }
-.sales-history-row:focus-within, .product-list-row:focus-within { background: var(--surface-soft); }
-@media (max-width: 1050px) { .sales-history-row:has([data-label="Cliente"]) { grid-template-columns: repeat(2, minmax(0, 1fr)); } .sales-history-row, .product-list-row, .ingredient-detail-row { margin-bottom: 12px; padding: 20px; border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); } }
-@media (max-width: 760px) { .sales-history-row:has([data-label="Cliente"]) { grid-template-columns: 1fr; } .sales-history-row, .product-list-row { gap: 14px; } .sales-history-row > div[data-label] { padding: 6px 0; } }
+.sales-history-list,
+.product-list,
+.ingredient-detail-list {
+  gap: 0;
+}
+.sales-history-head,
+.product-list-head,
+.ingredient-detail-head {
+  padding: var(--space-3) 14px;
+  background: var(--surface-soft);
+  color: var(--text-subtle);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+.sales-history-row,
+.product-list-row,
+.ingredient-detail-row {
+  min-width: 0;
+  padding: 18px 14px;
+  border-top: 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  transition: background var(--duration-fast);
+}
+.sales-history-row:hover,
+.product-list-row:hover,
+.ingredient-detail-row:hover {
+  background: var(--surface-soft);
+}
+.sales-history-row:last-child,
+.product-list-row:last-child,
+.ingredient-detail-row:last-child {
+  border-bottom: 0;
+}
+.sales-history-row > div,
+.product-list-row > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.sales-history-row strong,
+.product-list-row strong {
+  color: var(--ink);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+.sales-history-row [data-label="Forma de pagamento"] strong,
+.sales-history-row [data-label="Categoria"] strong {
+  display: inline-flex;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--space-1);
+  background: var(--surface-interactive);
+  font-size: var(--text-xs);
+}
+.sales-history-total strong {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.sales-history-row:has([data-label="Venda"]) .sales-history-total strong {
+  color: var(--positive);
+}
+.sales-history-row:has([data-label="Despesa"]) .sales-history-total strong {
+  color: var(--negative);
+}
+.sales-history-row:has([data-label="Cliente"]) {
+  grid-template-columns: minmax(200px, 1.4fr) minmax(160px, 1fr) minmax(
+      100px,
+      0.55fr
+    ) minmax(120px, auto);
+}
+.sales-history-row:has([data-label="Cliente"]) > div:empty {
+  display: none;
+}
+.product-list-row > [data-label="Venda"],
+.product-list-row > [data-label="Custo"],
+.product-list-row > [data-label="Lucro estimado"] {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.product-list-row > [data-label="Lucro estimado"] {
+  color: var(--positive);
+}
+.sales-history-action .secondary-button,
+.product-actions .secondary-button {
+  min-height: 40px;
+  padding: 9px var(--space-3);
+  font-size: var(--text-xs);
+}
+.ranking-badge {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  color: var(--accent);
+  background: var(--accent-soft);
+  font-size: var(--text-xs);
+}
+.quick-actions-visual {
+  grid-template-columns: 1fr;
+}
+.quick-action-visual.quick-action {
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+}
+.quick-action-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.quick-action-copy {
+  display: grid;
+  gap: 3px;
+}
+.quick-action-arrow {
+  color: var(--text-subtle);
+  transition: transform var(--duration-fast);
+}
+.quick-action-visual:hover .quick-action-arrow {
+  transform: translateX(3px);
+}
+.sales-history-row:focus-within,
+.product-list-row:focus-within {
+  background: var(--surface-soft);
+}
+@media (max-width: 1050px) {
+  .sales-history-row:has([data-label="Cliente"]) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .sales-history-row,
+  .product-list-row,
+  .ingredient-detail-row {
+    margin-bottom: var(--space-3);
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+  }
+}
+@media (max-width: 760px) {
+  .sales-history-row:has([data-label="Cliente"]) {
+    grid-template-columns: 1fr;
+  }
+  .sales-history-row,
+  .product-list-row {
+    gap: 14px;
+  }
+  .sales-history-row > div[data-label] {
+    padding: 6px 0;
+  }
+}

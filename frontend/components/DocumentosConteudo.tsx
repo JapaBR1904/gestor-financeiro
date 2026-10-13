@@ -132,17 +132,39 @@ export function DocumentosConteudo() {
               <h2>Adicionar documento</h2>
               <form onSubmit={enviar}>
                 <div className="form-grid">
-                  <label className={`field upload-zone${arrastando ? " drag-over" : ""}`} onDragOver={e => { e.preventDefault(); if (!ocupado) setArrastando(true); }} onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setArrastando(false); }} onDrop={e => {
-                    e.preventDefault(); setArrastando(false);
-                    if (ocupado) return;
-                    const arquivoSolto = e.dataTransfer.files[0];
-                    if (!arquivoSolto) return;
-                    const lista = new DataTransfer(); lista.items.add(arquivoSolto);
-                    if (entradaArquivo.current) entradaArquivo.current.files = lista.files;
-                    setArquivo(arquivoSolto);
-                  }}>
+                  <label
+                    className={`field upload-zone${arrastando ? " drag-over" : ""}`}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      if (!ocupado) setArrastando(true);
+                    }}
+                    onDragLeave={(e) => {
+                      if (
+                        !e.currentTarget.contains(
+                          e.relatedTarget as Node | null,
+                        )
+                      )
+                        setArrastando(false);
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setArrastando(false);
+                      if (ocupado) return;
+                      const arquivoSolto = e.dataTransfer.files[0];
+                      if (!arquivoSolto) return;
+                      const lista = new DataTransfer();
+                      lista.items.add(arquivoSolto);
+                      if (entradaArquivo.current)
+                        entradaArquivo.current.files = lista.files;
+                      setArquivo(arquivoSolto);
+                    }}
+                  >
                     <span>Arquivo</span>
-                    <span className="upload-prompt" aria-hidden="true"><Icone nome="upload" /><strong>Arraste seu arquivo para cá</strong><span>ou selecione no seu dispositivo</span></span>
+                    <span className="upload-prompt" aria-hidden="true">
+                      <Icone nome="upload" />
+                      <strong>Arraste seu arquivo para cá</strong>
+                      <span>ou selecione no seu dispositivo</span>
+                    </span>
                     <input
                       aria-label="Arquivo"
                       ref={entradaArquivo}
@@ -153,7 +175,12 @@ export function DocumentosConteudo() {
                       onChange={(e) => setArquivo(e.target.files?.[0] ?? null)}
                       disabled={ocupado}
                     />
-                    <span className="secondary-button upload-select" aria-hidden="true">Selecionar arquivo</span>
+                    <span
+                      className="secondary-button upload-select"
+                      aria-hidden="true"
+                    >
+                      Selecionar arquivo
+                    </span>
                     <small>
                       PDF, TXT, CSV, PNG ou JPEG. Até 5 MB por arquivo.
                     </small>
@@ -172,9 +199,18 @@ export function DocumentosConteudo() {
                     </small>
                   </label>
                 </div>
-                {arquivo ? <p className="upload-selection" role="status"><Icone nome="documento" />{arquivo.name} · {tamanhoArquivo(arquivo.size)}</p> : null}
+                {arquivo ? (
+                  <p className="upload-selection" role="status">
+                    <Icone nome="documento" />
+                    {arquivo.name} · {tamanhoArquivo(arquivo.size)}
+                  </p>
+                ) : null}
                 <div className="product-form-actions">
-                  <button className="primary-button" disabled={ocupado} aria-busy={ocupado}>
+                  <button
+                    className="primary-button"
+                    disabled={ocupado}
+                    aria-busy={ocupado}
+                  >
                     {ocupado ? "Enviando…" : "Salvar documento"}
                   </button>
                 </div>
@@ -189,11 +225,22 @@ export function DocumentosConteudo() {
           <section className="panel">
             <div className="panel-header">
               <h2>Arquivos do espaço</h2>
-              <span className="tag">
-                {tamanhoArquivo(total)} de 50 MB
-              </span>
+              <span className="tag">{tamanhoArquivo(total)} de 50 MB</span>
             </div>
-            <div className="document-quota" role="meter" aria-label="Armazenamento utilizado" aria-valuenow={total} aria-valuemin={0} aria-valuemax={50 * 1024 * 1024}><span style={{ width: `${Math.min(100, total / (50 * 1024 * 1024) * 100)}%` }} /></div>
+            <div
+              className="document-quota"
+              role="meter"
+              aria-label="Armazenamento utilizado"
+              aria-valuenow={total}
+              aria-valuemin={0}
+              aria-valuemax={50 * 1024 * 1024}
+            >
+              <span
+                style={{
+                  width: `${Math.min(100, (total / (50 * 1024 * 1024)) * 100)}%`,
+                }}
+              />
+            </div>
             {documentos === null && !erro ? (
               <p role="status">Carregando arquivos…</p>
             ) : documentos?.length === 0 ? (
@@ -204,14 +251,19 @@ export function DocumentosConteudo() {
             ) : (
               documentos?.map((doc) => (
                 <div className="member-row document-row" key={doc.id}>
-                  <div className="member-info"><span className="document-icon"><Icone nome="documento" /></span><div>
-                    <strong>{doc.nome}</strong>
-                    <small style={{ display: "block", marginTop: 6 }}>
-                      {doc.descricao || "Sem descrição"} ·{" "}
-                      {tamanhoArquivo(doc.tamanho)} ·{" "}
-                      {new Date(doc.criadoEm).toLocaleDateString("pt-BR")}
-                    </small>
-                  </div></div>
+                  <div className="member-info">
+                    <span className="document-icon">
+                      <Icone nome="documento" />
+                    </span>
+                    <div>
+                      <strong>{doc.nome}</strong>
+                      <small style={{ display: "block", marginTop: 6 }}>
+                        {doc.descricao || "Sem descrição"} ·{" "}
+                        {tamanhoArquivo(doc.tamanho)} ·{" "}
+                        {new Date(doc.criadoEm).toLocaleDateString("pt-BR")}
+                      </small>
+                    </div>
+                  </div>
                   <div className="member-actions">
                     <button
                       className="secondary-button"

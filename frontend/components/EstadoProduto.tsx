@@ -32,7 +32,9 @@ export function VazioProduto({
 }) {
   return (
     <div className="product-empty">
-      <span aria-hidden="true"><Icone nome="movimentos" /></span>
+      <span aria-hidden="true">
+        <Icone nome="movimentos" />
+      </span>
       <h3>{titulo}</h3>
       <p>{texto}</p>
       {acao}

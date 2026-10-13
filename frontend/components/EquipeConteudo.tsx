@@ -231,7 +231,10 @@ export function EquipeConteudo() {
                     (equipe.papelAtual === "proprietario" ||
                       membro.papel === "membro");
                   return (
-                    <div className={`member-row${!membro.ativo ? " member-inactive" : ""}`} key={membro.id}>
+                    <div
+                      className={`member-row${!membro.ativo ? " member-inactive" : ""}`}
+                      key={membro.id}
+                    >
                       <div className="member-info">
                         <span className="user-avatar" aria-hidden="true">
                           {Array.from(membro.nome)[0]}
@@ -239,7 +242,9 @@ export function EquipeConteudo() {
                         <div>
                           <strong>{membro.nome}</strong>
                           <small>
-                            <span className={`role-label role-${membro.papel}`}>{nomePapel(membro.papel)}</span>
+                            <span className={`role-label role-${membro.papel}`}>
+                              {nomePapel(membro.papel)}
+                            </span>
                             {membro.id === usuario?.id ? " · Você" : ""}
                             {!membro.ativo ? " · Acesso encerrado" : ""}
                           </small>

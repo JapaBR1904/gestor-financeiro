@@ -74,7 +74,11 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   if (!publico && !estado.usuario)
     return (
       <main className="auth-shell">
-        <section className="auth-card workspace-loading" id="conteudo" tabIndex={-1}>
+        <section
+          className="auth-card workspace-loading"
+          id="conteudo"
+          tabIndex={-1}
+        >
           <h1>Nexo</h1>
           {estado.erro ? (
             <>
@@ -89,7 +93,11 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
               </button>
             </>
           ) : (
-            <><p role="status">Carregando seu espaço…</p><div className="skeleton" aria-hidden="true" /><div className="skeleton" aria-hidden="true" /></>
+            <>
+              <p role="status">Carregando seu espaço…</p>
+              <div className="skeleton" aria-hidden="true" />
+              <div className="skeleton" aria-hidden="true" />
+            </>
           )}
         </section>
       </main>

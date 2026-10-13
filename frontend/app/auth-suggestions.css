@@ -18,7 +18,10 @@
   color: var(--accent);
   font-size: 0.8rem;
   font-weight: 600;
-  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease;
 }
 
 .email-suggestion:hover,

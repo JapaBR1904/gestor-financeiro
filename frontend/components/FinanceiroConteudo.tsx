@@ -272,8 +272,22 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
           },
         ].map((item) => (
           <article className={`summary-card ${item.classe}`} key={item.nome}>
-            <span className="summary-label">{item.nome}<Icone nome={item.nome === "Entradas" ? "venda" : item.nome === "Saídas" ? "despesa" : "fluxo"} /></span>
-            <strong className={carregando ? "summary-loading" : ""} aria-busy={carregando}>
+            <span className="summary-label">
+              {item.nome}
+              <Icone
+                nome={
+                  item.nome === "Entradas"
+                    ? "venda"
+                    : item.nome === "Saídas"
+                      ? "despesa"
+                      : "fluxo"
+                }
+              />
+            </span>
+            <strong
+              className={carregando ? "summary-loading" : ""}
+              aria-busy={carregando}
+            >
               {carregando || item.valor === undefined
                 ? "—"
                 : formatarMoeda(item.valor)}
@@ -440,7 +454,7 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
                     <th>Descrição</th>
                     <th className="optional">Data</th>
                     <th className="category-column">Categoria</th>
-                    <th>Valor</th>
+                    <th className="amount">Valor</th>
                     {pessoal && podeGerenciar ? <th>Ações</th> : null}
                   </tr>
                 </thead>
@@ -555,15 +569,18 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
           </div>
           <div className="quick-actions">
             <Link className="quick-action" href="/metas">
-              <Icone nome="meta" /><strong>Definir metas</strong>
+              <Icone nome="meta" />
+              <strong>Definir metas</strong>
               <span>Acompanhe o progresso dos seus objetivos.</span>
             </Link>
             <Link className="quick-action" href="/fluxo-caixa">
-              <Icone nome="fluxo" /><strong>Comparar períodos</strong>
+              <Icone nome="fluxo" />
+              <strong>Comparar períodos</strong>
               <span>Entenda a evolução de entradas e gastos.</span>
             </Link>
             <Link className="quick-action" href="/planos">
-              <Icone nome="painel" /><strong>
+              <Icone nome="painel" />
+              <strong>
                 {config?.plano === "business"
                   ? "Seu Business"
                   : "Conhecer os planos"}

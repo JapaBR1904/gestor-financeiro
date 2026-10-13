@@ -147,8 +147,22 @@ export function AnaliseConteudo() {
                     anterior: dados.anterior.saldo,
                   },
                 ].map((item) => (
-                  <article className={`summary-card ${item.nome === "Saldo" ? "balance-card" : ""}`} key={item.nome}>
-                    <span className="summary-label">{item.nome}<Icone nome={item.nome === "Entradas" ? "venda" : item.nome === "Saídas" ? "despesa" : "fluxo"} /></span>
+                  <article
+                    className={`summary-card ${item.nome === "Saldo" ? "balance-card" : ""}`}
+                    key={item.nome}
+                  >
+                    <span className="summary-label">
+                      {item.nome}
+                      <Icone
+                        nome={
+                          item.nome === "Entradas"
+                            ? "venda"
+                            : item.nome === "Saídas"
+                              ? "despesa"
+                              : "fluxo"
+                        }
+                      />
+                    </span>
                     <strong>{formatarMoeda(item.valor)}</strong>
                     <small>Anterior: {formatarMoeda(item.anterior)}</small>
                   </article>
@@ -173,8 +187,15 @@ export function AnaliseConteudo() {
                     <h2>Comparativo</h2>
                   </div>
                   <p className="subtitle">
-                    Intervalo anterior de mesma duração: {new Date(`${dados.anterior.inicio}T12:00:00`).toLocaleDateString("pt-BR")}{" "}
-                    a {new Date(`${dados.anterior.fim}T12:00:00`).toLocaleDateString("pt-BR")}.
+                    Intervalo anterior de mesma duração:{" "}
+                    {new Date(
+                      `${dados.anterior.inicio}T12:00:00`,
+                    ).toLocaleDateString("pt-BR")}{" "}
+                    a{" "}
+                    {new Date(
+                      `${dados.anterior.fim}T12:00:00`,
+                    ).toLocaleDateString("pt-BR")}
+                    .
                   </p>
                   <div className="comparison-list">
                     {[
@@ -196,7 +217,19 @@ export function AnaliseConteudo() {
                     ].map((item) => (
                       <div className="comparison-row" key={item.nome}>
                         <span>{item.nome}</span>
-                        <strong className={item.atual === item.anterior ? "" : (item.nome === "Despesas" ? item.atual < item.anterior : item.atual > item.anterior) ? "positive" : "negative"}>
+                        <strong
+                          className={
+                            item.atual === item.anterior
+                              ? ""
+                              : (
+                                    item.nome === "Despesas"
+                                      ? item.atual < item.anterior
+                                      : item.atual > item.anterior
+                                  )
+                                ? "positive"
+                                : "negative"
+                          }
+                        >
                           {item.atual - item.anterior >= 0 ? "+" : ""}
                           {formatarMoeda(item.atual - item.anterior)}
                         </strong>

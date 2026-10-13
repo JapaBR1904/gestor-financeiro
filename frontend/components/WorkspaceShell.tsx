@@ -20,7 +20,14 @@ export function WorkspaceShell({
       <Sidebar />
       <section className="content" id="conteudo" tabIndex={-1}>
         <div className="workspace-bar">
-          <Link href="/empresa" className="workspace-context" aria-label="Organização atual"><Icone nome="empresa" /><span>{usuario?.organizacaoNome ?? "Seu espaço"}</span></Link>
+          <Link
+            href="/empresa"
+            className="workspace-context"
+            aria-label="Organização atual"
+          >
+            <Icone nome="empresa" />
+            <span>{usuario?.organizacaoNome ?? "Seu espaço"}</span>
+          </Link>
           <div>
             <Link href="/conta/assinatura" className="plan-pill">
               {config?.plano === "business"
@@ -31,7 +38,12 @@ export function WorkspaceShell({
                     ? "Free"
                     : "…"}
             </Link>
-            <Link href="/conta" className="user-avatar" title={usuario?.nome} aria-label="Minha conta">
+            <Link
+              href="/conta"
+              className="user-avatar"
+              title={usuario?.nome}
+              aria-label="Minha conta"
+            >
               {usuario?.nome.slice(0, 1).toUpperCase() ?? "N"}
             </Link>
           </div>

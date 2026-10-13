@@ -1,18 +1,103 @@
 /* Assistente como ferramenta de decisão, integrado ao espaço financeiro. */
-.ia-intro { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
-.ia-symbol { display: grid; place-items: center; width: 42px; height: 42px; flex-shrink: 0; border: 1px solid var(--border); border-radius: var(--radius); background: var(--accent-soft); color: var(--accent); }
-.ia-intro p { color: var(--text-secondary); font-size: var(--text-xs); margin-top: 4px; }
-.ia-question-form { display: grid; gap: 16px; }
-.ia-question-form .subtitle { margin: 0; font-size: var(--text-xs); }
-.ia-answer { margin-top: 28px; padding: 24px; border: 1px solid var(--border-strong); border-left: 3px solid var(--accent); border-radius: var(--radius); background: var(--surface-soft); animation: page-enter var(--duration-slow) var(--ease); }
-.ia-answer > div { white-space: pre-wrap; line-height: 1.9; margin-top: 16px; font-size: var(--text-base); overflow-wrap: anywhere; }
-.ia-thinking { display: grid; gap: 12px; margin-top: 24px; padding: 24px; border: 1px solid var(--border); border-radius: var(--radius); }
-.ia-thinking .skeleton { height: 12px; } .ia-thinking .skeleton:last-child { width: 60%; }
-.ia-unavailable { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(240px, .8fr); gap: 24px; }
-.ia-unavailable .product-lock { gap: 24px; }
-.ia-next-steps { display: grid; align-content: start; gap: 16px; }
-.ia-next-steps .quick-action { background: var(--surface); }
-.ia-examples { display: grid; align-content: start; gap: 12px; }
-.ia-examples .quick-action { width: 100%; min-height: 66px; font-size: var(--text-sm); }
-@media (max-width: 1024px) { .ia-unavailable { grid-template-columns: 1fr; } .ia-next-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 760px) { .ia-next-steps { grid-template-columns: 1fr; } .ia-answer { padding: 20px; } }
+.ia-intro {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: var(--space-5);
+}
+.ia-symbol {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.ia-intro p {
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  margin-top: var(--space-1);
+}
+.ia-question-form {
+  display: grid;
+  gap: var(--space-4);
+}
+.ia-question-form .subtitle {
+  margin: 0;
+  font-size: var(--text-xs);
+}
+.ia-answer {
+  margin-top: 28px;
+  padding: var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--surface-soft);
+  animation: page-enter var(--duration-slow) var(--ease);
+}
+.ia-answer > div {
+  white-space: pre-wrap;
+  line-height: 1.9;
+  margin-top: var(--space-4);
+  font-size: var(--text-base);
+  overflow-wrap: anywhere;
+}
+.ia-thinking {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  padding: var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.ia-thinking .skeleton {
+  height: var(--space-3);
+}
+.ia-thinking .skeleton:last-child {
+  width: 60%;
+}
+.ia-unavailable {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(240px, 0.8fr);
+  gap: var(--space-5);
+}
+.ia-unavailable .product-lock {
+  gap: var(--space-5);
+}
+.ia-next-steps {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+}
+.ia-next-steps .quick-action {
+  background: var(--surface);
+}
+.ia-examples {
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+}
+.ia-examples .quick-action {
+  width: 100%;
+  min-height: 66px;
+  font-size: var(--text-sm);
+}
+@media (max-width: 1024px) {
+  .ia-unavailable {
+    grid-template-columns: 1fr;
+  }
+  .ia-next-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 760px) {
+  .ia-next-steps {
+    grid-template-columns: 1fr;
+  }
+  .ia-answer {
+    padding: 20px;
+  }
+}
