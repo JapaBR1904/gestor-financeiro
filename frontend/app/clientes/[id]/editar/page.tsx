@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Sidebar } from "../../../../components/Sidebar";
 import { atualizarCliente, carregarCliente, formatarTelefone } from "../../../../lib/clientes";
@@ -9,6 +9,7 @@ import { atualizarCliente, carregarCliente, formatarTelefone } from "../../../..
 export default function EditarClientePage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const envioEmCurso = useRef(false);
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
   const [observacao, setObservacao] = useState("");
@@ -29,11 +30,13 @@ export default function EditarClientePage() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (envioEmCurso.current) return;
     setErro("");
     if (!nome.trim()) {
       setErro("Informe o nome do cliente.");
       return;
     }
+    envioEmCurso.current = true;
     setSalvando(true);
     try {
       await atualizarCliente(params.id, { nome: nome.trim(), telefone: telefone.trim(), observacao: observacao.trim() });
@@ -41,6 +44,7 @@ export default function EditarClientePage() {
     } catch (error) {
       setErro(error instanceof Error ? error.message : "Não foi possível atualizar o cliente.");
     } finally {
+      envioEmCurso.current = false;
       setSalvando(false);
     }
   }
@@ -53,11 +57,11 @@ export default function EditarClientePage() {
         {carregando ? <article className="panel"><div className="empty-state"><strong>Carregando cliente...</strong></div></article> : (
           <form className="product-form-stack" onSubmit={handleSubmit}>
             <section className="panel product-form"><div className="form-grid">
-              <label className="field field-wide"><span>Nome *</span><input value={nome} maxLength={160} onChange={(event) => setNome(event.target.value)} /></label>
-              <label className="field field-wide"><span>Telefone / WhatsApp</span><input inputMode="numeric" value={telefone} maxLength={15} onChange={(event) => setTelefone(formatarTelefone(event.target.value))} placeholder="(11) 99999-9999" /></label>
-              <label className="field field-wide"><span>Observação</span><textarea rows={4} value={observacao} onChange={(event) => setObservacao(event.target.value)} /></label>
+              <label className="field field-wide"><span>Nome *</span><input aria-label="Nome *" required value={nome} maxLength={160} onChange={(event) => setNome(event.target.value)} /></label>
+              <label className="field field-wide"><span>Telefone / WhatsApp</span><input aria-label="Telefone / WhatsApp" inputMode="numeric" value={telefone} maxLength={15} onChange={(event) => setTelefone(formatarTelefone(event.target.value))} placeholder="(11) 99999-9999" /></label>
+              <label className="field field-wide"><span>Observação</span><textarea aria-label="Observação" rows={4} value={observacao} onChange={(event) => setObservacao(event.target.value)} /></label>
             </div></section>
-            {erro ? <p className="form-error-banner">{erro}</p> : null}
+            {erro ? <p className="form-error-banner" role="alert">{erro}</p> : null}
             <div className="form-actions standalone-actions"><Link className="secondary-button" href={`/clientes/${params.id}`}>Cancelar</Link><button className="primary-button" type="submit" disabled={salvando}>{salvando ? "Salvando..." : "Salvar alterações"}</button></div>
           </form>
         )}

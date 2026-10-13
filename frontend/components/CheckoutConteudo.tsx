@@ -1,4 +1,5 @@
 "use client";
+import { avisarWorkspace } from "../lib/workspace";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -50,6 +51,7 @@ function CheckoutConteudo({ plano, cancelar, onboarding }: { plano: string | nul
     try {
       const resultado = await confirmarCheckout(checkout.id, metodo, cenario);
       setCheckout(resultado);
+      if (resultado.status === "aprovado") avisarWorkspace();
       if (resultado.status === "aprovado" && onboarding) {
         try {
           const config = await carregarConfiguracaoSaas();
@@ -77,7 +79,7 @@ function CheckoutConteudo({ plano, cancelar, onboarding }: { plano: string | nul
       <section className="subscription-profile-card">
         {checkout.tipo !== "upgrade" ? <div className="checkout-warning"><h2>O que muda</h2><p>Recursos e limites do plano {checkout.plano.nome} passarão a valer imediatamente. Seus dados existentes serão mantidos.</p><p>Limite: {checkout.plano.limiteUsuarios} usuário(s). Inclusões acima do limite ficam indisponíveis; não excluiremos usuários ou informações financeiras.</p>{assinatura && assinatura.usuariosAtivos > checkout.plano.limiteUsuarios ? <p>Há {assinatura.usuariosAtivos} usuários ativos na organização, acima do novo limite.</p> : null}<label className="checkout-consent"><input type="checkbox" checked={consentimento} onChange={e => setConsentimento(e.target.checked)} disabled={processando} />Entendi a mudança e quero continuar</label></div> : null}
         {checkout.total > 0 ? <fieldset className="checkout-methods" disabled={processando}><legend>Método de pagamento simulado</legend>{([['pix','Pix'],['cartao','Cartão'],['boleto','Boleto']] as const).map(([id,nome]) => <label key={id}><input type="radio" name="metodo" value={id} checked={metodo === id} onChange={() => setMetodo(id)} />{nome}</label>)}</fieldset> : <p>Esta alteração não envolve pagamento.</p>}
-        <label className="field"><span>Resultado da simulação</span><select value={cenario} onChange={e => setCenario(e.target.value as CenarioPagamento)} disabled={processando}><option value="aprovado">Aprovado</option><option value="recusado">Recusado</option><option value="erro">Erro inesperado</option></select></label>
+        <label className="field"><span>Resultado da simulação</span><select aria-label="Resultado da simulação" value={cenario} onChange={e => setCenario(e.target.value as CenarioPagamento)} disabled={processando}><option value="aprovado">Aprovado</option><option value="recusado">Recusado</option><option value="erro">Erro inesperado</option></select></label>
         <button className="primary-button auth-primary" onClick={confirmar} disabled={processando}>{processando ? "Processando..." : cancelar ? "Confirmar cancelamento" : checkout.tipo === "downgrade" ? "Confirmar downgrade" : "Confirmar pagamento simulado"}</button>
         <button className="secondary-button auth-primary" onClick={desistir} disabled={processando}>Cancelar e voltar</button>
       </section>

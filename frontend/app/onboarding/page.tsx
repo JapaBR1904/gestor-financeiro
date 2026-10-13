@@ -1,10 +1,14 @@
 "use client";
+import { useWorkspace, avisarWorkspace } from "../../lib/workspace";
+import { Icone } from "../../components/Icone";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   OBJETIVOS_POR_PERFIL,
   PerfilUso,
+  carregarConfiguracaoSaas,
+  nomePlano,
   salvarOnboardingNoBackend,
 } from "../../lib/saas";
 
@@ -39,18 +43,20 @@ const opcoes: Array<{
 ];
 
 export default function OnboardingPage() {
-  const router = useRouter();
+  const router = useRouter(); const { assinatura, usuario, config } = useWorkspace(); const trava = useRef(false);
   const [perfil, setPerfil] = useState<PerfilUso | null>(null);
   const [objetivos, setObjetivos] = useState<string[]>([]);
   const [etapa, setEtapa] = useState<1 | 2 | 3>(1);
   const [erro, setErro] = useState("");
   const [salvando, setSalvando] = useState(false);
 
+  useEffect(() => { let ativo = true; carregarConfiguracaoSaas().then(dados => { if (ativo) { setPerfil(dados.perfilUso); setObjetivos(dados.objetivos); } }).catch(e => { if (ativo) setErro(e instanceof Error ? e.message : "Não foi possível carregar suas preferências."); }); return () => { ativo = false; }; }, []);
+
   const objetivosDisponiveis = useMemo(() => (perfil ? OBJETIVOS_POR_PERFIL[perfil] : []), [perfil]);
 
   function escolherPerfil(novoPerfil: PerfilUso) {
     setPerfil(novoPerfil);
-    setObjetivos([]);
+    if (novoPerfil !== perfil) setObjetivos([]);
     setErro("");
   }
 
@@ -74,17 +80,19 @@ export default function OnboardingPage() {
   }
 
   async function persistir(concluido: boolean) {
-    if (!perfil) return false;
+    if (!perfil || trava.current) return false;
+    trava.current = true;
     setErro("");
     setSalvando(true);
     try {
       await salvarOnboardingNoBackend(perfil, objetivos, concluido);
+      avisarWorkspace();
       return true;
     } catch (error) {
       setErro(error instanceof Error ? error.message : "Não foi possível salvar suas preferências.");
       return false;
     } finally {
-      setSalvando(false);
+      trava.current = false; setSalvando(false);
     }
   }
 
@@ -101,6 +109,7 @@ export default function OnboardingPage() {
     router.push("/planos?origem=onboarding");
   }
 
+  if (usuario?.papel === "membro") return <main className="saas-shell"><section className="product-lock"><h1>Preferências do espaço</h1><p>O proprietário ou administrador define as preferências compartilhadas. Consulte sua conta para ver as escolhas atuais.</p><a className="primary-button" href="/conta">Voltar à conta</a></section></main>;
   return (
     <main className="saas-shell onboarding-shell">
       <section className="saas-brandbar">
@@ -118,8 +127,8 @@ export default function OnboardingPage() {
           <div className="saas-heading"><p className="eyebrow">Bem-vindo ao Nexo</p><h1>Como você pretende usar o Nexo?</h1><p>Essa escolha prepara sua experiência inicial. Você pode alterar depois nas configurações.</p></div>
           <div className="use-case-grid">
             {opcoes.map((opcao) => (
-              <button className={`use-case-card${perfil === opcao.id ? " selected" : ""}`} key={opcao.id} type="button" onClick={() => escolherPerfil(opcao.id)}>
-                <span className="use-case-icon">{opcao.icone}</span>
+              <button className={`use-case-card${perfil === opcao.id ? " selected" : ""}`} key={opcao.id} aria-pressed={perfil === opcao.id} type="button" onClick={() => escolherPerfil(opcao.id)}>
+                <span className="use-case-icon"><Icone nome={opcao.id === "pessoal" ? "movimentos" : opcao.id === "empresa" ? "empresa" : "venda"} /></span>
                 <span className="use-case-copy"><strong>{opcao.titulo}</strong><span>{opcao.descricao}</span><small>{opcao.detalhe}</small></span>
                 <span className="use-case-check">{perfil === opcao.id ? "✓" : ""}</span>
               </button>
@@ -134,7 +143,7 @@ export default function OnboardingPage() {
           <div className="saas-heading"><p className="eyebrow">Personalização</p><h1>O que você mais quer melhorar agora?</h1><p>Escolha quantos objetivos quiser. Isso vai ajudar o Nexo a destacar as informações mais úteis.</p></div>
           <div className="goal-choice-grid">
             {objetivosDisponiveis.map((objetivo) => (
-              <button className={`goal-choice${objetivos.includes(objetivo) ? " selected" : ""}`} key={objetivo} type="button" onClick={() => alternarObjetivo(objetivo)}>
+              <button className={`goal-choice${objetivos.includes(objetivo) ? " selected" : ""}`} key={objetivo} aria-pressed={objetivos.includes(objetivo)} type="button" onClick={() => alternarObjetivo(objetivo)}>
                 <span className="goal-choice-check">{objetivos.includes(objetivo) ? "✓" : "+"}</span><strong>{objetivo}</strong>
               </button>
             ))}
@@ -145,10 +154,10 @@ export default function OnboardingPage() {
 
       {etapa === 3 ? (
         <section className="onboarding-card onboarding-plan-step">
-          <div className="saas-heading"><p className="eyebrow">Tudo pronto</p><h1>Comece no Free e evolua quando precisar</h1><p>Você pode entrar agora sem pagar nada. Pro e Business já têm a experiência preparada para quando fizer sentido.</p></div>
-          <div className="onboarding-plan-preview"><div className="plan-preview-main"><span className="plan-mini-label">Plano inicial</span><strong>Free</strong><p>Operação essencial para conhecer o Nexo e organizar suas primeiras informações.</p></div><div className="plan-preview-price"><strong>R$ 0</strong><span>/mês</span></div></div>
+          <div className="saas-heading"><p className="eyebrow">Tudo pronto</p><h1>Continue com seu plano e evolua quando precisar</h1><p>Suas preferências serão salvas no espaço atual. Compare os planos se precisar de mais recursos.</p></div>
+          <div className="onboarding-plan-preview"><div className="plan-preview-main"><span className="plan-mini-label">Plano atual</span><strong>{config ? nomePlano(config.plano) : "Seu plano"}</strong><p>Operação essencial para conhecer o Nexo e organizar suas primeiras informações.</p></div><div className="plan-preview-price"><strong>{assinatura ? assinatura.plano.valorMensal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "—"}</strong><span>/mês</span></div></div>
           <div className="onboarding-benefits"><span>✓ Dashboard financeiro</span><span>✓ Vendas e despesas</span><span>✓ Produtos e clientes</span><span>✓ Relatórios essenciais</span></div>
-          {erro ? <p className="form-error-banner">{erro}</p> : null}
+          {erro ? <p className="form-error-banner" role="alert">{erro}</p> : null}
           <div className="saas-actions split-actions"><button className="secondary-button" type="button" onClick={() => setEtapa(2)} disabled={salvando}>Voltar</button><button className="secondary-button" type="button" onClick={verPlanos} disabled={salvando}>Conhecer planos</button><button className="primary-button saas-primary" type="button" onClick={entrarNoNexo} disabled={salvando}>{salvando ? "Salvando..." : "Entrar no Nexo"}</button></div>
         </section>
       ) : null}

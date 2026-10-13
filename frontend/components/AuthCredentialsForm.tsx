@@ -9,6 +9,7 @@ import { carregarConfiguracaoSaas } from "../lib/saas";
 import { validarSenha } from "../lib/politica-senha";
 import AuthCard from "./AuthCard";
 import PasswordFields from "./PasswordFields";
+import { destinoConvite, fragmentoConvite } from "../lib/convite";
 
 export default function AuthCredentialsForm({ cadastro = false }: { cadastro?: boolean }) {
   const router = useRouter();
@@ -36,13 +37,13 @@ export default function AuthCredentialsForm({ cadastro = false }: { cadastro?: b
       if (cadastro) {
         await cadastrar({ nome, email, senha, confirmacaoSenha: confirmacao });
         setSenha(""); setConfirmacao("");
-        router.push(`/verificar-codigo?${new URLSearchParams({ email: email.trim() })}`);
+        router.push(`/verificar-codigo?${new URLSearchParams({ email: email.trim() })}${fragmentoConvite()}`);
       } else {
         await login(email, senha);
         setSenha("");
         const configuracao = await carregarConfiguracaoSaas();
         const destino = configuracao.perfilUso === "pessoal" ? "/pessoal" : configuracao.perfilUso === "empresa" ? "/empresa" : "/";
-        router.replace(configuracao.onboardingConcluido ? destino : "/onboarding");
+        router.replace(destinoConvite() ?? (configuracao.onboardingConcluido ? destino : "/onboarding"));
         router.refresh();
       }
     } catch (error) {
@@ -54,15 +55,15 @@ export default function AuthCredentialsForm({ cadastro = false }: { cadastro?: b
     <AuthCard titulo={cadastro ? "Criar conta" : "Bem-vindo de volta"}
       descricao={cadastro ? "Comece com seus dados. Vamos confirmar seu e-mail antes de liberar o acesso." : "Entre para acompanhar seu negócio com clareza."}>
       <form className="auth-form" onSubmit={enviar} noValidate aria-busy={enviando}>
-        {cadastro ? <label className="field"><span>Seu nome</span><input autoComplete="name" value={nome} onChange={(e) => { setNome(e.target.value); setErro(""); }} maxLength={160} required /></label> : null}
-        <label className="field"><span>E-mail</span><input type="email" autoComplete="email" inputMode="email" value={email} onChange={(e) => { setEmail(e.target.value); setErro(""); }} maxLength={180} required /></label>
+        {cadastro ? <label className="field"><span>Seu nome</span><input aria-label="Seu nome" autoComplete="name" value={nome} onChange={(e) => { setNome(e.target.value); setErro(""); }} maxLength={160} required /></label> : null}
+        <label className="field"><span>E-mail</span><input aria-label="E-mail" type="email" autoComplete="email" inputMode="email" value={email} onChange={(e) => { setEmail(e.target.value); setErro(""); }} maxLength={180} required /></label>
         <PasswordFields senha={senha} setSenha={(valor) => { setSenha(valor); setErro(""); }} confirmacao={cadastro ? confirmacao : undefined} setConfirmacao={cadastro ? (valor) => { setConfirmacao(valor); setErro(""); } : undefined} />
         {!cadastro ? <Link className="auth-back" href="/esqueci-senha">Esqueci minha senha</Link> : null}
         {erro ? <p className="form-error-banner" role="alert">{erro}</p> : null}
         <button className="primary-button auth-primary" disabled={enviando} type="submit">{enviando ? (cadastro ? "Criando conta..." : "Entrando...") : (cadastro ? "Criar conta" : "Entrar")}</button>
       </form>
       {!cadastro ? <p className="auth-switch">Falta confirmar seu e-mail? <Link href="/verificar-codigo">Verificar e-mail</Link></p> : null}
-      <p className="auth-switch">{cadastro ? "Já tem conta?" : "Ainda não tem conta?"} <Link href={cadastro ? "/login" : "/cadastro"}>{cadastro ? "Entrar" : "Criar conta"}</Link></p>
+      <p className="auth-switch">{cadastro ? "Já tem conta?" : "Ainda não tem conta?"} <Link href={cadastro ? "/login" : "/cadastro"} onClick={e => { const fragmento=fragmentoConvite(); if(fragmento){e.preventDefault();router.push((cadastro?"/login":"/cadastro")+fragmento);} }}>{cadastro ? "Entrar" : "Criar conta"}</Link></p>
     </AuthCard>
   );
 }

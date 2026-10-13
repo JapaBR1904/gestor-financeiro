@@ -10,12 +10,20 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
     private final String[] origensPermitidas;
+    private final PermissoesInterceptor permissoes;
 
-    public WebConfig(@Value("${nexo.allowed-origins:http://localhost:3000}") String origens) {
+    public WebConfig(@Value("${nexo.allowed-origins:http://localhost:3000}") String origens, PermissoesInterceptor permissoes) {
+        this.permissoes = permissoes;
         this.origensPermitidas = Arrays.stream(origens.split(","))
                 .map(String::trim)
                 .filter(valor -> !valor.isBlank())
                 .toArray(String[]::new);
+    }
+
+    @Override public void addInterceptors(org.springframework.web.servlet.config.annotation.InterceptorRegistry registry) {
+        registry.addInterceptor(permissoes).addPathPatterns("/api/produtos/**", "/api/vendas/**", "/api/despesas/**", "/api/clientes/**",
+                "/api/metas/**", "/api/relatorios/**", "/api/financeiro/**", "/api/ia/**", "/api/documentos/**",
+                "/api/saas/onboarding", "/api/organizacoes/atual");
     }
 
     @Override
@@ -23,7 +31,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/api/**")
                 .allowedOrigins(origensPermitidas)
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-                .allowedHeaders("Content-Type", "Accept", "X-Requested-With")
+                .allowedHeaders("Content-Type", "Accept", "X-Requested-With", "Idempotency-Key")
                 .allowCredentials(true)
                 .maxAge(3600);
     }

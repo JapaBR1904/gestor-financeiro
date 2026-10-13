@@ -48,7 +48,7 @@ export default function ClienteDetalhePage() {
       <section className="content">
         <header className="topbar">
           <div><p className="eyebrow">Cliente</p><h1>{cliente.nome}</h1><p className="subtitle">Dados cadastrais e situação do cliente.</p></div>
-          <div className="topbar-actions"><Link className="secondary-button" href="/clientes">Voltar</Link><Link className="secondary-button" href={`/clientes/${cliente.id}/editar`}>Editar</Link><button className="primary-button" type="button" disabled={alterando} onClick={alternarStatus}>{alterando ? "Salvando..." : cliente.ativo ? "Desativar" : "Ativar"}</button></div>
+          <div className="topbar-actions"><Link className="secondary-button" href="/clientes">Voltar</Link><Link className="secondary-button" href={`/clientes/${cliente.id}/editar`}>Editar</Link><button className="primary-button product-status-button" type="button" disabled={alterando} onClick={alternarStatus}>{alterando ? "Salvando..." : cliente.ativo ? "Desativar" : "Ativar"}</button></div>
         </header>
 
         {erro ? <p className="form-error-banner">{erro}</p> : null}

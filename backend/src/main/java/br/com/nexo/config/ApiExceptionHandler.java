@@ -61,7 +61,8 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler({org.springframework.http.converter.HttpMessageNotReadableException.class,
-            org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class})
+            org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class,
+            org.springframework.web.multipart.support.MissingServletRequestPartException.class})
     public ResponseEntity<Map<String, Object>> tratarFormato(Exception exception) {
         return ResponseEntity.badRequest().body(Map.of("erro", "dados_invalidos", "mensagem", "Confira os campos enviados."));
     }
@@ -72,5 +73,10 @@ public class ApiExceptionHandler {
                 "erro", "erro_interno",
                 "mensagem", "Não foi possível concluir a operação agora."
         ));
+    }
+
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    public ResponseEntity<Map<String,Object>> tratarArquivoGrande(Exception exception) {
+        return ResponseEntity.badRequest().body(Map.of("erro","arquivo_grande","mensagem","O limite por arquivo é 5 MB."));
     }
 }

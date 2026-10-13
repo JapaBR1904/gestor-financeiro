@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "../../../components/Sidebar";
 import {
@@ -57,6 +57,7 @@ function paraIngrediente(ingrediente: IngredienteEdicao): IngredienteProduto {
 
 export default function NovoProdutoPage() {
   const router = useRouter();
+  const envioEmCurso = useRef(false);
   const [nome, setNome] = useState("");
   const [preco, setPreco] = useState("");
   const [descricao, setDescricao] = useState("");
@@ -119,6 +120,7 @@ export default function NovoProdutoPage() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (envioEmCurso.current) return;
 
     const novosErros: FormErrors = {};
 
@@ -135,6 +137,7 @@ export default function NovoProdutoPage() {
 
     if (Object.keys(novosErros).length > 0) return;
 
+    envioEmCurso.current = true;
     setSalvando(true);
     try {
       await salvarProduto({
@@ -149,6 +152,7 @@ export default function NovoProdutoPage() {
     } catch (error) {
       setErroSalvar(error instanceof Error ? error.message : "Não foi possível salvar o produto.");
     } finally {
+      envioEmCurso.current = false;
       setSalvando(false);
     }
   }
@@ -174,7 +178,7 @@ export default function NovoProdutoPage() {
             <div className="form-grid">
               <label className="field field-wide">
                 <span>Nome do produto *</span>
-                <input
+                <input aria-label="Nome do produto *"
                   aria-invalid={Boolean(errors.nome)}
                   onChange={(event) => setNome(event.target.value)}
                   placeholder="Ex.: Bolo de pote de morango"
@@ -186,7 +190,7 @@ export default function NovoProdutoPage() {
 
               <label className="field">
                 <span>Preço de venda *</span>
-                <input
+                <input aria-label="Preço de venda *"
                   aria-invalid={Boolean(errors.preco)}
                   inputMode="decimal"
                   onChange={(event) => setPreco(event.target.value)}
@@ -205,7 +209,7 @@ export default function NovoProdutoPage() {
 
               <label className="field field-wide">
                 <span>Descrição</span>
-                <textarea
+                <textarea aria-label="Descrição"
                   onChange={(event) => setDescricao(event.target.value)}
                   placeholder="Ex.: duas camadas de bolo, ganache de chocolate, chantilly e pedaços de morango."
                   rows={4}
@@ -237,7 +241,7 @@ export default function NovoProdutoPage() {
                   <div className="ingredient-row" key={ingrediente.id}>
                     <label className="field ingredient-name">
                       <span>Ingrediente</span>
-                      <input
+                      <input aria-label="Ingrediente"
                         onChange={(event) => atualizarIngrediente(ingrediente.id, "nome", event.target.value)}
                         placeholder="Farinha"
                         type="text"
@@ -247,7 +251,7 @@ export default function NovoProdutoPage() {
 
                     <label className="field">
                       <span>Preço pago</span>
-                      <input
+                      <input aria-label="Preço pago"
                         inputMode="decimal"
                         onChange={(event) => atualizarIngrediente(ingrediente.id, "precoCompra", event.target.value)}
                         placeholder="6,50"
@@ -258,7 +262,7 @@ export default function NovoProdutoPage() {
 
                     <label className="field">
                       <span>Qtd. comprada</span>
-                      <input
+                      <input aria-label="Qtd. comprada"
                         inputMode="decimal"
                         onChange={(event) => atualizarIngrediente(ingrediente.id, "quantidadeCompra", event.target.value)}
                         placeholder="1"
@@ -269,7 +273,7 @@ export default function NovoProdutoPage() {
 
                     <label className="field field-unit">
                       <span>Unidade</span>
-                      <select
+                      <select aria-label="Unidade"
                         onChange={(event) => atualizarIngrediente(ingrediente.id, "unidadeCompra", event.target.value as Unidade)}
                         value={ingrediente.unidadeCompra}
                       >
@@ -283,7 +287,7 @@ export default function NovoProdutoPage() {
 
                     <label className="field">
                       <span>Qtd. usada</span>
-                      <input
+                      <input aria-label="Qtd. usada"
                         inputMode="decimal"
                         onChange={(event) => atualizarIngrediente(ingrediente.id, "quantidadeUsada", event.target.value)}
                         placeholder="120"
@@ -294,7 +298,7 @@ export default function NovoProdutoPage() {
 
                     <label className="field field-unit">
                       <span>Unidade</span>
-                      <select
+                      <select aria-label="Unidade"
                         onChange={(event) => atualizarIngrediente(ingrediente.id, "unidadeUso", event.target.value as Unidade)}
                         value={ingrediente.unidadeUso}
                       >

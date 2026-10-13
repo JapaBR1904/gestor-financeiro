@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Sidebar } from "../../../../components/Sidebar";
 import {
@@ -67,6 +67,7 @@ export default function EditarProdutoPage() {
   const params = useParams<{ id: string }>();
   const produtoId = params.id;
   const router = useRouter();
+  const envioEmCurso = useRef(false);
 
   const [produtoOriginal, setProdutoOriginal] = useState<Produto | null>(null);
   const [nome, setNome] = useState("");
@@ -156,6 +157,7 @@ export default function EditarProdutoPage() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (envioEmCurso.current) return;
 
     const novosErros: FormErrors = {};
     if (!nome.trim()) novosErros.nome = "Informe o nome do produto.";
@@ -165,6 +167,7 @@ export default function EditarProdutoPage() {
     setErroSalvar("");
     if (Object.keys(novosErros).length > 0 || !produtoOriginal) return;
 
+    envioEmCurso.current = true;
     setSalvando(true);
     try {
       await atualizarProduto(produtoId, {
@@ -182,6 +185,7 @@ export default function EditarProdutoPage() {
     } catch (error) {
       setErroSalvar(error instanceof Error ? error.message : "Não foi possível atualizar o produto.");
     } finally {
+      envioEmCurso.current = false;
       setSalvando(false);
     }
   }
@@ -223,7 +227,7 @@ export default function EditarProdutoPage() {
             <div className="form-grid">
               <label className="field field-wide">
                 <span>Nome do produto *</span>
-                <input
+                <input aria-label="Nome do produto *"
                   aria-invalid={Boolean(errors.nome)}
                   onChange={(event) => setNome(event.target.value)}
                   type="text"
@@ -234,7 +238,7 @@ export default function EditarProdutoPage() {
 
               <label className="field">
                 <span>Preço de venda *</span>
-                <input
+                <input aria-label="Preço de venda *"
                   aria-invalid={Boolean(errors.preco)}
                   inputMode="decimal"
                   onChange={(event) => setPreco(event.target.value)}
@@ -252,7 +256,7 @@ export default function EditarProdutoPage() {
 
               <label className="field field-wide">
                 <span>Descrição</span>
-                <textarea onChange={(event) => setDescricao(event.target.value)} rows={4} value={descricao} />
+                <textarea aria-label="Descrição" onChange={(event) => setDescricao(event.target.value)} rows={4} value={descricao} />
               </label>
             </div>
           </section>
@@ -277,7 +281,7 @@ export default function EditarProdutoPage() {
                   <div className="ingredient-row" key={ingrediente.id}>
                     <label className="field ingredient-name">
                       <span>Ingrediente</span>
-                      <input
+                      <input aria-label="Ingrediente"
                         onChange={(event) => atualizarIngrediente(ingrediente.id, "nome", event.target.value)}
                         type="text"
                         value={ingrediente.nome}
@@ -286,7 +290,7 @@ export default function EditarProdutoPage() {
 
                     <label className="field">
                       <span>Preço pago</span>
-                      <input
+                      <input aria-label="Preço pago"
                         inputMode="decimal"
                         onChange={(event) => atualizarIngrediente(ingrediente.id, "precoCompra", event.target.value)}
                         type="text"
@@ -296,7 +300,7 @@ export default function EditarProdutoPage() {
 
                     <label className="field">
                       <span>Qtd. comprada</span>
-                      <input
+                      <input aria-label="Qtd. comprada"
                         inputMode="decimal"
                         onChange={(event) => atualizarIngrediente(ingrediente.id, "quantidadeCompra", event.target.value)}
                         type="text"
@@ -306,7 +310,7 @@ export default function EditarProdutoPage() {
 
                     <label className="field field-unit">
                       <span>Unidade</span>
-                      <select
+                      <select aria-label="Unidade"
                         onChange={(event) => atualizarIngrediente(ingrediente.id, "unidadeCompra", event.target.value as Unidade)}
                         value={ingrediente.unidadeCompra}
                       >
@@ -320,7 +324,7 @@ export default function EditarProdutoPage() {
 
                     <label className="field">
                       <span>Qtd. usada</span>
-                      <input
+                      <input aria-label="Qtd. usada"
                         inputMode="decimal"
                         onChange={(event) => atualizarIngrediente(ingrediente.id, "quantidadeUsada", event.target.value)}
                         type="text"
@@ -330,7 +334,7 @@ export default function EditarProdutoPage() {
 
                     <label className="field field-unit">
                       <span>Unidade</span>
-                      <select
+                      <select aria-label="Unidade"
                         onChange={(event) => atualizarIngrediente(ingrediente.id, "unidadeUso", event.target.value as Unidade)}
                         value={ingrediente.unidadeUso}
                       >

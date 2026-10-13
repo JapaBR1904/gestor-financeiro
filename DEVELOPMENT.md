@@ -19,6 +19,8 @@ Nomes usados pelo backend:
 
 - Banco: `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`.
 - Segurança: `NEXO_ALLOWED_ORIGINS`, `COOKIE_SECURE`.
+- Convites: `NEXO_FRONTEND_URL`, origem pública do frontend, sem caminho/query/fragmento. HTTP só é aceito em loopback fora de produção; em prod/production, use HTTPS.
+- IA opcional: `GEMINI_API_KEY` e `GEMINI_MODEL` (padrão `gemini-flash-latest`). Sem chave, os demais recursos continuam disponíveis. O envio de resumo ou documento exige autorização na interface.
 - Assinatura simulada, opcional: `SPRING_PROFILES_ACTIVE=dev` e `PAGAMENTO_SIMULADO_ENABLED=true`. Os perfis `prod` e `production` impedem sua ativação mesmo se a flag estiver habilitada.
 - E-mail recomendado: `NEXO_EMAIL_PROVIDER=resend`, `RESEND_ENABLED`, `RESEND_API_KEY`, `RESEND_FROM`, `RESEND_REPLY_TO`. Veja [docs/RESEND.md](docs/RESEND.md), incluindo o diagnóstico isolado em PowerShell.
 - SMTP legado, somente `NEXO_EMAIL_PROVIDER=smtp`: `MAIL_ENABLED`, `MAIL_FROM`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_SMTP_AUTH`, `MAIL_STARTTLS`, `MAIL_STARTTLS_REQUIRED`.
@@ -75,7 +77,7 @@ cd backend
 mvn verify
 ```
 
-Para executar **também os testes de integração**, configure `NEXO_TEST_DB_URL`, `NEXO_TEST_DB_USERNAME` e `NEXO_TEST_DB_PASSWORD` para um PostgreSQL exclusivo de teste antes desse comando. Os scripts `02` a `10` e os privilégios precisam estar aplicados. Sem essa configuração, os testes de integração são ignorados e somente o teste independente de banco é executado.
+Para executar **também os testes de integração**, configure `NEXO_TEST_DB_URL`, `NEXO_TEST_DB_USERNAME` e `NEXO_TEST_DB_PASSWORD` para um PostgreSQL exclusivo de teste antes desse comando. Os scripts `02` a `11` e os privilégios precisam estar aplicados. Sem essa configuração, os testes de integração são ignorados e somente os testes independentes de banco são executados.
 
 Frontend:
 
@@ -87,7 +89,7 @@ npx --no-install tsc --noEmit
 npm run build
 ```
 
-O build completo inclui autenticação, planos e checkout. O problema anterior de `/planos` foi corrigido com `Suspense`. Os relatórios anteriores preservam os resultados históricos; os resultados desta etapa estão em [docs/ASSINATURAS.md](docs/ASSINATURAS.md).
+O build completo inclui autenticação, planos e checkout. O problema anterior de `/planos` foi corrigido com `Suspense`. Os relatórios anteriores preservam os resultados históricos; os resultados de assinatura estão em [docs/ASSINATURAS.md](docs/ASSINATURAS.md), e a conclusão de Free/Pro/Business está em [docs/PRODUTO.md](docs/PRODUTO.md).
 
 Para a jornada de assinatura no navegador com backend e banco reais, instale o Chromium do Playwright e execute na pasta `backend`, com as variáveis do banco de teste já configuradas:
 
@@ -98,7 +100,7 @@ cd ../backend
 NEXO_E2E=true mvn -Dtest=AssinaturaBrowserTest test
 ```
 
-Esse teste inicia Spring em porta aleatória, cria somente contas sintéticas já verificadas e executa `npm run test:e2e`. Não envia e-mails. O Playwright inicia o frontend se necessário. Pode usar um Chromium instalado via `NEXO_BROWSER_EXECUTABLE=/caminho/do/chromium`. Sem `NEXO_E2E=true`, a jornada de navegador fica explicitamente ignorada; os demais testes de integração continuam disponíveis.
+Esse teste inicia Spring em porta aleatória, cria somente contas sintéticas já verificadas e executa `npm run test:e2e`. Não envia e-mails externos. O provider do navegador é substituído apenas no teste por um capturador de mensagens sintéticas em arquivo temporário privado, removido ao terminar. Isso permite testar confirmação e recuperação sem enviar e-mails externos. Convites também usam o link privado. O transporte real continua coberto pelos testes locais HTTP/SMTP. O Playwright inicia um frontend próprio, com a origem real da API em `NEXT_PUBLIC_API_URL`. A porta 3000 precisa estar livre. A jornada usa `npm run build` e o servidor de produção `npm run start`, evitando interferência do Hot Reload e permitindo revisar o produto compilado. Para desenvolvimento, `npm run dev -- --webpack` é uma alternativa suportada ao erro interno reproduzido no cache do Turbopack nesta versão. Pode usar um Chromium instalado via `NEXO_BROWSER_EXECUTABLE=/caminho/do/chromium`. Sem `NEXO_E2E=true`, a jornada de navegador fica explicitamente ignorada; os demais testes de integração continuam disponíveis.
 
 ## Limites de segurança
 

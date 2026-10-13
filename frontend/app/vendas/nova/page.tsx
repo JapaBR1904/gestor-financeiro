@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "../../../components/Sidebar";
 import { carregarClientes, Cliente } from "../../../lib/clientes";
@@ -16,6 +16,7 @@ function novaLinha(id = `item-${Date.now()}`): LinhaVenda {
 
 export default function NovaVendaPage() {
   const router = useRouter();
+  const envioEmCurso = useRef(false);
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [clienteId, setClienteId] = useState("");
@@ -58,6 +59,7 @@ export default function NovaVendaPage() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (envioEmCurso.current) return;
     setErro("");
 
     const itensValidos = itens
@@ -69,6 +71,7 @@ export default function NovaVendaPage() {
       return;
     }
 
+    envioEmCurso.current = true;
     setSalvando(true);
     try {
       await salvarVenda({ clienteId: clienteId || null, formaPagamento, observacao: observacao.trim(), itens: itensValidos });
@@ -76,6 +79,7 @@ export default function NovaVendaPage() {
     } catch (error) {
       setErro(error instanceof Error ? error.message : "Não foi possível registrar a venda.");
     } finally {
+      envioEmCurso.current = false;
       setSalvando(false);
     }
   }
@@ -98,14 +102,14 @@ export default function NovaVendaPage() {
             <div className="form-grid">
               <label className="field">
                 <span>Cliente</span>
-                <select value={clienteId} onChange={(event) => setClienteId(event.target.value)}>
+                <select aria-label="Cliente" value={clienteId} onChange={(event) => setClienteId(event.target.value)}>
                   <option value="">Venda sem cliente identificado</option>
                   {clientes.map((cliente) => <option key={cliente.id} value={String(cliente.id)}>{cliente.nome}</option>)}
                 </select>
               </label>
               <label className="field">
                 <span>Forma de pagamento *</span>
-                <select value={formaPagamento} onChange={(event) => setFormaPagamento(event.target.value as FormaPagamento)}>
+                <select aria-label="Forma de pagamento *" value={formaPagamento} onChange={(event) => setFormaPagamento(event.target.value as FormaPagamento)}>
                   <option value="pix">Pix</option>
                   <option value="dinheiro">Dinheiro</option>
                   <option value="debito">Cartão de débito</option>
@@ -115,7 +119,7 @@ export default function NovaVendaPage() {
               </label>
               <label className="field field-wide">
                 <span>Observação</span>
-                <textarea rows={3} value={observacao} onChange={(event) => setObservacao(event.target.value)} placeholder="Ex.: encomenda para retirada às 18h" />
+                <textarea aria-label="Observação" rows={3} value={observacao} onChange={(event) => setObservacao(event.target.value)} placeholder="Ex.: encomenda para retirada às 18h" />
               </label>
             </div>
           </section>
@@ -139,14 +143,14 @@ export default function NovaVendaPage() {
                     <div className="ingredient-row" key={item.id}>
                       <label className="field ingredient-name">
                         <span>Produto</span>
-                        <select value={item.produtoId} onChange={(event) => atualizarItem(item.id, "produtoId", event.target.value)}>
+                        <select aria-label="Produto" value={item.produtoId} onChange={(event) => atualizarItem(item.id, "produtoId", event.target.value)}>
                           <option value="">Selecione...</option>
                           {produtos.map((produto) => <option value={String(produto.id)} key={produto.id}>{produto.nome} — {formatarMoeda(produto.precoVenda)}</option>)}
                         </select>
                       </label>
                       <label className="field">
                         <span>Quantidade</span>
-                        <input min="1" step="1" type="number" value={item.quantidade} onChange={(event) => atualizarItem(item.id, "quantidade", event.target.value)} />
+                        <input aria-label="Quantidade" min="1" step="1" type="number" value={item.quantidade} onChange={(event) => atualizarItem(item.id, "quantidade", event.target.value)} />
                       </label>
                       <div className="ingredient-cost">
                         <span>Subtotal</span>
@@ -163,7 +167,7 @@ export default function NovaVendaPage() {
 
           <section className="panel product-totals"><div><span>Total da venda</span><strong>{formatarMoeda(totalVenda)}</strong></div></section>
 
-          {erro ? <p className="form-error-banner">{erro}</p> : null}
+          {erro ? <p className="form-error-banner" role="alert">{erro}</p> : null}
           <div className="form-actions standalone-actions">
             <Link className="secondary-button" href="/vendas">Cancelar</Link>
             <button className="primary-button" type="submit" disabled={salvando || carregando || produtos.length === 0}>{salvando ? "Registrando..." : "Registrar venda"}</button>

@@ -133,6 +133,20 @@ class EmailCodigoServiceTest {
             assertFalse(encerrou.await(100, TimeUnit.MILLISECONDS));
         } finally { liberar.countDown(); assertTrue(encerrou.await(5, TimeUnit.SECONDS)); thread.join(); }
     }
+    @Test void conviteTambemEsperaCommitEEscapaHtmlSemRegistrarLink() throws Exception {
+        var enviado=new java.util.concurrent.atomic.AtomicReference<br.com.nexo.email.EmailMensagem>();
+        var terminou=new CountDownLatch(1);
+        br.com.nexo.email.EmailProvider provider=mensagem->{enviado.set(mensagem);terminou.countDown();return "fixture-envio";};
+        var service=new EmailCodigoService(provider);
+        try(var logs=new LogEmailTeste()) {
+            TransactionSynchronizationManager.initSynchronization();TransactionSynchronizationManager.setActualTransactionActive(true);
+            TransactionSynchronization callback;
+            try {service.enviarConvite("pessoa@example.com","Empresa <privada>","https://nexo.example/convite#token-fixture");callback=TransactionSynchronizationManager.getSynchronizations().getFirst();}
+            finally {TransactionSynchronizationManager.clearSynchronization();TransactionSynchronizationManager.setActualTransactionActive(false);}
+            assertNull(enviado.get());callback.afterCommit();assertTrue(terminou.await(5,TimeUnit.SECONDS));
+            assertTrue(enviado.get().html().contains("&lt;privada&gt;"));logs.semDadosSensiveis("pessoa@example.com","token-fixture","Empresa <privada>");
+        } finally {service.encerrar();}
+    }
     static JavaMailSender sender() {
         var sender = mock(JavaMailSender.class);
         when(sender.createMimeMessage()).thenAnswer(inv -> new MimeMessage(Session.getInstance(new java.util.Properties())));

@@ -1,0 +1,78 @@
+import { API_URL, apiFetch, lerResposta } from "./api";
+export type Movimentacao = {
+  id: number;
+  origem: string;
+  tipo: "receita" | "despesa";
+  descricao: string;
+  valor: number;
+  data: string;
+  categoria: string;
+  conta: string;
+};
+export type ResumoFinanceiro = {
+  inicio: string;
+  fim: string;
+  receitas: number;
+  despesas: number;
+  saldo: number;
+  movimentacoes: Movimentacao[];
+};
+export type AnaliseFinanceira = {
+  atual: ResumoFinanceiro;
+  anterior: ResumoFinanceiro;
+  evolucao: Array<{
+    data: string;
+    receitas: number;
+    despesas: number;
+    saldo: number;
+  }>;
+  categorias: Record<string, number>;
+};
+export type Lancamento = Omit<Movimentacao, "id" | "origem">;
+const periodo = (inicio: string, fim: string) =>
+  new URLSearchParams({ inicio, fim }).toString();
+export const resumoFinanceiro = (inicio: string, fim: string) =>
+  apiFetch<ResumoFinanceiro>(`/api/financeiro/resumo?${periodo(inicio, fim)}`);
+export const analiseFinanceira = (inicio: string, fim: string) =>
+  apiFetch<AnaliseFinanceira>(
+    `/api/financeiro/analise?${periodo(inicio, fim)}`,
+  );
+export const salvarLancamento = (
+  dados: Lancamento,
+  id?: number,
+  chaveIdempotencia?: string,
+) =>
+  apiFetch<Movimentacao>(`/api/financeiro/movimentacoes${id ? `/${id}` : ""}`, {
+    method: id ? "PUT" : "POST",
+    headers: chaveIdempotencia
+      ? { "Idempotency-Key": chaveIdempotencia }
+      : undefined,
+    body: JSON.stringify(dados),
+  });
+export const removerLancamento = (id: number) =>
+  apiFetch<void>(`/api/financeiro/movimentacoes/${id}`, { method: "DELETE" });
+export async function exportarFinanceiro(inicio: string, fim: string) {
+  let response: Response;
+  try {
+    response = await fetch(
+      `${API_URL}/api/financeiro/exportar?${periodo(inicio, fim)}`,
+      { credentials: "include", cache: "no-store" },
+    );
+  } catch {
+    throw new Error("Não foi possível conectar ao servidor para exportar.");
+  }
+  if (!response.ok) await lerResposta(response);
+  const url = URL.createObjectURL(await response.blob());
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `nexo-movimentacoes-${inicio}-${fim}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+export function datasDoMes() {
+  const hoje = new Date();
+  const fim = new Date(hoje.getTime() - hoje.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 10);
+  return { inicio: `${fim.slice(0, 7)}-01`, fim };
+}

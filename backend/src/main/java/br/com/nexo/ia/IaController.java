@@ -26,12 +26,20 @@ public class IaController {
             @CookieValue(name = SessaoContexto.COOKIE, required = false) String token,
             @Valid @RequestBody PerguntaRequest request
     ) {
-        return iaService.perguntar(sessaoContexto.organizacaoId(token), request.pergunta());
+        return iaService.perguntar(sessaoContexto.organizacaoId(token), request.pergunta(), Boolean.TRUE.equals(request.incluirResumo()));
     }
 
     public record PerguntaRequest(
             @NotBlank(message = "Escreva o que você quer calcular ou entender.")
             @Size(max = 3000, message = "A solicitação está muito longa.")
-            String pergunta
+            String pergunta,
+            Boolean incluirResumo
     ) {}
+    @org.springframework.web.bind.annotation.GetMapping("/status")
+    public IaService.StatusIa status(@CookieValue(name=SessaoContexto.COOKIE,required=false)String token){return iaService.status(sessaoContexto.organizacaoId(token));}
+    @PostMapping("/documento")
+    public IaService.RespostaIa documento(@CookieValue(name=SessaoContexto.COOKIE,required=false)String token,@Valid @RequestBody DocumentoRequest request){
+        return iaService.documento(sessaoContexto.organizacaoId(token),request.documentoId(),request.pergunta(),request.autorizado());
+    }
+    public record DocumentoRequest(@jakarta.validation.constraints.NotNull Long documentoId,@NotBlank @Size(max=3000)String pergunta,boolean autorizado){}
 }

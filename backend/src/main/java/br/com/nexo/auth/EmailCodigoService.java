@@ -45,6 +45,19 @@ public class EmailCodigoService {
     }
 
     public void enviarRecuperacao(String email, String codigo) {
+        registrarPosCommit(() -> enviarCodigo(email, codigo, "recuperacao_senha"));
+    }
+
+    public void enviarConvite(String email, String organizacao, String link) {
+        String nome = organizacao.replaceAll("[\\r\\n]", " ");
+        registrarPosCommit(() -> provider.enviar(new EmailMensagem(email, "Convite para " + nome + " — Nexo",
+                "<h1>Você recebeu um convite para o Nexo</h1><p>Entre com o e-mail convidado para participar de "
+                        + org.springframework.web.util.HtmlUtils.htmlEscape(organizacao) + ".</p><p><a href=\""
+                        + org.springframework.web.util.HtmlUtils.htmlEscape(link) + "\">Aceitar convite</a></p><p>Este convite expira em 24 horas.</p>",
+                "Você foi convidado para " + organizacao + " no Nexo. Entre com o e-mail convidado.\n" + link + "\nO convite expira em 24 horas.")));
+    }
+
+    private void registrarPosCommit(Runnable envio) {
         // Enviar após o commit, fora da resposta HTTP, para não revelar contas pelo tempo do transporte de e-mail.
         if (!TransactionSynchronizationManager.isActualTransactionActive() || !TransactionSynchronizationManager.isSynchronizationActive()) {
             log.error("E-mail de recuperação etapa=transacao_ausente");
@@ -59,7 +72,7 @@ public class EmailCodigoService {
                     recuperacoes.execute(() -> {
                         try (var contexto = MDC.putCloseable(MDC_DESPACHO, Long.toString(despacho))) {
                             log.debug("E-mail de recuperação despacho={} etapa=tarefa_iniciada", despacho);
-                            try { enviarCodigo(email, codigo, "recuperacao_senha"); }
+                            try { envio.run(); }
                             catch (RuntimeException exception) {
                                 log.error("E-mail de recuperação despacho={} etapa=falha_tarefa tipos={}", despacho, tipos(exception));
                             }

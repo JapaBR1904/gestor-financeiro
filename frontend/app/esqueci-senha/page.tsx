@@ -29,7 +29,7 @@ export default function EsqueciSenhaPage() {
   return (
     <AuthCard titulo="Esqueceu sua senha?" descricao="Se existir uma conta com este e-mail, enviaremos um código de recuperação.">
       <form className="auth-form" onSubmit={enviar} noValidate aria-busy={enviando}>
-        <label className="field"><span>E-mail</span><input type="email" autoComplete="email" required maxLength={180} value={email} onChange={(e) => { setEmail(e.target.value); setErro(""); }} /></label>
+        <label className="field"><span>E-mail</span><input aria-label="E-mail" type="email" autoComplete="email" required maxLength={180} value={email} onChange={(e) => { setEmail(e.target.value); setErro(""); }} /></label>
         {erro ? <p className="form-error-banner" role="alert">{erro}</p> : null}
         <button className="primary-button auth-primary" type="submit" disabled={enviando}>{enviando ? "Solicitando..." : "Enviar código de recuperação"}</button>
       </form>

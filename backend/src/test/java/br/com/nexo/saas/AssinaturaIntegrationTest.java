@@ -78,7 +78,7 @@ class AssinaturaIntegrationTest {
     @Test void catalogoPreservaPrecosRecursosELimitesExistentes() {
         assertEquals(3, service.planos().size());
         assertEquals(1, Plano.FREE.limiteUsuarios());
-        assertEquals(3, Plano.PRO.limiteUsuarios());
+        assertEquals(1, Plano.PRO.limiteUsuarios());
         assertEquals(10, Plano.BUSINESS.limiteUsuarios());
         assertFalse(Plano.FREE.permite(RecursoPlano.METAS));
         assertTrue(Plano.PRO.permite(RecursoPlano.METAS));

@@ -1,57 +1,19 @@
 "use client";
-
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { carregarConfiguracaoSaas, ConfiguracaoSaas, nomePerfilUso, nomePlano } from "../../lib/saas";
+import { WorkspaceShell } from "../../components/WorkspaceShell";
+import { useWorkspace } from "../../lib/workspace";
+import { nomePapel } from "../../lib/equipe";
+import { nomePerfilUso, nomePlano } from "../../lib/saas";
 
 export default function ContaPage() {
-  const [config, setConfig] = useState<ConfiguracaoSaas | null>(null);
-  const [erro, setErro] = useState("");
-
-  useEffect(() => {
-    carregarConfiguracaoSaas()
-      .then(setConfig)
-      .catch((error) => setErro(error instanceof Error ? error.message : "Não foi possível carregar sua conta."));
-  }, []);
-
-  return (
-    <main className="saas-shell account-shell">
-      <section className="saas-brandbar pricing-brandbar">
-        <Link className="saas-brand" href="/"><span>N</span><div><strong>Nexo</strong><small>Conta e preferências</small></div></Link>
-        <Link className="secondary-button compact-button" href="/">Voltar ao Nexo</Link>
-      </section>
-
-      <section className="account-heading">
-        <p className="eyebrow">Sua conta</p>
-        <h1>Configurações do Nexo</h1>
-        <p>Perfil, objetivos e assinatura ficam vinculados à sua organização e são carregados do servidor.</p>
-      </section>
-
-      {erro ? <p className="form-error-banner">{erro}</p> : null}
-
-      <section className="account-grid">
-        <Link className="account-card account-card-primary" href="/conta/assinatura">
-          <span className="account-card-icon">◇</span>
-          <div><small>Plano atual</small><strong>{config ? nomePlano(config.plano) : "Carregando..."}</strong><p>Veja recursos, compare planos e prepare upgrades.</p></div>
-          <span className="account-card-arrow">→</span>
-        </Link>
-
-        <Link className="account-card" href="/onboarding">
-          <span className="account-card-icon">◎</span>
-          <div><small>Perfil de uso</small><strong>{config ? nomePerfilUso(config.perfilUso) : "Carregando..."}</strong><p>Altere como você pretende usar o Nexo e seus objetivos.</p></div>
-          <span className="account-card-arrow">→</span>
-        </Link>
-
-        <article className="account-card account-objectives-card">
-          <span className="account-card-icon">✓</span>
-          <div><small>Objetivos escolhidos</small><strong>{config ? config.objetivos.length || "Nenhum" : "—"}</strong><p>{config?.objetivos.length ? config.objetivos.join(" · ") : "Você pode definir objetivos no onboarding."}</p></div>
-        </article>
-      </section>
-
-      <section className="account-section-card">
-        <div><p className="eyebrow">Conta protegida</p><h2>Dados vinculados à organização</h2><p>Plano, perfil e recursos são validados no backend pela sessão autenticada. O navegador não escolhe mais qual organização acessar.</p></div>
-        <Link className="primary-button" href="/planos">Comparar planos</Link>
-      </section>
-    </main>
-  );
+  const { usuario, config, assinatura } = useWorkspace();
+  const gestao = usuario?.papel === "proprietario" || (usuario?.papel === "administrador" && config?.plano === "business");
+  return <WorkspaceShell titulo="Conta e preferências" descricao="Seus dados de acesso e as configurações do espaço atual.">
+    {!usuario || !config ? <p role="status">Carregando sua conta…</p> : <>
+      <section className="panel"><div className="panel-header"><h2>Seu acesso</h2><span className="tag">{nomePapel(usuario.papel)}</span></div><dl className="account-details"><div><dt>Nome</dt><dd>{usuario.nome}</dd></div><div><dt>E-mail verificado</dt><dd>{usuario.email}</dd></div><div><dt>Espaço atual</dt><dd>{usuario.organizacaoNome}</dd></div></dl><Link className="text-button" href="/esqueci-senha">Redefinir minha senha →</Link></section>
+      <div className="product-two-columns" style={{ marginTop: 20 }}><section className="panel"><div className="panel-header"><h2>Plano {nomePlano(config.plano)}</h2></div><p className="subtitle">{assinatura?.podeGerenciar ? "Gerencie o plano e acompanhe o histórico de mudanças." : "Você pode consultar a assinatura. O proprietário gerencia as mudanças de plano."}</p><div className="product-form-actions"><Link className="primary-button" href="/conta/assinatura">Minha assinatura</Link><Link className="secondary-button" href="/planos">Comparar planos</Link></div></section>
+      <section className="panel"><div className="panel-header"><h2>Como você usa este espaço</h2></div><strong>{nomePerfilUso(config.perfilUso)}</strong><p className="subtitle">{config.objetivos.length ? config.objetivos.join(" · ") : "Nenhum objetivo definido ainda."}</p>{gestao ? <Link className="text-button" href="/onboarding">Editar perfil e objetivos →</Link> : <p className="permission-note">As preferências do espaço são definidas pela gestão.</p>}</section></div>
+      <section className="panel" style={{ marginTop: 20 }}><div className="panel-header"><h2>Organizações e equipe</h2></div><p className="subtitle">Seu espaço pessoal e as organizações das quais participa mantêm dados e assinaturas separados.</p><div className="product-form-actions"><Link className="secondary-button" href="/empresa">Gerenciar espaços</Link><Link className="secondary-button" href="/equipe">Consultar equipe</Link></div></section>
+    </>}
+  </WorkspaceShell>;
 }

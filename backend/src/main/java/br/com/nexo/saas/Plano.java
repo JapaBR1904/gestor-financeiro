@@ -8,10 +8,10 @@ import java.util.Locale;
 public enum Plano {
     FREE("free", "Free", 0, 1, "Para começar a organizar a vida financeira e conhecer o Nexo.",
             List.of("Dashboard financeiro", "Cadastro de produtos e clientes", "Vendas e despesas", "Relatórios essenciais", "1 usuário")),
-    PRO("pro", "Pro", 39, 3, "Para quem usa o Nexo todos os dias e quer mais controle do negócio.",
-            List.of("Tudo do plano Free", "Fluxo de caixa avançado", "Metas e comparativos", "Exportação de dados", "Até 3 usuários", "Suporte prioritário")),
+    PRO("pro", "Pro", 39, 1, "Controle individual, com análises e planejamento para decidir melhor.",
+            List.of("Tudo do plano Free", "Fluxo de caixa por período", "Metas e comparativos", "Exportação CSV", "Assistente financeiro com IA", "1 usuário")),
     BUSINESS("business", "Business", 99, 10, "Para empresas com equipe e gestão compartilhada.",
-            List.of("Tudo do plano Pro", "Até 10 usuários", "Perfis e permissões", "Visão por unidade/equipe", "Relatórios gerenciais", "Atendimento prioritário"));
+            List.of("Tudo do plano Pro", "Até 10 usuários", "Convites e acesso compartilhado", "Papéis e permissões", "Organizações independentes", "Documentos da empresa"));
 
     private final String id;
     private final String nome;

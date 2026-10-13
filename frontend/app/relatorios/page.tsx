@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Sidebar } from "../../components/Sidebar";
+import Link from "next/link";
+import { WorkspaceShell } from "../../components/WorkspaceShell";
+import { useWorkspace } from "../../lib/workspace";
 import { formatarMoeda } from "../../lib/produtos";
 import { carregarRelatorioResumo, RelatorioResumo } from "../../lib/relatorios";
 import { nomeFormaPagamento } from "../../lib/vendas";
@@ -9,6 +11,8 @@ import { nomeFormaPagamento } from "../../lib/vendas";
 type Secao = "produtos" | "recebimentos" | "despesas" | "clientes";
 
 export default function RelatoriosPage() {
+  const { usuario } = useWorkspace();
+  const [revisao, setRevisao] = useState(0);
   const [relatorio, setRelatorio] = useState<RelatorioResumo | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
@@ -19,7 +23,7 @@ export default function RelatoriosPage() {
       .then(setRelatorio)
       .catch((error) => setErro(error instanceof Error ? error.message : "Não foi possível carregar os relatórios."))
       .finally(() => setCarregando(false));
-  }, []);
+  }, [usuario?.organizacaoId, revisao]);
 
   const limites = useMemo(() => {
     if (!relatorio) return { produtos: 1, recebimentos: 1, despesas: 1, clientes: 1 };
@@ -40,14 +44,10 @@ export default function RelatoriosPage() {
   }
 
   return (
-    <main className="app-shell">
-      <Sidebar ativo="relatorios" />
-      <section className="content">
-        <header className="topbar">
-          <div><p className="eyebrow">Análise</p><h1>Relatórios</h1><p className="subtitle">Os principais números e rankings do Nexo, organizados para bater o olho e entender.</p></div>
-        </header>
+    <WorkspaceShell titulo="Relatórios" descricao="Histórico completo da operação comercial: vendas, custos dos produtos, despesas e clientes." acoes={<Link className="secondary-button" href="/fluxo-caixa">Análise por período</Link>}>
+        <p className="permission-note">Estes indicadores reúnem as vendas e despesas comerciais de todo o histórico. Para incluir lançamentos pessoais e filtrar datas, abra <Link href="/pessoal">Lançamentos</Link>.</p>
 
-        {erro ? <p className="form-error-banner">{erro}</p> : null}
+        {erro ? <p className="form-error-banner" role="alert">{erro} <button className="text-button" onClick={() => setRevisao(r => r + 1)}>Tentar novamente</button></p> : null}
 
         {carregando ? (
           <article className="panel"><div className="empty-state"><strong>Carregando relatórios...</strong></div></article>
@@ -58,7 +58,7 @@ export default function RelatoriosPage() {
             <section className="summary-grid report-summary-grid">
               <article className="summary-card"><span>Faturamento</span><strong>{formatarMoeda(relatorio.faturamento)}</strong><small>{relatorio.quantidadeVendas} venda(s) registrada(s)</small></article>
               <article className="summary-card"><span>Despesas registradas</span><strong>{formatarMoeda(relatorio.totalDespesas)}</strong><small>{relatorio.quantidadeDespesas} lançamento(s)</small></article>
-              <article className="summary-card"><span>Saldo financeiro</span><strong>{formatarMoeda(relatorio.saldoFinanceiro)}</strong><small>Faturamento menos despesas</small></article>
+              <article className="summary-card"><span>Resultado comercial</span><strong>{formatarMoeda(relatorio.saldoFinanceiro)}</strong><small>Faturamento menos despesas</small></article>
               <article className="summary-card"><span>Lucro bruto</span><strong>{formatarMoeda(relatorio.lucroBruto)}</strong><small>Faturamento menos custo dos produtos</small></article>
             </section>
 
@@ -129,7 +129,6 @@ export default function RelatoriosPage() {
             </section>
           </div>
         )}
-      </section>
-    </main>
+    </WorkspaceShell>
   );
 }

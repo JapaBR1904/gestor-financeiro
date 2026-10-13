@@ -1,165 +1,350 @@
 "use client";
-
 import Link from "next/link";
-import { FormEvent, useEffect, useMemo, useState } from "react";
-import { arquivarMeta, atualizarProgressoMeta, criarMeta, listarMetas, Meta, UnidadeMeta } from "../../lib/metas";
-import { carregarConfiguracaoSaas, planoPermite, PlanoNexo } from "../../lib/saas";
+import { FormEvent, useEffect, useRef, useState } from "react";
+import { WorkspaceShell } from "../../components/WorkspaceShell";
+import { useWorkspace } from "../../lib/workspace";
+import { VazioProduto } from "../../components/EstadoProduto";
+import {
+  arquivarMeta,
+  atualizarProgressoMeta,
+  criarMeta,
+  listarMetas,
+  Meta,
+  UnidadeMeta,
+} from "../../lib/metas";
+import { planoPermite } from "../../lib/planos";
 
-function formatarValor(meta: Meta, valor: number) {
-  if (meta.unidade === "moeda") {
-    return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(valor);
-  }
-  if (meta.unidade === "percentual") return `${valor.toLocaleString("pt-BR")}%`;
-  return valor.toLocaleString("pt-BR");
+function valor(meta: Meta, numero: number) {
+  return meta.unidade === "moeda"
+    ? numero.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+    : `${numero.toLocaleString("pt-BR")}${meta.unidade === "percentual" ? "%" : ""}`;
 }
-
 export default function MetasPage() {
-  const [plano, setPlano] = useState<PlanoNexo>("free");
-  const [carregandoPlano, setCarregandoPlano] = useState(true);
-  const [carregandoMetas, setCarregandoMetas] = useState(false);
-  const [metas, setMetas] = useState<Meta[]>([]);
+  const { config, usuario } = useWorkspace();
+  const liberado = config && planoPermite(config.plano, "pro");
+  const gestao =
+    usuario?.papel === "proprietario" || usuario?.papel === "administrador";
+  const [metas, setMetas] = useState<Meta[] | null>(null);
   const [erro, setErro] = useState("");
-  const [mostrarFormulario, setMostrarFormulario] = useState(false);
-  const [salvando, setSalvando] = useState(false);
+  const [sucesso, setSucesso] = useState("");
+  const [formulario, setFormulario] = useState(false);
+  const [ocupado, setOcupado] = useState(false);
+  const trava = useRef(false);
+  const [revisao, setRevisao] = useState(0);
   const [titulo, setTitulo] = useState("");
   const [unidade, setUnidade] = useState<UnidadeMeta>("moeda");
-  const [valorMeta, setValorMeta] = useState("");
-  const [valorAtual, setValorAtual] = useState("0");
+  const [meta, setMeta] = useState("");
+  const [atual, setAtual] = useState("0");
   const [prazo, setPrazo] = useState("");
   const [edicoes, setEdicoes] = useState<Record<number, string>>({});
-
-  const liberado = planoPermite(plano, "pro");
-
   useEffect(() => {
-    carregarConfiguracaoSaas()
-      .then(async (dados) => {
-        setPlano(dados.plano);
-        if (planoPermite(dados.plano, "pro")) {
-          setCarregandoMetas(true);
-          try {
-            setMetas(await listarMetas());
-          } catch (error) {
-            setErro(error instanceof Error ? error.message : "Não foi possível carregar as metas.");
-          } finally {
-            setCarregandoMetas(false);
-          }
+    if (!liberado) return;
+    let ativo = true;
+    listarMetas()
+      .then((lista) => {
+        if (ativo) {
+          setMetas(lista);
+          setErro("");
         }
       })
-      .catch(() => setPlano("free"))
-      .finally(() => setCarregandoPlano(false));
-  }, []);
-
-  const resumo = useMemo(() => {
-    const concluidas = metas.filter((meta) => meta.status === "concluida").length;
-    const ativas = metas.filter((meta) => meta.status === "ativa").length;
-    return { concluidas, ativas, total: metas.length };
-  }, [metas]);
-
-  async function handleCriarMeta(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+      .catch((e) => {
+        if (ativo)
+          setErro(
+            e instanceof Error
+              ? e.message
+              : "Não foi possível carregar as metas.",
+          );
+      });
+    return () => {
+      ativo = false;
+    };
+  }, [liberado, usuario?.organizacaoId, revisao]);
+  async function executar(acao: () => Promise<void>) {
+    if (trava.current) return;
+    trava.current = true;
+    setOcupado(true);
     setErro("");
-
-    const metaNumero = Number(valorMeta.replace(",", "."));
-    const atualNumero = Number(valorAtual.replace(",", "."));
-    if (!titulo.trim()) return setErro("Informe o título da meta.");
-    if (!Number.isFinite(metaNumero) || metaNumero <= 0) return setErro("Informe um valor de meta maior que zero.");
-    if (!Number.isFinite(atualNumero) || atualNumero < 0) return setErro("O valor atual não pode ser negativo.");
-
-    setSalvando(true);
     try {
-      const criada = await criarMeta({ titulo, unidade, valorMeta: metaNumero, valorAtual: atualNumero, prazo });
-      setMetas((atuais) => [criada, ...atuais]);
-      setTitulo("");
-      setValorMeta("");
-      setValorAtual("0");
-      setPrazo("");
-      setMostrarFormulario(false);
-    } catch (error) {
-      setErro(error instanceof Error ? error.message : "Não foi possível criar a meta.");
+      await acao();
+    } catch (e) {
+      setErro(
+        e instanceof Error ? e.message : "Não foi possível salvar a meta.",
+      );
     } finally {
-      setSalvando(false);
+      trava.current = false;
+      setOcupado(false);
     }
   }
-
-  async function atualizar(meta: Meta) {
-    const texto = edicoes[meta.id] ?? String(meta.valorAtual);
-    const valor = Number(texto.replace(",", "."));
-    if (!Number.isFinite(valor) || valor < 0) return setErro("Informe um progresso válido.");
-
-    setErro("");
-    try {
-      const atualizada = await atualizarProgressoMeta(meta.id, valor);
-      setMetas((atuais) => atuais.map((item) => item.id === meta.id ? atualizada : item));
-      setEdicoes((atuais) => ({ ...atuais, [meta.id]: String(atualizada.valorAtual) }));
-    } catch (error) {
-      setErro(error instanceof Error ? error.message : "Não foi possível atualizar a meta.");
-    }
+  function criar(e: FormEvent) {
+    e.preventDefault();
+    void executar(async () => {
+      await criarMeta({
+        titulo,
+        unidade,
+        valorMeta: Number(meta),
+        valorAtual: Number(atual),
+        prazo,
+      });
+      setFormulario(false);
+      setTitulo("");
+      setMeta("");
+      setAtual("0");
+      setPrazo("");
+      setRevisao((r) => r + 1);
+      setSucesso("Meta criada.");
+    });
   }
-
-  async function arquivar(metaId: number) {
-    setErro("");
-    try {
-      await arquivarMeta(metaId);
-      setMetas((atuais) => atuais.filter((meta) => meta.id !== metaId));
-    } catch (error) {
-      setErro(error instanceof Error ? error.message : "Não foi possível arquivar a meta.");
-    }
-  }
-
   return (
-    <main className="saas-shell premium-shell">
-      <section className="saas-brandbar pricing-brandbar">
-        <Link className="saas-brand" href="/"><span>N</span><div><strong>Nexo</strong><small>Metas e crescimento</small></div></Link>
-        <Link className="secondary-button compact-button" href="/">Voltar ao Nexo</Link>
-      </section>
-
-      {!carregandoPlano && !liberado ? (
-        <section className="premium-lock-card"><span className="premium-lock-icon">◇</span><p className="eyebrow">Recurso Pro</p><h1>Metas e comparativos</h1><p>Defina objetivos financeiros e comerciais e acompanhe a evolução ao longo do mês.</p><Link className="primary-button" href="/planos">Ver planos</Link></section>
-      ) : liberado ? (
+    <WorkspaceShell
+      titulo="Metas e comparativos"
+      descricao="Defina objetivos e acompanhe o progresso que você registra."
+      acoes={
+        liberado && gestao ? (
+          <button
+            className="primary-button"
+            onClick={() => setFormulario(!formulario)}
+          >
+            {formulario ? "Fechar" : "+ Nova meta"}
+          </button>
+        ) : null
+      }
+    >
+      {!config ? (
+        <p role="status">Carregando seu plano…</p>
+      ) : !liberado ? (
+        <section className="product-empty product-lock">
+          <p className="eyebrow">Disponível no Pro</p>
+          <h2>Planeje o próximo passo</h2>
+          <p>
+            Defina metas financeiras e comerciais. Compare os resultados por
+            período na análise de fluxo.
+          </p>
+          <Link className="primary-button" href="/planos">
+            Ver planos
+          </Link>
+        </section>
+      ) : (
         <>
-          <section className="premium-heading pro-heading-row">
-            <div><p className="eyebrow">Plano Pro</p><h1>Metas e comparativos</h1><p>Crie metas reais, acompanhe o progresso e marque automaticamente quando atingir o objetivo.</p></div>
-            <button className="primary-button" type="button" onClick={() => setMostrarFormulario((valor) => !valor)}>{mostrarFormulario ? "Fechar" : "+ Nova meta"}</button>
+          {erro ? (
+            <p className="form-error-banner" role="alert">
+              {erro}{" "}
+              <button
+                className="text-button"
+                onClick={() => setRevisao((r) => r + 1)}
+              >
+                Tentar novamente
+              </button>
+            </p>
+          ) : null}
+          {sucesso ? (
+            <p className="form-success" role="status">
+              {sucesso}
+            </p>
+          ) : null}
+          <section className="finance-summary">
+            {[
+              [
+                "Em andamento",
+                metas?.filter((m) => m.status === "ativa").length,
+              ],
+              [
+                "Concluídas",
+                metas?.filter((m) => m.status === "concluida").length,
+              ],
+              ["Total de metas", metas?.length],
+            ].map(([nome, numero]) => (
+              <article className="summary-card" key={nome}>
+                <span>{nome}</span>
+                <strong>{numero ?? "—"}</strong>
+                <small>Metas não arquivadas</small>
+              </article>
+            ))}
           </section>
-
-          <section className="pro-summary-grid">
-            <article><span>Metas ativas</span><strong>{resumo.ativas}</strong><small>em andamento</small></article>
-            <article><span>Concluídas</span><strong>{resumo.concluidas}</strong><small>objetivos alcançados</small></article>
-            <article><span>Total</span><strong>{resumo.total}</strong><small>metas visíveis</small></article>
-          </section>
-
-          {mostrarFormulario ? (
-            <section className="pro-form-card">
-              <div><p className="eyebrow">Nova meta</p><h2>Defina um objetivo</h2><p>Você pode usar dinheiro, percentual ou quantidade.</p></div>
-              <form className="pro-form-grid" onSubmit={handleCriarMeta}>
-                <label><span>Título</span><input value={titulo} onChange={(event) => setTitulo(event.target.value)} placeholder="Ex.: Faturar R$ 15.000" /></label>
-                <label><span>Unidade</span><select value={unidade} onChange={(event) => setUnidade(event.target.value as UnidadeMeta)}><option value="moeda">Dinheiro (R$)</option><option value="percentual">Percentual (%)</option><option value="quantidade">Quantidade</option></select></label>
-                <label><span>Valor da meta</span><input inputMode="decimal" value={valorMeta} onChange={(event) => setValorMeta(event.target.value)} placeholder="15000" /></label>
-                <label><span>Valor atual</span><input inputMode="decimal" value={valorAtual} onChange={(event) => setValorAtual(event.target.value)} placeholder="0" /></label>
-                <label><span>Prazo</span><input type="date" value={prazo} onChange={(event) => setPrazo(event.target.value)} /></label>
-                <div className="pro-form-actions"><button className="primary-button" type="submit" disabled={salvando}>{salvando ? "Salvando..." : "Criar meta"}</button></div>
+          {formulario && gestao ? (
+            <section className="product-form-panel">
+              <h2>Defina um objetivo</h2>
+              <form onSubmit={criar}>
+                <div className="form-grid">
+                  <label className="field">
+                    <span>Título</span>
+                    <input
+                      aria-label="Título"
+                      required
+                      maxLength={140}
+                      value={titulo}
+                      onChange={(e) => setTitulo(e.target.value)}
+                      autoFocus
+                    />
+                  </label>
+                  <label className="field">
+                    <span>Unidade</span>
+                    <select
+                      aria-label="Unidade"
+                      value={unidade}
+                      onChange={(e) =>
+                        setUnidade(e.target.value as UnidadeMeta)
+                      }
+                    >
+                      <option value="moeda">Dinheiro (R$)</option>
+                      <option value="percentual">Percentual (%)</option>
+                      <option value="quantidade">Quantidade</option>
+                    </select>
+                  </label>
+                  <label className="field">
+                    <span>Valor da meta</span>
+                    <input
+                      aria-label="Valor da meta"
+                      type="number"
+                      min="0.01"
+                      max="999999999999.99"
+                      step="0.01"
+                      required
+                      value={meta}
+                      onChange={(e) => setMeta(e.target.value)}
+                    />
+                  </label>
+                  <label className="field">
+                    <span>Valor atual</span>
+                    <input
+                      aria-label="Valor atual"
+                      type="number"
+                      min="0"
+                      max="999999999999.99"
+                      step="0.01"
+                      required
+                      value={atual}
+                      onChange={(e) => setAtual(e.target.value)}
+                    />
+                  </label>
+                  <label className="field">
+                    <span>Prazo (opcional)</span>
+                    <input
+                      aria-label="Prazo (opcional)"
+                      type="date"
+                      value={prazo}
+                      onChange={(e) => setPrazo(e.target.value)}
+                    />
+                  </label>
+                </div>
+                <div className="product-form-actions">
+                  <button className="primary-button" disabled={ocupado}>
+                    {ocupado ? "Salvando…" : "Criar meta"}
+                  </button>
+                </div>
               </form>
             </section>
           ) : null}
-
-          {erro ? <p className="form-error-banner pro-error">{erro}</p> : null}
-
-          <section className="pro-goals-list">
-            {carregandoMetas ? <div className="pro-empty-card">Carregando metas...</div> : null}
-            {!carregandoMetas && metas.length === 0 ? <div className="pro-empty-card"><strong>Nenhuma meta criada ainda.</strong><span>Crie sua primeira meta para começar a acompanhar a evolução.</span></div> : null}
-            {metas.map((meta) => {
-              const progresso = Math.max(0, Math.min(100, (meta.valorAtual / meta.valorMeta) * 100));
+          {!gestao ? (
+            <p className="permission-note">
+              Seu papel permite acompanhar as metas. A gestão atualiza o
+              progresso.
+            </p>
+          ) : null}
+          {metas === null && !erro ? (
+            <p role="status">Carregando metas…</p>
+          ) : metas?.length === 0 ? (
+            <VazioProduto
+              titulo="Qual é seu próximo objetivo?"
+              texto="Crie uma meta com valor e prazo. Você registra o progresso, e o Nexo marca a conclusão quando o objetivo é atingido."
+            />
+          ) : (
+            metas?.map((m) => {
+              const progresso = Math.max(
+                0,
+                Math.min(100, (m.valorAtual / m.valorMeta) * 100),
+              );
               return (
-                <article className={`pro-goal-card${meta.status === "concluida" ? " completed" : ""}`} key={meta.id}>
-                  <div className="pro-goal-top"><div><span className="pro-goal-status">{meta.status === "concluida" ? "Concluída" : "Em andamento"}</span><h2>{meta.titulo}</h2><p>{formatarValor(meta, meta.valorAtual)} de {formatarValor(meta, meta.valorMeta)}{meta.prazo ? ` · prazo ${new Date(`${meta.prazo}T12:00:00`).toLocaleDateString("pt-BR")}` : ""}</p></div><strong className="pro-goal-percent">{Math.round(progresso)}%</strong></div>
-                  <div className="premium-progress pro-goal-progress"><span style={{ width: `${progresso}%` }} /></div>
-                  <div className="pro-goal-actions"><label><span>Atualizar progresso</span><input inputMode="decimal" value={edicoes[meta.id] ?? String(meta.valorAtual)} onChange={(event) => setEdicoes((atuais) => ({ ...atuais, [meta.id]: event.target.value }))} /></label><button className="secondary-button compact-button" type="button" onClick={() => atualizar(meta)}>Salvar progresso</button><button className="pro-archive-button" type="button" onClick={() => arquivar(meta.id)}>Arquivar</button></div>
+                <article className="pro-goal-card" key={m.id}>
+                  <div className="pro-goal-top">
+                    <div>
+                      <span className="tag">
+                        {m.status === "concluida"
+                          ? "Concluída"
+                          : "Em andamento"}
+                      </span>
+                      <h2>{m.titulo}</h2>
+                      <p>
+                        {valor(m, m.valorAtual)} de {valor(m, m.valorMeta)}
+                        {m.prazo
+                          ? ` · prazo ${new Date(`${m.prazo}T12:00:00`).toLocaleDateString("pt-BR")}`
+                          : ""}
+                      </p>
+                    </div>
+                    <strong>{Math.round(progresso)}%</strong>
+                  </div>
+                  <div
+                    className="premium-progress"
+                    role="progressbar"
+                    aria-label={`Progresso de ${m.titulo}`}
+                    aria-valuenow={Math.round(progresso)}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                  >
+                    <span style={{ width: `${progresso}%` }} />
+                  </div>
+                  {gestao ? (
+                    <form
+                      className="pro-goal-actions"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        void executar(async () => {
+                          await atualizarProgressoMeta(
+                            m.id,
+                            Number(edicoes[m.id] ?? m.valorAtual),
+                          );
+                          setRevisao((r) => r + 1);
+                          setSucesso("Progresso atualizado.");
+                        });
+                      }}
+                    >
+                      <label className="field">
+                        <span>Atualizar progresso</span>
+                        <input
+                          aria-label="Atualizar progresso"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          max="999999999999.99"
+                          required
+                          value={edicoes[m.id] ?? m.valorAtual}
+                          onChange={(e) =>
+                            setEdicoes({ ...edicoes, [m.id]: e.target.value })
+                          }
+                        />
+                      </label>
+                      <button className="secondary-button" disabled={ocupado}>
+                        Salvar progresso
+                      </button>
+                      <button
+                        className="text-button danger-text"
+                        type="button"
+                        disabled={ocupado}
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              "Arquivar esta meta? Seu histórico será preservado.",
+                            )
+                          )
+                            void executar(async () => {
+                              await arquivarMeta(m.id);
+                              setRevisao((r) => r + 1);
+                              setSucesso("Meta arquivada.");
+                            });
+                        }}
+                      >
+                        Arquivar
+                      </button>
+                    </form>
+                  ) : null}
                 </article>
               );
-            })}
-          </section>
+            })
+          )}
+          <Link className="text-button" href="/fluxo-caixa">
+            Ver fluxo e comparativos do período →
+          </Link>
         </>
-      ) : null}
-    </main>
+      )}
+    </WorkspaceShell>
   );
 }

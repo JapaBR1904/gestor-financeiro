@@ -12,6 +12,8 @@ import "./checkout.css";
 import "./saas-extra.css";
 import "./pro.css";
 import "./ia.css";
+import "./product.css";
+import { WorkspaceProvider } from "../components/WorkspaceProvider";
 
 export const metadata: Metadata = {
   title: "Nexo",
@@ -21,7 +23,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR">
-      <body>{children}</body>
+      <body><WorkspaceProvider>{children}</WorkspaceProvider></body>
     </html>
   );
 }

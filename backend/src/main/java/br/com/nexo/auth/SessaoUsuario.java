@@ -24,6 +24,9 @@ public class SessaoUsuario {
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
+    @Column(name = "organizacao_id")
+    private Long organizacaoId;
+
     @Column(name = "token_hash", nullable = false, length = 255)
     private String tokenHash;
 
@@ -43,6 +46,7 @@ public class SessaoUsuario {
 
     public SessaoUsuario(Usuario usuario, String tokenHash, OffsetDateTime expiraEm) {
         this.usuario = usuario;
+        this.organizacaoId = usuario.getOrganizacao().getId();
         this.tokenHash = tokenHash;
         this.expiraEm = expiraEm;
     }
@@ -59,4 +63,6 @@ public class SessaoUsuario {
 
     public void revogar() { revogadaEm = OffsetDateTime.now(); }
     public Usuario getUsuario() { return usuario; }
+    public Long getOrganizacaoId() { return organizacaoId == null ? usuario.getOrganizacao().getId() : organizacaoId; }
+    public void selecionarOrganizacao(Long id) { this.organizacaoId = id; }
 }

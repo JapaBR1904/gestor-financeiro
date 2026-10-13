@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { solicitarCodigo, verificarCodigo, verificarRecuperacao } from "../lib/auth";
 import { emailValido } from "../lib/formatacao";
 import AuthCard from "./AuthCard";
+import { destinoConvite } from "../lib/convite";
 
 export default function AuthCodeForm({ recuperacao = false }: { recuperacao?: boolean }) {
   const router = useRouter();
@@ -37,7 +38,7 @@ export default function AuthCodeForm({ recuperacao = false }: { recuperacao?: bo
         router.replace("/redefinir-senha");
       } else {
         await verificarCodigo({ email: email.trim(), codigo, finalidade });
-        router.replace("/onboarding");
+        router.replace(destinoConvite() ?? "/onboarding");
         router.refresh();
       }
     } catch (error) {
@@ -65,10 +66,10 @@ export default function AuthCodeForm({ recuperacao = false }: { recuperacao?: bo
     <AuthCard titulo={recuperacao ? "Confirme a recuperação" : "Confirme seu e-mail"}
       descricao="Informe o código recebido por e-mail. Ele vale por 10 minutos e só pode ser usado uma vez.">
       <form className="auth-form" onSubmit={confirmar} noValidate aria-busy={ocupado}>
-        <label className="field"><span>E-mail</span><input type="email" autoComplete="email" required maxLength={180} value={email}
+        <label className="field"><span>E-mail</span><input aria-label="E-mail" type="email" autoComplete="email" required maxLength={180} value={email}
           onChange={(e) => { setEmail(e.target.value); setCodigo(""); setErro(""); setMensagem(""); }} /></label>
         <label className="field"><span>Código de 6 dígitos</span>
-          <input className="auth-code-input" inputMode="numeric" autoComplete="one-time-code" required pattern="[0-9]{6}" maxLength={6}
+          <input aria-label="Código de 6 dígitos" className="auth-code-input" inputMode="numeric" autoComplete="one-time-code" required pattern="[0-9]{6}" maxLength={6}
             value={codigo} onChange={(e) => { setCodigo(e.target.value.replace(/\D/g, "").slice(0, 6)); setErro(""); }} placeholder="000000" />
         </label>
         {erro ? <p className="form-error-banner" role="alert">{erro}</p> : null}

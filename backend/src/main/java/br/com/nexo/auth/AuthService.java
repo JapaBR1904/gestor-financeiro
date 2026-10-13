@@ -30,6 +30,7 @@ public class AuthService {
     private final SessaoUsuarioRepository sessaoRepository;
     private final OrganizacaoService organizacaoService;
     private final EmailCodigoService emailCodigoService;
+    private final br.com.nexo.organizacao.MembroRepository membros;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
     public AuthService(
@@ -37,13 +38,15 @@ public class AuthService {
             CodigoAutenticacaoRepository codigoRepository,
             SessaoUsuarioRepository sessaoRepository,
             OrganizacaoService organizacaoService,
-            EmailCodigoService emailCodigoService
+            EmailCodigoService emailCodigoService,
+            br.com.nexo.organizacao.MembroRepository membros
     ) {
         this.usuarioRepository = usuarioRepository;
         this.codigoRepository = codigoRepository;
         this.sessaoRepository = sessaoRepository;
         this.organizacaoService = organizacaoService;
         this.emailCodigoService = emailCodigoService;
+        this.membros = membros;
     }
 
     @Transactional
@@ -187,9 +190,19 @@ public class AuthService {
     }
 
     private ResultadoAutenticacao criarSessao(Usuario usuario) {
+        usuarioRepository.flush();
+        membros.garantirOriginal(usuario.getId());
+        var vinculo = membros.vinculo(usuario.getId(), usuario.getOrganizacao().getId());
+        if (vinculo == null) {
+            var disponiveis = membros.organizacoes(usuario.getId());
+            if (disponiveis.isEmpty()) throw new IllegalArgumentException(ERRO_LOGIN);
+            vinculo = disponiveis.getFirst();
+        }
         String token = gerarTokenSeguro();
-        sessaoRepository.save(new SessaoUsuario(usuario, sha256(token), OffsetDateTime.now().plusDays(30)));
-        return new ResultadoAutenticacao(token, montarUsuario(usuario));
+        var sessao = new SessaoUsuario(usuario, sha256(token), OffsetDateTime.now().plusDays(30));
+        sessao.selecionarOrganizacao(vinculo.id());
+        sessaoRepository.save(sessao);
+        return new ResultadoAutenticacao(token, montarUsuario(usuario, vinculo));
     }
 
     @Transactional
@@ -205,7 +218,20 @@ public class AuthService {
         if (sessaoRepository.registrarAcesso(sha256(token), OffsetDateTime.now()) == 0) {
             throw new IllegalArgumentException("Sessão expirada. Entre novamente.");
         }
-        return montarUsuario(sessao.getUsuario());
+        membros.garantirOriginal(sessao.getUsuario().getId());
+        var vinculo = membros.vinculo(sessao.getUsuario().getId(), sessao.getOrganizacaoId());
+        if (vinculo == null) throw new IllegalArgumentException("Este acesso à organização foi encerrado.");
+        return montarUsuario(sessao.getUsuario(), vinculo);
+    }
+
+    @Transactional
+    public UsuarioAutenticado selecionarOrganizacao(String token, Long organizacaoId) {
+        var usuario = autenticarSessao(token);
+        if (membros.vinculo(usuario.id(), organizacaoId) == null)
+            throw new br.com.nexo.config.AcessoNegadoException("Você não tem acesso a esta organização.");
+        var sessao = sessaoRepository.findByTokenHash(sha256(token)).orElseThrow(() -> new IllegalArgumentException("Sessão inválida."));
+        sessao.selecionarOrganizacao(organizacaoId);
+        return autenticarSessao(token);
     }
 
     @Transactional
@@ -217,8 +243,8 @@ public class AuthService {
         });
     }
 
-    private UsuarioAutenticado montarUsuario(Usuario usuario) {
-        return new UsuarioAutenticado(usuario.getId(), usuario.getNome(), usuario.getEmail(), usuario.getPapel(), usuario.getOrganizacao().getId(), usuario.getOrganizacao().getNome());
+    private UsuarioAutenticado montarUsuario(Usuario usuario, br.com.nexo.organizacao.MembroRepository.Vinculo vinculo) {
+        return new UsuarioAutenticado(usuario.getId(), usuario.getNome(), usuario.getEmail(), vinculo.papel(), vinculo.id(), vinculo.nome());
     }
 
     private String normalizarEmail(String valor) {

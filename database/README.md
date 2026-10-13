@@ -4,7 +4,7 @@ Os scripts desta pasta pertencem à aplicação Spring/Next. Eles foram preserva
 
 ## Banco novo
 
-Crie o usuário `nexo_app` com senha definida de forma segura no seu PostgreSQL. Como administrador, execute `01_criar_banco.sql` conectado ao banco `postgres`. Depois, conectado ao banco `nexo`, execute os scripts `02` a `10` em ordem, usando `psql -v ON_ERROR_STOP=1 -f caminho/do/script.sql` ou o Query Tool do pgAdmin.
+Crie o usuário `nexo_app` com senha definida de forma segura no seu PostgreSQL. Como administrador, execute `01_criar_banco.sql` conectado ao banco `postgres`. Depois, conectado ao banco `nexo`, execute os scripts `02` a `11` em ordem, usando `psql -v ON_ERROR_STOP=1 -f caminho/do/script.sql` ou o Query Tool do pgAdmin.
 
 Depois dos scripts, conceda os privilégios de desenvolvimento ao usuário da aplicação:
 
@@ -27,6 +27,18 @@ A migração `09` adiciona:
 - índice único do hash da prova e finalidades `verificacao_email` e `recuperacao_senha`.
 
 Ela invalida os códigos do fluxo anterior (`cadastro`/`login`) sem apagar o histórico. As contas existentes continuam verificadas como antes; usuários sem senha usam **Esqueci minha senha** para defini-la. Nenhuma organização, sessão ou informação financeira é excluída pela migração. A migração pode ser reaplicada e não recria o banco.
+
+## Finanças e equipes
+
+Aplique `11_produto_financas_equipes.sql` depois da `10` no banco existente. Esta migração adiciona associações de membros, a organização selecionada na sessão, o autor dos convites, lançamentos manuais (incluindo chave de idempotência) e documentos. Preserva usuários, organizações, assinaturas e registros financeiros. As associações iniciais e as organizações das sessões são preenchidas a partir dos dados existentes. A reaplicação não substitui membros nem altera sessões que já selecionaram outro espaço.
+
+A migração foi aplicada e reaplicada no banco exclusivo `nexo_test`; o banco de destino do usuário ainda precisa recebê-la. Não execute `01_criar_banco.sql` em um banco existente.
+
+```bash
+psql -v ON_ERROR_STOP=1 -d nexo -f database/11_produto_financas_equipes.sql
+```
+
+Use sua conexão administrativa habitual e forneça credenciais pelo mecanismo seguro já utilizado. Veja [../docs/PRODUTO.md](../docs/PRODUTO.md) para permissões, limites e configuração.
 
 ## Banco dos testes
 

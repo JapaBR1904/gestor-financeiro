@@ -20,12 +20,14 @@ public class SaasController {
     private final SessaoContexto sessaoContexto;
     private final AcessoPlanoService acessoPlano;
     private final AssinaturaRepository assinaturas;
+    private final br.com.nexo.organizacao.PoliticaOrganizacao politica;
 
-    public SaasController(SaasService saasService, SessaoContexto sessaoContexto, AcessoPlanoService acessoPlano, AssinaturaRepository assinaturas) {
+    public SaasController(SaasService saasService, SessaoContexto sessaoContexto, AcessoPlanoService acessoPlano, AssinaturaRepository assinaturas, br.com.nexo.organizacao.PoliticaOrganizacao politica) {
         this.saasService = saasService;
         this.sessaoContexto = sessaoContexto;
         this.acessoPlano = acessoPlano;
         this.assinaturas = assinaturas;
+        this.politica = politica;
     }
 
     @GetMapping
@@ -38,6 +40,7 @@ public class SaasController {
             @CookieValue(name = SessaoContexto.COOKIE, required = false) String token,
             @Valid @RequestBody OnboardingRequest request
     ) {
+        politica.exigirGestao(sessaoContexto.usuario(token));
         return saasService.salvarOnboarding(
                 sessaoContexto.organizacaoId(token),
                 request.perfilUso(),

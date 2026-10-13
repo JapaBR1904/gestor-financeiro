@@ -57,9 +57,19 @@ public class AssinaturaRepository {
         return jdbc.query("SELECT plano_anterior, plano_novo, tipo, origem, criado_em FROM historico_assinaturas WHERE organizacao_id = ? ORDER BY id DESC LIMIT 50",
                 (rs, n) -> new Historico(rs.getString("plano_anterior"), rs.getString("plano_novo"), rs.getString("tipo"), rs.getString("origem"), rs.getObject("criado_em", OffsetDateTime.class)), organizacaoId);
     }
-    public int usuarios(Long organizacaoId) { return jdbc.queryForObject("SELECT count(*) FROM usuarios WHERE organizacao_id = ? AND ativo", Integer.class, organizacaoId); }
+    public int usuarios(Long organizacaoId) {
+        return jdbc.queryForObject("""
+                SELECT count(*) FROM usuarios u LEFT JOIN membros_organizacao m ON m.usuario_id=u.id AND m.organizacao_id=?
+                WHERE u.ativo AND ((m.organizacao_id IS NOT NULL AND m.ativo) OR (m.organizacao_id IS NULL AND u.organizacao_id=?))
+                """, Integer.class, organizacaoId, organizacaoId);
+    }
     public List<Membro> membros(Long organizacaoId) {
-        return jdbc.query("SELECT id, nome, papel, ativo FROM usuarios WHERE organizacao_id = ? ORDER BY id", (rs, n) -> new Membro(rs.getLong("id"), rs.getString("nome"), rs.getString("papel"), rs.getBoolean("ativo")), organizacaoId);
+        return jdbc.query("""
+                SELECT u.id,u.nome,CASE WHEN u.organizacao_id=? THEN u.papel ELSE m.papel END AS papel,
+                       u.ativo AND COALESCE(m.ativo,TRUE) AS ativo
+                FROM usuarios u LEFT JOIN membros_organizacao m ON m.usuario_id=u.id AND m.organizacao_id=?
+                WHERE u.organizacao_id=? OR m.organizacao_id IS NOT NULL ORDER BY u.id
+                """, (rs, n) -> new Membro(rs.getLong("id"), rs.getString("nome"), rs.getString("papel"), rs.getBoolean("ativo")), organizacaoId, organizacaoId, organizacaoId);
     }
     private Checkout mapear(java.sql.ResultSet rs, int n) throws java.sql.SQLException {
         return new Checkout(rs.getObject("id", UUID.class), rs.getLong("organizacao_id"), rs.getLong("usuario_id"), rs.getString("plano_anterior"), rs.getString("plano_destino"), rs.getLong("assinatura_versao"), rs.getString("tipo"), rs.getBigDecimal("valor"), rs.getString("status"), rs.getString("metodo"), rs.getObject("expira_em", OffsetDateTime.class));

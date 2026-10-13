@@ -14,7 +14,10 @@ export async function lerResposta<T>(response: Response): Promise<T> {
   } catch {}
 
   if (response.status === 401 && typeof window !== "undefined" && window.location.pathname !== "/login") {
-    window.location.replace(new URL("/login", window.location.origin).toString());
+    const login = new URL("/login", window.location.origin);
+    const convite = window.location.pathname === "/convite" ? window.location.hash.slice(1) : "";
+    if (/^[A-Za-z0-9_-]{43}$/.test(convite)) login.hash = `convite=${convite}`;
+    window.location.replace(login.toString());
   }
 
   throw new Error(mensagem);

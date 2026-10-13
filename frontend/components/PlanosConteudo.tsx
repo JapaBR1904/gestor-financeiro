@@ -46,7 +46,7 @@ export default function PlanosConteudo() {
         </article>;
       })}</section>
       {onboarding && assinatura ? <button className="primary-button" onClick={continuar} disabled={salvando}>{salvando ? "Continuando..." : "Continuar com o plano atual"}</button> : null}
-      <section className="pricing-note"><strong>{assinatura?.simulacaoHabilitada ? "Pagamento simulado" : "Assinaturas em preparação"}</strong><p>{assinatura?.simulacaoHabilitada ? "O checkout não realiza cobranças e não pede dados de cartão ou banco." : "A troca simulada precisa estar habilitada em desenvolvimento. Nenhuma cobrança real está disponível."}</p>{assinatura && !assinatura.podeGerenciar ? <p>Somente o dono da organização pode trocar o plano.</p> : null}<p>Equipe, convites, exportação, comparativos e recursos gerenciais ainda têm partes em preparação; os limites de usuários são preservados do catálogo existente.</p></section>
+      <section className="pricing-note"><strong>{assinatura?.simulacaoHabilitada ? "Pagamento simulado" : "Assinaturas em preparação"}</strong><p>{assinatura?.simulacaoHabilitada ? "O checkout não realiza cobranças e não pede dados de cartão ou banco." : "A troca simulada precisa estar habilitada em desenvolvimento. Nenhuma cobrança real está disponível."}</p>{assinatura && !assinatura.podeGerenciar ? <p>Somente o dono da organização pode trocar o plano.</p> : null}<p>Free e Pro são para uso individual. Business inclui os recursos Pro e a colaboração com até 10 usuários, contando o proprietário.</p></section>
     </main>
   );
 }

@@ -52,10 +52,10 @@ public class MetaService {
         BigDecimal atual = validarValorAtual(valorAtual);
 
         Long id = jdbcTemplate.queryForObject("""
-                INSERT INTO metas (organizacao_id, titulo, unidade, valor_meta, valor_atual, prazo)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO metas (organizacao_id, titulo, unidade, valor_meta, valor_atual, prazo, status)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
                 RETURNING id
-                """, Long.class, organizacaoId, tituloNormalizado, unidadeNormalizada, meta, atual, prazo == null ? null : Date.valueOf(prazo));
+                """, Long.class, organizacaoId, tituloNormalizado, unidadeNormalizada, meta, atual, prazo == null ? null : Date.valueOf(prazo), atual.compareTo(meta) >= 0 ? "concluida" : "ativa");
 
         return buscar(organizacaoId, id);
     }
@@ -121,6 +121,7 @@ public class MetaService {
     }
 
     private BigDecimal validarValorMeta(BigDecimal valor) {
+        validarPrecisao(valor);
         if (valor == null || valor.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("O valor da meta deve ser maior que zero.");
         }
@@ -128,11 +129,17 @@ public class MetaService {
     }
 
     private BigDecimal validarValorAtual(BigDecimal valor) {
+        validarPrecisao(valor);
         BigDecimal atual = valor == null ? BigDecimal.ZERO : valor;
         if (atual.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("O progresso atual não pode ser negativo.");
         }
         return atual;
+    }
+
+    private void validarPrecisao(BigDecimal valor) {
+        if (valor != null && (valor.scale() > 2 || valor.abs().compareTo(new BigDecimal("999999999999.99")) > 0))
+            throw new IllegalArgumentException("Use um valor com até duas casas decimais e no máximo 999.999.999.999,99.");
     }
 
     public record MetaResumo(Long id, String titulo, String unidade, BigDecimal valorMeta, BigDecimal valorAtual, LocalDate prazo, String status) {}

@@ -21,7 +21,7 @@ export default function PasswordFields({ senha, setSenha, confirmacao, setConfir
     <>
       <label className="field">
         <span>{nova ? "Nova senha" : "Senha"}</span>
-        <input type={visivel ? "text" : "password"} autoComplete={nova ? "new-password" : "current-password"}
+        <input aria-label={nova ? "Nova senha" : "Senha"} type={visivel ? "text" : "password"} autoComplete={nova ? "new-password" : "current-password"}
           value={senha} onChange={(e) => setSenha(e.target.value)} maxLength={72} required
           minLength={nova ? 16 : undefined} aria-describedby={nova ? `${id}-requisitos ${id}-ajuda` : undefined} />
       </label>
@@ -43,7 +43,7 @@ export default function PasswordFields({ senha, setSenha, confirmacao, setConfir
       {setConfirmacao ? (
         <>
           <label className="field"><span>Confirme a senha</span>
-            <input type={visivel ? "text" : "password"} autoComplete="new-password" value={confirmacao ?? ""}
+            <input aria-label="Confirme a senha" type={visivel ? "text" : "password"} autoComplete="new-password" value={confirmacao ?? ""}
               onChange={(e) => setConfirmacao(e.target.value)} maxLength={72} minLength={16} required
               aria-invalid={diferentes} aria-describedby={confirmou ? `${id}-confirmacao` : undefined} />
           </label>

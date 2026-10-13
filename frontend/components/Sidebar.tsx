@@ -1,99 +1,187 @@
 "use client";
-
+import { Icone } from "./Icone";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { logout } from "../lib/auth";
-import { carregarConfiguracaoSaas, planoPermite, PlanoNexo } from "../lib/saas";
+import { useWorkspace } from "../lib/workspace";
+import { nomePlano, planoPermite } from "../lib/planos";
 
-type SidebarProps = {
-  ativo: "dashboard" | "vendas" | "produtos" | "despesas" | "clientes" | "relatorios";
-};
-
-const itens = [
-  { chave: "dashboard", nome: "Dashboard", href: "/", icone: "D" },
-  { chave: "vendas", nome: "Vendas", href: "/vendas", icone: "V" },
-  { chave: "produtos", nome: "Produtos", href: "/produtos", icone: "P" },
-  { chave: "despesas", nome: "Despesas", href: "/despesas", icone: "$" },
-  { chave: "clientes", nome: "Clientes", href: "/clientes", icone: "C" },
-  { chave: "relatorios", nome: "Relatórios", href: "/relatorios", icone: "R" },
+const grupos = [
+  {
+    nome: "Visão financeira",
+    itens: [
+      { href: "/", nome: "Visão geral", icone: "painel" },
+      { href: "/pessoal", nome: "Lançamentos", icone: "movimentos" },
+      { href: "/relatorios", nome: "Relatórios", icone: "relatorio" },
+    ],
+  },
+  {
+    nome: "Operação",
+    itens: [
+      { href: "/vendas", nome: "Vendas", icone: "venda" },
+      { href: "/despesas", nome: "Despesas", icone: "despesa" },
+      { href: "/produtos", nome: "Produtos", icone: "produto" },
+      { href: "/clientes", nome: "Clientes", icone: "clientes" },
+    ],
+  },
+  {
+    nome: "Planejamento",
+    itens: [
+      { href: "/metas", nome: "Metas", icone: "meta", plano: "pro" },
+      {
+        href: "/fluxo-caixa",
+        nome: "Fluxo e comparativos",
+        icone: "fluxo",
+        plano: "pro",
+      },
+      { href: "/ia", nome: "Assistente IA", icone: "ia", plano: "pro" },
+    ],
+  },
+  {
+    nome: "Empresa",
+    itens: [
+      { href: "/empresa", nome: "Organização", icone: "empresa" },
+      { href: "/equipe", nome: "Equipe", icone: "equipe", plano: "business" },
+      {
+        href: "/documentos",
+        nome: "Documentos",
+        icone: "documento",
+        plano: "business",
+      },
+    ],
+  },
 ] as const;
-
-export function Sidebar({ ativo }: SidebarProps) {
+export function Sidebar(_props: {
+  ativo?:
+    | "dashboard"
+    | "vendas"
+    | "produtos"
+    | "despesas"
+    | "clientes"
+    | "relatorios";
+}) {
+  const pathname = usePathname();
   const router = useRouter();
+  const { config, usuario } = useWorkspace();
   const [saindo, setSaindo] = useState(false);
-  const [plano, setPlano] = useState<PlanoNexo>("free");
-
+  const [aberto, setAberto] = useState(false);
   useEffect(() => {
-    carregarConfiguracaoSaas().then((dados) => setPlano(dados.plano)).catch(() => setPlano("free"));
+    const fechar = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setAberto(false);
+    };
+    window.addEventListener("keydown", fechar);
+    return () => window.removeEventListener("keydown", fechar);
   }, []);
-
-  async function handleLogout() {
+  async function sair() {
     if (saindo) return;
     setSaindo(true);
     try {
       await logout();
     } catch {
-      // Mesmo se a sessão já tiver expirado, o usuário deve voltar ao login.
+      /* Sessão expirada também permite voltar ao login. */
     } finally {
-      router.push("/login");
+      router.replace("/login");
       router.refresh();
-      setSaindo(false);
     }
   }
-
   return (
-    <aside className="sidebar">
-      <Link className="brand" href="/">
-        <span className="brand-mark">N</span>
-        <div>
-          <strong>Nexo</strong>
-          <small>Seu espaço financeiro</small>
-        </div>
-      </Link>
-
-      <nav className="menu" aria-label="Navegação principal">
-        {itens.map((item) => (
-          <Link className={`menu-item${ativo === item.chave ? " active" : ""}`} href={item.href} key={item.chave}>
-            <span className="menu-icon" aria-hidden="true">{item.icone}</span>
-            <span>{item.nome}</span>
-          </Link>
-        ))}
-
-        {planoPermite(plano, "pro") ? (
-          <>
-            <Link className="menu-item" href="/ia"><span className="menu-icon" aria-hidden="true">✦</span><span>Nexo IA</span></Link>
-            <Link className="menu-item" href="/metas"><span className="menu-icon" aria-hidden="true">M</span><span>Metas Pro</span></Link>
-            <Link className="menu-item" href="/fluxo-caixa"><span className="menu-icon" aria-hidden="true">F</span><span>Fluxo de caixa</span></Link>
-          </>
-        ) : null}
-      </nav>
-
-      <div className="sidebar-watermark" aria-hidden="true">
-        <svg className="nexo-signature" viewBox="0 0 240 170" role="presentation">
-          <path id="nexo-signature-loop" className="nexo-signature-loop" pathLength="1" d="M22 92 C44 46 90 42 120 74 C149 105 176 126 218 92 C190 55 151 45 120 74 C91 102 57 122 22 92" />
-          <circle className="nexo-signature-head" r="3.4"><animateMotion dur="1.85s" begin="0.08s" fill="freeze" calcMode="linear"><mpath href="#nexo-signature-loop" /></animateMotion></circle>
-        </svg>
-        <span className="nexo-signature-n">N</span>
-        <span className="nexo-signature-word">NEXO</span>
-      </div>
-
-      <div className="sidebar-footer">
-        <Link className="menu-item sidebar-account-link" href="/conta">
-          <span className="menu-icon" aria-hidden="true">◎</span>
-          <span>Conta e plano</span>
-          <span className="logout-arrow" aria-hidden="true">→</span>
+    <aside className={`sidebar${aberto ? " sidebar-open" : ""}`}>
+      <div className="sidebar-brand-row">
+        <Link className="brand" href="/">
+          <span className="brand-mark">N</span>
+          <div>
+            <strong>Nexo</strong>
+            <small title={usuario?.organizacaoNome}>
+              {usuario?.organizacaoNome ?? "Seu espaço financeiro"}
+            </small>
+          </div>
         </Link>
-
-        <button className="menu-item logout-button" type="button" onClick={handleLogout} disabled={saindo}>
-          <span className="menu-icon" aria-hidden="true">↪</span>
-          <span>{saindo ? "Saindo..." : "Fazer logout"}</span>
-          <span className="logout-arrow" aria-hidden="true">→</span>
+        <button
+          className="menu-toggle"
+          aria-label={aberto ? "Fechar menu" : "Abrir menu"}
+          aria-expanded={aberto}
+          onClick={() => setAberto(!aberto)}
+        >
+          <Icone nome="menu" />
         </button>
-
-        <div className="plan-card">
-          <Link className="plan-card-link" href="/planos"><strong>Planos Nexo</strong><small>{plano === "business" ? "Business ativo" : plano === "pro" ? "Pro ativo" : "Free · veja upgrades"}</small></Link>
-        </div>
+      </div>
+      <nav className="menu" aria-label="Navegação principal">
+        {grupos
+          .filter(
+            (grupo) =>
+              config?.perfilUso !== "pessoal" || grupo.nome !== "Operação",
+          )
+          .map((grupo) => (
+            <div className="nav-group" key={grupo.nome}>
+              <span className="nav-group-label">{grupo.nome}</span>
+              {grupo.itens.map((item) => {
+                const rotaPreferida =
+                  _props.ativo === "dashboard"
+                    ? "/"
+                    : _props.ativo
+                      ? `/${_props.ativo}`
+                      : null;
+                const ativo =
+                  pathname === item.href ||
+                  (!pathname && rotaPreferida === item.href) ||
+                  (item.href !== "/" && pathname.startsWith(item.href + "/"));
+                const minimo = "plano" in item ? item.plano : null;
+                const bloqueado =
+                  minimo && config && !planoPermite(config.plano, minimo);
+                return (
+                  <Link
+                    className={`menu-item${ativo ? " active" : ""}`}
+                    href={item.href}
+                    key={item.href}
+                    aria-current={ativo ? "page" : undefined}
+                    onClick={() => setAberto(false)}
+                  >
+                    <span className="menu-icon" aria-hidden="true">
+                      <Icone nome={item.icone} />
+                    </span>
+                    <span>{item.nome}</span>
+                    {bloqueado ? (
+                      <span
+                        className="nav-lock"
+                        title={`Disponível no ${nomePlano(minimo)}`}
+                      >
+                        {nomePlano(minimo)}
+                      </span>
+                    ) : null}
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
+      </nav>
+      <div className="sidebar-footer">
+        <Link className="menu-item" href="/conta">
+          <span className="menu-icon">
+            <Icone nome="conta" />
+          </span>
+          <span>Conta e assinatura</span>
+        </Link>
+        <Link className="plan-card" href="/planos">
+          <strong>{config ? nomePlano(config.plano) : "Seu plano"}</strong>
+          <small>
+            {config?.plano === "business"
+              ? "Gestão compartilhada"
+              : "Conhecer outros planos"}{" "}
+            →
+          </small>
+        </Link>
+        <button
+          aria-label={saindo ? "Saindo…" : "Sair"}
+          className="menu-item logout-button"
+          onClick={sair}
+          disabled={saindo}
+        >
+          <span className="menu-icon">
+            <Icone nome="sair" />
+          </span>
+          {saindo ? "Saindo…" : "Sair"}
+        </button>
       </div>
     </aside>
   );

@@ -38,6 +38,10 @@ public class Organizacao {
         return nome;
     }
 
+    public void alterarNome(String nome) {
+        this.nome = nome;
+    }
+
     public OffsetDateTime getCriadoEm() {
         return criadoEm;
     }
