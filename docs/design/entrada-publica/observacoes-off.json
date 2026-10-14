@@ -1,0 +1,23 @@
+[
+  {
+    "cenario": "entrada-entrada-pública-se-3293d-mento-reduzido-e-sem-reload",
+    "resultado": "passou",
+    "errosJavascript": [],
+    "errosConsole": 0,
+    "rede": []
+  },
+  {
+    "cenario": "entrada-recuperação-transp-6ec3d-lidade-sem-solicitar-código",
+    "resultado": "passou",
+    "errosJavascript": [],
+    "errosConsole": 0,
+    "rede": []
+  },
+  {
+    "cenario": "entrada-cadastro-direto-OF-1437b-t-público-e-login-existente",
+    "resultado": "passou",
+    "errosJavascript": [],
+    "errosConsole": 0,
+    "rede": []
+  }
+]

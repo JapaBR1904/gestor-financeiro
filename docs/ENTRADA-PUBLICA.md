@@ -50,4 +50,71 @@ A primeira validação focada passou em 29 casos de backend; a jornada OFF real 
 
 Na adaptação inicial da sidebar, foi corrigido o delimitador usado para reconhecer rotas filhas; um teste novo confirma `/produtos/123/editar`, grupo Operação aberto, `aria-current` e retorno pela marca ao dashboard. No teste novo de cadastro, o seletor do item ativo foi delimitado à sidebar desktop, pois o drawer fechado contém a segunda cópia, invisível, do mesmo link.
 
-Resultados finais consolidados abaixo após a última execução.
+### Resultados finais
+
+| Verificação | Resultado |
+| --- | --- |
+| `mvn verify`, PostgreSQL `nexo_test`, navegador habilitado | **243 testes, 0 falhas, 0 erros, 0 ignorados**; JAR gerado |
+| Playwright completo, verificação ON | **29 passaram**; 1 caso OFF ignorado somente nesse modo |
+| Playwright focado, verificação OFF | **3 passaram**, incluindo cadastro real, landing e recuperação indisponível |
+| Casos distintos de navegador | **30 validados** nos dois modos (landing e indisponibilidade repetidos no OFF) |
+| `npm test` | **30 passaram** |
+| `npx --no-install tsc --noEmit` | Passou |
+| `npm run lint` | Passou, sem warnings |
+| `npm run build` | Passou; landing e dashboard compilados |
+| Axe | Sem violações: 54 varreduras na suíte ON, mais 7 da landing no OFF |
+| `git diff --check` | Passou |
+
+A suíte completa cobre assinatura, checkout, idempotência, autorização, planos, equipes, documentos, organização/isolamento, autenticação, recuperação, SMTP/Resend locais de teste, política de senha e relatórios. O caso ON confirma que cadastro não emite cookie antes do código. O caso OFF confirma persistência, hash, vínculo de proprietário, zero códigos e zero interações com EmailProvider, além de cookie e logout/revogação.
+
+Foram também validados sete tamanhos (1440/1280/1024/768/430/390/360), limites visuais dos elementos essenciais, navegação por teclado, menu mobile, Escape/foco, reduced-motion e ausência de navegações espontâneas. Não há exceções JavaScript. As 13 mensagens de console de rede da suíte ON são esperadas nos testes negativos: 11 respostas HTTP nos casos negativos e 2 aborts (logout offline e leitura de produto não encaminhada ao banco no deep link isolado). Na passagem OFF não houve erros de console/rede. Evidências sanitizadas: [ON](design/entrada-publica/observacoes-on.json), [OFF](design/entrada-publica/observacoes-off.json), [backend](design/entrada-publica/backend-verify.json).
+
+### Inicialização real em desenvolvimento
+
+Além do E2E com build local de produção, foi iniciado o JAR empacotado com perfil `dev` e Next dev, ambos em loopback e no banco `nexo_test`. **Sem definir `NEXO_EMAIL_VERIFICATION_ENABLED`**, o cadastro entrou diretamente no dashboard, permaneceu autenticado após refresh e saiu para a landing. O provider estava realmente desabilitado; a recuperação informou indisponibilidade. Em oito segundos de repouso a landing recebeu uma única requisição à raiz e nenhuma API; o dashboard não navegou sozinho. Os processos iniciados para essa conferência foram encerrados.
+
+O aviso do Next sobre scroll suave foi corrigido com `data-scroll-behavior="smooth"` em `app/layout.tsx`, conforme o guia instalado do Next 16. O atributo evita scroll animado nas trocas de rota; o movimento suave fica nos anchors da landing e continua respeitando reduced-motion. Fonte Manrope e estrutura do layout preservadas. Evidência: [smoke dev](design/entrada-publica/dev-smoke.json).
+
+Para reproduzir localmente, prepare banco e variáveis como em [DEVELOPMENT.md](../DEVELOPMENT.md), use `SPRING_PROFILES_ACTIVE=dev`, execute `mvn -f backend/pom.xml spring-boot:run` e, no frontend, `npm ci` / `npm run dev`. O cadastro direto não exige outra variável. Para ON, configure `NEXO_EMAIL_VERIFICATION_ENABLED=true` e um transporte válido. Nenhuma configuração de produção foi publicada.
+
+### Capturas revisadas
+
+Todas produzidas pelo Chromium sobre o frontend real, sem fotografias ou mock de página estática. O painel dentro da landing tem dados fictícios rotulados. O dashboard após cadastro usa a conta sintética no PostgreSQL de teste, com saldo real inicial zero.
+
+- [Landing desktop 1440](design/entrada-publica/landing-1440.png)
+- [Landing mobile 390](design/entrada-publica/landing-390.png)
+- [Hero desktop](design/entrada-publica/hero-1440.png) e [mobile](design/entrada-publica/hero-390.png)
+- [Recursos](design/entrada-publica/recursos.png)
+- [Planos da landing](design/entrada-publica/planos.png)
+- [Login desktop](design/entrada-publica/login-desktop.png) e [mobile](design/entrada-publica/login-360.png)
+- [Cadastro](design/entrada-publica/cadastro-desktop.png)
+- [Dashboard após cadastro](design/entrada-publica/dashboard-cadastro.png)
+
+A inspeção levou ao ajuste do insight demonstrativo para não cobrir a meta, ao contraste do foco nos blocos escuros e à organização mobile sem cortar o conteúdo principal. Aurora e insight usam somente transform/opacity, SVG leve e CSS; sem canvas, partículas, vídeos, biblioteca de animação ou dependência nova de aplicação. O conteúdo da landing é pré-renderizado; o único componente cliente novo é o menu mobile. O WorkspaceProvider compartilhado não consulta APIs na área pública.
+
+### Arquivos principais
+
+| Área | Arquivos |
+| --- | --- |
+| Entrada pública | `frontend/app/page.tsx`, `app/landing.css`, `components/LandingMenu.tsx` |
+| Rotas e bootstrap | `app/dashboard/page.tsx`, `app/layout.tsx`, `components/WorkspaceProvider.tsx`, `Sidebar.tsx` |
+| Autenticação | `components/AuthCredentialsForm.tsx`, `AuthCard.tsx`, `lib/auth.ts`, `app/esqueci-senha/page.tsx` |
+| Destinos internos | `PlanosConteudo`, `CheckoutConteudo`, `AssinaturaConteudo`, `EmpresaConteudo`, `PrimeirosPassos`, onboarding e convite |
+| Backend | `auth/ConfiguracaoCadastro.java`, `AuthService.java`, `AuthController.java`, `application.properties`, `application-dev.properties` |
+| Testes | `ConfiguracaoCadastroTest`, `CadastroDiretoIntegrationTest`, `AuthIntegrationTest`, `AuthHttpIntegrationTest`, coordenador `AssinaturaBrowserTest`, specs `entrada`, `assinatura`, `confianca`, `qualidade` |
+| Documentação | `DEVELOPMENT.md`, `.env.example` (somente comentários), `AUTENTICACAO.md`, este relatório e `docs/design/entrada-publica` |
+
+### Checkpoints preservados no GitHub
+
+1. `73437b7e92b93c5d94a3057607b44c3dcfb43914` — Cria experiência pública de entrada e separa dashboard.
+2. `b0152ad337b79eb8ddb6575091aa5493576bb547` — Integra cadastro direto configurável e sessão no dashboard.
+3. `930b13f3a9d56f6e58ff4129211708f84a070191` — Conecta landing, autenticação e dashboard com navegação acessível.
+4. O commit de fechamento deste relatório consolida evidências e o acabamento final. Seu SHA é informado na entrega e pode ser consultado em `git log`.
+
+Os checkpoints foram enviados exclusivamente para `nexo-next-spring`, com SHA remoto confirmado. A `main` não foi alterada; sua referência remota permaneceu `8247ee36393d4a275f68ee2f14ae738176a31466`. Nenhum force push, merge na main ou deploy foi feito.
+
+### Pendências reais
+
+- Entrega externa de recuperação/verificação continua dependendo de Resend/SMTP habilitado e configurado. Não foi validada com credenciais reais nesta etapa; os transportes existentes foram preservados e testados com servidores/fixtures locais.
+- A causa histórica dos GETs repetidos não foi reproduzida. Foram validados os fluxos atuais sem loop tanto no build de produção local quanto no Next dev; os tempos de observação não constituem garantia sobre qualquer extensão/configuração externa de navegador.
+- Contas pendentes anteriores continuam dependendo de verificação. A dispensa em dev vale para novos cadastros e não transforma contas antigas em contas aptas.

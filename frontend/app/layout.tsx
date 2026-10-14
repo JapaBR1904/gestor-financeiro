@@ -32,7 +32,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="pt-BR" className={manrope.variable}>
+    <html lang="pt-BR" className={manrope.variable} data-scroll-behavior="smooth">
       <body>
         <div className="nexo-ambient" aria-hidden="true" />
         <a href="#conteudo" className="skip-link">

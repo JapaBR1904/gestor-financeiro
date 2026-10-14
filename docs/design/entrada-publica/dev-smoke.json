@@ -1,0 +1,12 @@
+{
+  "ambiente": "Next dev + JAR dev, transporte desabilitado, banco nexo_test",
+  "flagExplicita": false,
+  "cadastroDireto": true,
+  "sessaoAposRefresh": true,
+  "logoutPublico": true,
+  "recuperacaoIndisponivelVisivel": true,
+  "requisicoesRaizEmRepouso": 1,
+  "apiLanding": 0,
+  "periodoRepousoSegundos": 8,
+  "errosJavascript": []
+}
