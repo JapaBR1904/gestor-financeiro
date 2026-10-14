@@ -156,7 +156,7 @@ function CheckoutConteudo({
   return (
     <main id="conteudo" tabIndex={-1} className="saas-shell subscription-shell">
       <section className="saas-brandbar pricing-brandbar">
-        <Link className="saas-brand" href="/">
+        <Link className="saas-brand" href="/dashboard">
           <span>
             <Marca />
           </span>

@@ -70,7 +70,7 @@ export default function PlanosConteudo() {
           ? "/pessoal"
           : config.perfilUso === "empresa"
             ? "/empresa"
-            : "/",
+            : "/dashboard",
       );
     } catch (error) {
       setErro(
@@ -83,7 +83,7 @@ export default function PlanosConteudo() {
   return (
     <main id="conteudo" tabIndex={-1} className="saas-shell pricing-shell">
       <section className="saas-brandbar pricing-brandbar">
-        <Link className="saas-brand" href="/">
+        <Link className="saas-brand" href="/dashboard">
           <span>
             <Marca />
           </span>

@@ -51,7 +51,7 @@ export default function AssinaturaConteudo() {
   return (
     <main id="conteudo" tabIndex={-1} className="saas-shell subscription-shell">
       <section className="saas-brandbar pricing-brandbar">
-        <Link className="saas-brand" href="/">
+        <Link className="saas-brand" href="/dashboard">
           <span>
             <Marca />
           </span>
@@ -172,7 +172,7 @@ export default function AssinaturaConteudo() {
             )}
           </details>
           <section className="plan-capability-grid">
-            <Link href="/" className="plan-capability-link">
+            <Link href="/dashboard" className="plan-capability-link">
               <div>
                 <strong>Operação essencial</strong>
                 <p>Vendas, despesas, produtos, clientes e relatórios.</p>

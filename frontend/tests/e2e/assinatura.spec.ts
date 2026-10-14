@@ -340,7 +340,7 @@ test("finanças, Pro, Business, convite, documentos e downgrade preservam dados"
   }
   await page.reload();
   await expect(page.locator(".finance-table tbody tr")).toHaveCount(2);
-  await page.goto("/");
+  await page.goto("/dashboard");
   await expect(page.locator(".balance-card")).toContainText("2.150,00");
   await page.screenshot({
     path: testInfo.outputPath("dashboard-free.png"),
@@ -524,7 +524,7 @@ test("finanças, Pro, Business, convite, documentos e downgrade preservam dados"
   ] as const) {
     await page.setViewportSize({ width: largura, height: altura });
     for (const rota of [
-      "/",
+      "/dashboard",
       "/pessoal",
       "/fluxo-caixa",
       "/metas",
@@ -748,7 +748,7 @@ test("polish em sete larguras, drawer, teclado, gráfico e movimento reduzido", 
         fullPage: true,
       });
     }
-    await page.goto("/");
+    await page.goto("/dashboard");
     await expect(
       page.getByRole("heading", { name: "Visão geral", exact: true }),
     ).toBeVisible();
@@ -953,7 +953,7 @@ test("acessibilidade WCAG nas telas principais em desktop e celular", async ({
     }
     await login(page, 7);
     for (const rota of [
-      "/",
+      "/dashboard",
       "/pessoal",
       "/fluxo-caixa",
       "/metas",

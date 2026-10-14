@@ -63,7 +63,7 @@ export default function AuthCard({
           tabIndex={-1}
           aria-labelledby="auth-title"
         >
-          <Link className="auth-brand" href="/login" aria-label="Nexo — login">
+          <Link className="auth-brand" href="/" aria-label="Nexo — página inicial">
             <span>
               <Marca />
             </span>

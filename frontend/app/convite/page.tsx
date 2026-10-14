@@ -110,7 +110,7 @@ export default function ConvitePage() {
           >
             {ocupado ? "Aceitando…" : "Aceitar convite"}
           </button>
-          <Link className="secondary-button" href="/">
+          <Link className="secondary-button" href="/dashboard">
             Continuar no meu espaço
           </Link>
         </div>

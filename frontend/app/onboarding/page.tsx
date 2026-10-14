@@ -84,7 +84,7 @@ export default function OnboardingPage() {
   function destinoInicial(perfilEscolhido: PerfilUso) {
     if (perfilEscolhido === "pessoal") return "/pessoal";
     if (perfilEscolhido === "empresa") return "/empresa";
-    return "/";
+    return "/dashboard";
   }
 
   async function persistir(concluido: boolean) {

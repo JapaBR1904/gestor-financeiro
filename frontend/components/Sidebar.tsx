@@ -10,7 +10,7 @@ import { nomePlano, planoPermite } from "../lib/planos";
 
 const grupos = [
   { nome: "Financeiro", itens: [
-    { href: "/", nome: "Visão geral", icone: "painel" },
+    { href: "/dashboard", nome: "Visão geral", icone: "painel" },
     { href: "/pessoal", nome: "Lançamentos", icone: "movimentos" },
     { href: "/relatorios", nome: "Análises", icone: "relatorio" },
   ] },
@@ -118,8 +118,7 @@ export function Sidebar(props: {
     setErroSaida("");
     try {
       await logout();
-      router.replace("/login");
-      router.refresh();
+      router.replace("/");
     } catch (erro) {
       setErroSaida(erro instanceof Error ? erro.message : "Não foi possível encerrar a sessão. Tente novamente.");
     } finally {
@@ -130,7 +129,7 @@ export function Sidebar(props: {
   const marca = (
     <Link
       className="brand"
-      href="/"
+      href="/dashboard"
       onClick={() => {
         if (aberto) fechar();
       }}
@@ -170,7 +169,7 @@ export function Sidebar(props: {
               config?.perfilUso !== "pessoal" || grupo.nome !== "Operação",
           )
           .map((grupo) => {
-            const grupoAtivo = grupo.itens.some(item => pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href + "/")));
+            const grupoAtivo = grupo.itens.some(item => pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href + "/dashboard")));
             const recolhivel = grupo.nome === "Operação" || grupo.nome === "Gestão";
             const expandido = grupoAtivo || !recolhivel || Boolean(gruposAbertos[grupo.nome]);
             return <div className="nav-group" key={grupo.nome}>
@@ -178,7 +177,7 @@ export function Sidebar(props: {
               <div hidden={!expandido}>
               {grupo.itens.map((item) => {
                 const analiseAtiva = item.nome === "Análises" && ["/relatorios", "/fluxo-caixa", "/metas"].some(rota => pathname === rota);
-                const ativo = analiseAtiva || pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href + "/")) || (!pathname && props.ativo === "dashboard" && item.href === "/");
+                const ativo = analiseAtiva || pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href + "/dashboard")) || (!pathname && props.ativo === "dashboard" && item.href === "/dashboard");
                 const minimo = "plano" in item ? item.plano : null;
                 const bloqueado = minimo && config && !planoPermite(config.plano, minimo);
                 const destino = item.nome === "Análises" && config?.perfilUso === "pessoal" && planoPermite(config.plano, "pro") ? "/fluxo-caixa" : item.href;

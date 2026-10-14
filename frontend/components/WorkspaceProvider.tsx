@@ -38,12 +38,9 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         });
     }
   }, []);
+  const publico = caminho === "/" || /^\/(login|cadastro|verificar-codigo|esqueci-senha|redefinir-senha|recuperar-senha|convite)(\/|$)/.test(caminho);
   useEffect(() => {
-    if (
-      /^\/(login|cadastro|verificar-codigo|esqueci-senha|redefinir-senha|recuperar-senha|convite)(\/|$)/.test(
-        caminho,
-      )
-    ) {
+    if (publico) {
       const pedido = ++sequencia.current;
       queueMicrotask(() => {
         if (pedido === sequencia.current)
@@ -68,11 +65,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       ativo = false;
       controle.current++;
     };
-  }, [caminho, atualizar]);
-  const publico =
-    /^\/(login|cadastro|verificar-codigo|esqueci-senha|redefinir-senha|recuperar-senha|convite)(\/|$)/.test(
-      caminho,
-    );
+  }, [caminho, publico, atualizar]);
   if (!publico && !estado.usuario)
     return (
       <main className="auth-shell">

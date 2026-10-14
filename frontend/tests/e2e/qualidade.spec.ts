@@ -12,7 +12,7 @@ test("qualidade: nomes e valores máximos em sete larguras, detalhes, contraste 
   await page.route("**/api/financeiro/resumo?*", route => route.fulfill({ status: 200, json: { ...resumo, receitas: 999999999999.99, despesas: resumo.despesas, saldo: 999999999999.99 - resumo.despesas, movimentacoes: resumo.movimentacoes.filter((m,i) => i === 0 || m.tipo === "despesa").map((m, i) => ({ ...m, descricao: i === 0 ? "Consultoria especializada com descrição extensa para testar a leitura de valores e nomes sem esconder a origem financeira dos registros" : m.descricao, valor: i === 0 ? 999999999999.99 : m.valor })) } }));
   for (const width of [1440,1280,1024,768,430,390,360]) {
     await page.setViewportSize({ width, height: 900 });
-    await page.goto("/");
+    await page.goto("/dashboard");
     await expect(page.locator(".income-card > strong")).toContainText("999.999.999.999,99");
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     const valores = await page.locator(".finance-summary strong").evaluateAll(es => es.map(e => e.scrollWidth <= e.clientWidth));

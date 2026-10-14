@@ -7,7 +7,7 @@ import { apresentar, fixtures } from "./fixtures/apresentacao";
 test.beforeEach(async ({ page }) => { await apresentar(page); });
 
 test("confiança: logout offline, 503, clique repetido e retry confirmado", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/dashboard");
   await expect(page.getByRole("heading", { name: "Visão geral", exact: true })).toBeVisible();
   let chamadas = 0;
   let liberar: (() => void) | undefined;
@@ -30,14 +30,14 @@ test("confiança: logout offline, 503, clique repetido e retry confirmado", asyn
   await page.getByRole("button", { name: "Saindo…" }).dispatchEvent("click");
   await expect.poll(() => chamadas).toBe(3);
   liberar!();
-  await expect(page).toHaveURL(/\/login$/);
+  await expect(page).toHaveURL(/\/$/);
 });
 
 test("confiança: logout aceita sessão comprovadamente expirada", async ({ page }) => {
   await page.route("**/api/auth/logout", route => route.fulfill({ status: 401, json: { mensagem: "Sessão expirada." } }));
-  await page.goto("/");
+  await page.goto("/dashboard");
   await page.getByRole("button", { name: "Sair", exact: true }).click();
-  await expect(page).toHaveURL(/\/login$/);
+  await expect(page).toHaveURL(/\/$/);
 });
 
 test("confiança: relatório recupera de 503 sem alerta antigo", async ({ page }) => {
@@ -128,7 +128,7 @@ test("confiança: onboarding bloqueia sobrescrita até preferências carregarem"
 test("navegação: sete larguras, drawer com grupos recolhidos, foco e redução de movimento", async ({ page }) => {
   for (const width of [1440,1280,1024,768,430,390,360]) {
     await page.setViewportSize({ width, height: 900 });
-    await page.goto("/");
+    await page.goto("/dashboard");
     await expect(page.getByRole("heading", { name: "Visão geral", exact: true })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     const menu = width < 1024 ? page.getByRole("dialog", { name: "Navegação do Nexo" }) : page.locator(".sidebar");
@@ -198,7 +198,7 @@ test("organizações: falha após troca limpa contexto antigo e retry recupera o
 });
 
 test("guia: objetivo orienta tarefa disponível e dispensa persiste por espaço", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/dashboard");
   await page.locator(".first-steps > summary").click();
   await expect(page.getByRole("link", { name: "Revisar seu foco: Controlar custos" })).toHaveAttribute("href", "/pessoal");
   await page.getByRole("button", { name: "Dispensar guia" }).click();
@@ -235,7 +235,7 @@ test("guia: membro recebe tarefa de consulta no vazio, sem ação de gestão", a
   await page.route("**/api/assinatura", route => route.fulfill({ status: 200, json: { ...(fixtures["/api/assinatura"] as Record<string, unknown>), podeGerenciar: false } }));
   await page.route("**/api/auth/me", route => route.fulfill({ status: 200, json: { id: 900009, nome: "Membro de apresentação", email: "membro@example.com", organizacaoId: 900001, organizacaoNome: "Espaço de apresentação", papel: "membro" } }));
   await page.route("**/api/financeiro/resumo?*", route => { const q = new URL(route.request().url()).searchParams; return route.fulfill({ status: 200, json: { inicio: q.get("inicio"), fim: q.get("fim"), receitas: 0, despesas: 0, saldo: 0, movimentacoes: [] } }); });
-  await page.goto("/");
+  await page.goto("/dashboard");
   await page.locator(".first-steps > summary").click();
   await expect(page.locator(".first-steps")).toContainText("Seu papel permite acompanhar os registros da equipe");
   await expect(page.getByRole("link", { name: "Consultar lançamentos", exact: true })).toHaveAttribute("href", "/pessoal");

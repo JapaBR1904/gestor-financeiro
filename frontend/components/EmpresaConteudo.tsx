@@ -71,7 +71,7 @@ export function EmpresaConteudo() {
     try {
       await selecionarOrganizacao(id);
       await atualizar();
-      router.replace("/");
+      router.replace("/dashboard");
     } catch (e) {
       setErro(
         e instanceof Error
