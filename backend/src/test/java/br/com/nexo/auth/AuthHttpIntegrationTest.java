@@ -37,7 +37,10 @@ class AuthHttpIntegrationTest {
     void fluxoHttpCompletoProtegeCookiesERevogaSessao() throws Exception {
         String email = "http-" + UUID.randomUUID() + "@example.com";
         String dados = "{\"nome\":\"Pessoa Teste\",\"email\":\"%s\",\"senha\":\"Senha-Segura-Teste123!\",\"confirmacaoSenha\":\"Senha-Segura-Teste123!\"}".formatted(email);
-        assertEquals(200, post("/cadastro", dados, null).statusCode());
+        var cadastro = post("/cadastro", dados, null);
+        assertEquals(200, cadastro.statusCode());
+        assertTrue(cadastro.body().contains("\"verificacaoEmailNecessaria\":true"));
+        assertTrue(cadastro.headers().allValues("Set-Cookie").isEmpty());
         String login = "{\"email\":\"%s\",\"senha\":\"Senha-Segura-Teste123!\"}".formatted(email);
         assertEquals(400, post("/login", login, null).statusCode());
         var verificacao = post("/verificar", "{\"email\":\"%s\",\"codigo\":\"%s\",\"finalidade\":\"verificacao_email\"}".formatted(email, emails.codigo(email)), null);

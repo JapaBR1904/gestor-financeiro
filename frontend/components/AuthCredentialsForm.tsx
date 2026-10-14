@@ -45,7 +45,7 @@ export default function AuthCredentialsForm({
         const resultado = await cadastrar({ nome, email, senha, confirmacaoSenha: confirmacao });
         setSenha("");
         setConfirmacao("");
-        if (resultado.verificacaoEmailNecessaria) {
+        if (resultado.verificacaoEmailNecessaria !== false) {
           router.replace(`/verificar-codigo?${new URLSearchParams({ email: email.trim() })}${fragmentoConvite()}`);
         } else {
           setPreparando(true);
@@ -58,6 +58,7 @@ export default function AuthCredentialsForm({
       }
       redirecionando = true;
     } catch (error) {
+      setPreparando(false);
       setErro(
         error instanceof Error
           ? error.message

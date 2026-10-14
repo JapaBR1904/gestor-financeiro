@@ -479,6 +479,7 @@ test("finanças, Pro, Business, convite, documentos e downgrade preservam dados"
     });
   }, api!);
   await login(page, 8);
+  await page.goto("/empresa");
   await page.getByRole("button", { name: /^Ateliê de demonstração/ }).click();
   await expect(
     page.getByRole("heading", {
@@ -692,6 +693,7 @@ test("membro legado cria espaço próprio sem assumir a empresa", async ({
   page,
 }) => {
   await login(page, 12);
+  await page.goto("/empresa");
   await page
     .getByRole("button", { name: "Criar meu espaço pessoal", exact: true })
     .click();

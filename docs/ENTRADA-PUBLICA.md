@@ -40,8 +40,14 @@ Header próprio sticky, menu mobile nativo acessível com Escape/foco, anchors, 
 
 A raiz anterior era privada e `WorkspaceProvider` iniciava consultas de sessão/configuração/assinatura. Havia um `router.refresh()` explícito após login e logout, além da navegação. Essas chamadas podiam gerar requisições adicionais pontuais, mas **não há evidência para atribuir a elas um loop contínuo**. Foram removidas as chamadas redundantes do formulário de credenciais/logout. A landing agora é pública e independente do bootstrap de workspace. Não há middleware/proxy novo, timer de reload ou redirect automático da raiz.
 
-Testes contam navegações de documento em repouso na landing e no dashboard e verificam zero chamadas API na landing. A causa histórica dos GETs repetidos não foi reproduzida; não confundir prefetch/Fast Refresh em dev com reload em produção. A validação de navegador usa build local de produção.
+Testes contam navegações de documento em repouso na landing e no dashboard e verificam zero chamadas API na landing. Também foi acrescentada uma indicação de indisponibilidade da recuperação, sem tentar solicitar código quando o transporte está desligado. A causa histórica dos GETs repetidos não foi reproduzida; não confundir prefetch/Fast Refresh em dev com reload em produção. A validação de navegador usa build local de produção.
 
 ## Validação
 
-Resultados finais, evidências e SHAs serão preenchidos após a passagem completa; checkpoints só são enviados depois de validação. Testes usam exclusivamente `nexo_test` existente, jamais o banco `nexo`.
+Testes usam exclusivamente `nexo_test` existente, jamais o banco `nexo`. Nenhuma migração, limpeza de dados ou alteração de credencial nesta etapa.
+
+A primeira validação focada passou em 29 casos de backend; a jornada OFF real passou com sessão após refresh, módulos, logout e novo login. Na revisão completa foram corrigidas duas dependências antigas dos testes E2E: abrir `/empresa` explicitamente depois do login antes de selecionar organização/criar espaço pessoal. A mudança intencional é que login agora leva a `/dashboard`. Não foram removidos testes ou enfraquecidas asserções de permissão/persistência.
+
+Na adaptação inicial da sidebar, foi corrigido o delimitador usado para reconhecer rotas filhas; um teste novo confirma `/produtos/123/editar`, grupo Operação aberto, `aria-current` e retorno pela marca ao dashboard. No teste novo de cadastro, o seletor do item ativo foi delimitado à sidebar desktop, pois o drawer fechado contém a segunda cópia, invisível, do mesmo link.
+
+Resultados finais consolidados abaixo após a última execução.
