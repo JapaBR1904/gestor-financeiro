@@ -106,7 +106,7 @@
 }
 .landing-hero {
   position:relative;
-  padding:88px 0 66px;
+  padding:64px 0 48px;
   background:linear-gradient(160deg,var(--surface) 5%,var(--lp-white) 65%,var(--accent-soft));
   isolation:isolate;
 }
@@ -228,7 +228,7 @@
 .landing-demo-wrap {
   position:relative;
   min-width:0;
-  padding-bottom:72px;
+  padding-bottom:110px;
 }
 .landing-orbit {
   position:absolute;
@@ -464,7 +464,7 @@
 .demo-insight {
   position:absolute;
   right:-20px;
-  bottom:20px;
+  bottom:12px;
   background:var(--surface-glass);
   border:1px solid var(--lp-line);
   box-shadow:0 12px 32px #12366b14;
@@ -1080,6 +1080,9 @@
   .landing-explore {
     margin-top:16px;
   }
+  .landing-demo-wrap {
+    padding-bottom:18px;
+  }
   .landing-demo {
     padding:15px;
     border-radius:12px;
@@ -1106,8 +1109,10 @@
     font-size:14px;
   }
   .demo-insight {
+    position:relative;
+    margin:16px 0 0 auto;
     right:0;
-    bottom:14px;
+    bottom:auto;
     max-width:275px;
     padding:12px 16px;
   }
@@ -1140,7 +1145,7 @@
     font-size:22px;
   }
   .landing-feature-icon {
-    margin-bottom:20px;
+    margin-bottom:12px;
   }
   .landing-benefit h2 {
     font-size:28px;

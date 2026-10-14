@@ -30,7 +30,8 @@ class AssinaturaBrowserTest {
     @Autowired AssinaturaService assinatura;
     @Autowired org.springframework.jdbc.core.JdbcTemplate jdbc;
     @org.springframework.test.context.bean.override.mockito.MockitoBean br.com.nexo.email.EmailProvider emailProvider;
-    @DynamicPropertySource static void banco(DynamicPropertyRegistry registry) { BancoAssinaturaTeste.configurar(registry);
+    @DynamicPropertySource static void banco(DynamicPropertyRegistry registry) {
+        registry.add("nexo.auth.email-verification-enabled", () -> !"false".equals(System.getenv("NEXO_E2E_VERIFICATION"))); BancoAssinaturaTeste.configurar(registry);
         var origem = "http://localhost:" + System.getenv().getOrDefault("NEXO_E2E_PORT", "3000");
         registry.add("nexo.allowed-origins", () -> origem);
         registry.add("nexo.frontend-url", () -> origem);

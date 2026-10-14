@@ -1,3 +1,5 @@
+> Atualização da entrada pública: consulte [ENTRADA-PUBLICA.md](ENTRADA-PUBLICA.md) e [DEVELOPMENT.md](../DEVELOPMENT.md). O cadastro agora admite dispensa de verificação em desenvolvimento por `NEXO_EMAIL_VERIFICATION_ENABLED`; login/cadastro direto levam a `/dashboard`. Os resultados abaixo registram a etapa anterior com verificação obrigatória.
+
 # Autenticação — relatório da primeira etapa
 
 > Transporte atual recomendado: API do Resend; veja [RESEND.md](RESEND.md). Este documento preserva o histórico da etapa SMTP. As variáveis `MAIL_*` só enviam pela aplicação com `NEXO_EMAIL_PROVIDER=smtp`; o diagnóstico SMTP isolado continua disponível como legado interno dev/test.

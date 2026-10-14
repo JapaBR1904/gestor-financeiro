@@ -28,6 +28,7 @@ class AuthHttpIntegrationTest {
 
     @DynamicPropertySource
     static void configuracao(DynamicPropertyRegistry registry) {
+        registry.add("nexo.auth.email-verification-enabled", () -> true);
         AuthIntegrationTest.banco(registry);
         registry.add("nexo.cookie.secure", () -> true);
     }

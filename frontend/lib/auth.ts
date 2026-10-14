@@ -44,7 +44,7 @@ async function requisicao<T>(caminho: string, dados?: unknown): Promise<T> {
 }
 
 export function cadastrar(dados: { nome: string; email: string; senha: string; confirmacaoSenha: string }) {
-  return requisicao("/cadastro", { ...dados, email: dados.email.trim(), nome: dados.nome.trim() });
+  return requisicao<{ verificacaoEmailNecessaria: boolean; usuario?: UsuarioAutenticado }>("/cadastro", { ...dados, email: dados.email.trim(), nome: dados.nome.trim() });
 }
 
 export function login(email: string, senha: string): Promise<UsuarioAutenticado> {
@@ -79,4 +79,8 @@ export async function logout() {
     // 401 comprova que a sessão já expirou; falha de rede não comprova logout.
     if (!(erro instanceof ErroAutenticacao && erro.status === 401)) throw erro;
   }
+}
+
+export function disponibilidadeAutenticacao() {
+  return requisicao<{ recuperacaoPorEmailDisponivel: boolean }>("/disponibilidade");
 }

@@ -26,21 +26,38 @@ public class AuthController {
     private final AuthService authService;
     private final SessaoContexto sessaoContexto;
     private final boolean cookieSecure;
+    private final br.com.nexo.email.EmailProvider emailProvider;
 
     public AuthController(
             AuthService authService,
             SessaoContexto sessaoContexto,
-            @Value("${nexo.cookie.secure:false}") boolean cookieSecure
+            @Value("${nexo.cookie.secure:false}") boolean cookieSecure,
+            br.com.nexo.email.EmailProvider emailProvider
     ) {
         this.authService = authService;
         this.sessaoContexto = sessaoContexto;
         this.cookieSecure = cookieSecure;
+        this.emailProvider = emailProvider;
+    }
+
+    @GetMapping("/disponibilidade")
+    public Map<String, Boolean> disponibilidade() {
+        // Somente capacidade pública: não informa conta, destinatário ou configuração do transporte.
+        return Map.of("recuperacaoPorEmailDisponivel", !(emailProvider instanceof br.com.nexo.email.EmailDesabilitadoProvider));
     }
 
     @PostMapping("/cadastro")
-    public Map<String, Object> cadastrar(@Valid @RequestBody CadastroRequest request) {
-        authService.cadastrar(request.nome(), request.email(), request.senha(), request.confirmacaoSenha());
-        return codigoEnviado();
+    public ResponseEntity<Map<String, Object>> cadastrar(@Valid @RequestBody CadastroRequest request) {
+        var resultado = authService.cadastrar(request.nome(), request.email(), request.senha(), request.confirmacaoSenha());
+        if (resultado.verificacaoEmailNecessaria()) {
+            var resposta = new java.util.HashMap<>(codigoEnviado());
+            resposta.put("verificacaoEmailNecessaria", true);
+            return ResponseEntity.ok(resposta);
+        }
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie(resultado.autenticacao().token(), Duration.ofDays(30)).toString())
+                .body(Map.of("verificacaoEmailNecessaria", false, "usuario", resultado.autenticacao().usuario(),
+                        "mensagem", "Conta criada. Seu espaço está pronto."));
     }
 
     @PostMapping("/login")

@@ -17,7 +17,7 @@ async function login(page: Page, indice: number) {
   await page.getByLabel("E-mail", { exact: true }).fill(emails[indice]);
   await page.getByLabel("Senha", { exact: true }).fill("Assinatura-Teste123!");
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
-  await expect(page).toHaveURL(/\/empresa$/);
+  await expect(page).toHaveURL(/\/dashboard$/);
 }
 async function atual(page: Page, plano: string) {
   await page.goto("/planos");
@@ -685,7 +685,7 @@ test("cadastro, confirmação, onboarding pessoal e recuperação mantêm o aces
   await page.getByLabel("E-mail", { exact: true }).fill(email);
   await page.getByLabel("Senha", { exact: true }).fill("NovaSenha-Forte123!@#");
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
-  await expect(page).toHaveURL(/\/pessoal$/);
+  await expect(page).toHaveURL(/\/dashboard$/);
 });
 
 test("membro legado cria espaço próprio sem assumir a empresa", async ({

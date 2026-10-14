@@ -31,6 +31,7 @@ public class AuthService {
     private final OrganizacaoService organizacaoService;
     private final EmailCodigoService emailCodigoService;
     private final br.com.nexo.organizacao.MembroRepository membros;
+    private final ConfiguracaoCadastro configuracaoCadastro;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
     public AuthService(
@@ -39,7 +40,8 @@ public class AuthService {
             SessaoUsuarioRepository sessaoRepository,
             OrganizacaoService organizacaoService,
             EmailCodigoService emailCodigoService,
-            br.com.nexo.organizacao.MembroRepository membros
+            br.com.nexo.organizacao.MembroRepository membros,
+            ConfiguracaoCadastro configuracaoCadastro
     ) {
         this.usuarioRepository = usuarioRepository;
         this.codigoRepository = codigoRepository;
@@ -47,10 +49,11 @@ public class AuthService {
         this.organizacaoService = organizacaoService;
         this.emailCodigoService = emailCodigoService;
         this.membros = membros;
+        this.configuracaoCadastro = configuracaoCadastro;
     }
 
     @Transactional
-    public void cadastrar(String nome, String emailInformado, String senha, String confirmacao) {
+    public ResultadoCadastro cadastrar(String nome, String emailInformado, String senha, String confirmacao) {
         String email = normalizarEmail(emailInformado);
         PoliticaSenha.validar(senha, confirmacao);
         String nomeFormatado = formatarNome(nome, "Informe seu nome para criar a conta.");
@@ -58,8 +61,14 @@ public class AuthService {
             throw new IllegalArgumentException("Não foi possível criar a conta. Confira os dados ou tente entrar ou recuperar seu acesso.");
         }
         Organizacao organizacao = organizacaoService.criar("Meu espaço");
-        usuarioRepository.save(new Usuario(organizacao, nomeFormatado, email, encoder.encode(senha)));
-        enviarCodigo(email, "verificacao_email", false);
+        Usuario usuario = usuarioRepository.save(new Usuario(organizacao, nomeFormatado, email, encoder.encode(senha)));
+        if (configuracaoCadastro.verificacaoEmailHabilitada()) {
+            enviarCodigo(email, "verificacao_email", false);
+            return new ResultadoCadastro(true, null);
+        }
+        // A conta fica apta por política local; não é uma comprovação de entrega de e-mail.
+        usuario.verificarEmail();
+        return new ResultadoCadastro(false, criarSessao(usuario));
     }
 
     @Transactional
@@ -289,6 +298,7 @@ public class AuthService {
         }
     }
 
+    public record ResultadoCadastro(boolean verificacaoEmailNecessaria, ResultadoAutenticacao autenticacao) {}
     public record ResultadoAutenticacao(String token, UsuarioAutenticado usuario) {}
     public record UsuarioAutenticado(Long id, String nome, String email, String papel, Long organizacaoId, String organizacaoNome) {}
 }

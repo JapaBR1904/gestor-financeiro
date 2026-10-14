@@ -34,7 +34,7 @@ read -rs -p 'Senha do PostgreSQL: ' DB_PASSWORD
 export DB_PASSWORD
 ```
 
-Configure o provider e suas variáveis no mesmo processo. Para Resend, habilite `RESEND_ENABLED` e defina chave/remetente; não são utilizadas as variáveis SMTP. Com o transporte desabilitado, o cadastro informa indisponibilidade. A recuperação mantém a resposta neutra mesmo em falha de envio, com logs seguros e sem códigos ou credenciais.
+Configure o provider e suas variáveis no mesmo processo. Para Resend, habilite `RESEND_ENABLED` e defina chave/remetente; não são utilizadas as variáveis SMTP. No perfil `dev`, o cadastro direto não depende de transporte de e-mail. Com verificação habilitada, o cadastro continua dependendo de um provider disponível. A recuperação mantém a resposta neutra mesmo em falha de envio, com logs seguros e sem códigos ou credenciais.
 
 No frontend, `NEXT_PUBLIC_API_URL` define a origem da API. Se necessário, configure-a em `frontend/.env.local` (ignorado pelo Git). O padrão local é a API na porta 8080. Use o mesmo hostname no frontend e backend (por exemplo, ambos `localhost`) para que os cookies funcionem. A origem do frontend precisa constar em `NEXO_ALLOWED_ORIGINS`.
 
@@ -65,7 +65,21 @@ curl --fail http://localhost:8080/api/health
 curl --fail http://localhost:8080/api/health/database
 ```
 
-A rota de saúde do banco retorna seu estado, sem exigir login. Não confunda uma porta aberta com um fluxo de autenticação funcional: crie uma conta sintética, confirme o e-mail e teste login/logout.
+A rota de saúde do banco retorna seu estado, sem exigir login. Não confunda uma porta aberta com um fluxo de autenticação funcional: crie uma conta sintética e teste sessão/refresh/login/logout. No modo de verificação ON, confirme também o código.
+
+## Entrada pública e cadastro local
+
+`/` é a landing pública, sem consulta a dados. `/dashboard` é a visão geral autenticada; login e cadastro direto levam a ela. O onboarding continua disponível pelo guia do dashboard e pelas páginas existentes, sem bloquear a primeira entrada. Convites mantêm seu destino específico.
+
+`nexo.auth.email-verification-enabled` (`NEXO_EMAIL_VERIFICATION_ENABLED`) exige verificação por padrão. **Somente no perfil `dev`, o default é `false`**: cadastro valida os mesmos campos/senha, persiste usuário/organização/vínculo e cria sessão HTTP-only, sem código e sem chamada ao EmailProvider. Não precisa definir outra variável de cadastro ao usar `SPRING_PROFILES_ACTIVE=dev`.
+
+Para testar o fluxo antigo no desenvolvimento, configure `NEXO_EMAIL_VERIFICATION_ENABLED=true` e um provider de e-mail válido no mesmo processo. O cadastro retorna `verificacaoEmailNecessaria=true`, segue para código e só cria sessão após a confirmação. OFF retorna `false` e cookie; o frontend segue a resposta, sem flag pública duplicada.
+
+**`prod`/`production` recusam iniciar com a verificação OFF**, inclusive combinados com `dev`. Nunca use o cadastro direto para comprovar propriedade de uma caixa de e-mail; ele é uma facilidade local temporária. Contas pendentes antigas não são verificadas em lote nem liberadas automaticamente.
+
+Logout leva à landing somente quando confirmado pelo servidor (ou quando a sessão já expirou). Recuperação permanece por e-mail. Quando o transporte está desabilitado, a tela informa indisponibilidade; nenhum código alternativo é revelado. O endpoint público `/api/auth/disponibilidade` informa apenas capacidade configurada, sem dados de contas nem credenciais, e não garante entrega externa.
+
+Veja [docs/ENTRADA-PUBLICA.md](docs/ENTRADA-PUBLICA.md) para decisões, validação e capturas desta etapa.
 
 ## Política de senha
 

@@ -241,3 +241,15 @@ test("guia: membro recebe tarefa de consulta no vazio, sem ação de gestão", a
   await expect(page.getByRole("link", { name: "Consultar lançamentos", exact: true })).toHaveAttribute("href", "/pessoal");
   await expect(page.getByRole("button", { name: "+ Novo lançamento", exact: true })).toHaveCount(0);
 });
+
+
+test("entrada: deep link preserva grupo aberto e item ativo da navegação", async ({ page }) => {
+  await page.goto("/produtos/123/editar");
+  const produtos = page.locator(".sidebar").getByRole("link", { name: "Produtos", exact: true });
+  await expect(produtos).toBeVisible();
+  await expect(produtos).toHaveAttribute("aria-current", "page");
+  await expect(page.locator(".sidebar").getByRole("button", { name: "Operação", exact: true })).toHaveAttribute("aria-expanded", "true");
+  await page.locator(".sidebar .brand").click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page.getByRole("heading", { name: "Visão geral", exact: true })).toBeVisible();
+});

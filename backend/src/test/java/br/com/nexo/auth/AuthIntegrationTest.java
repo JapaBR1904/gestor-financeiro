@@ -39,6 +39,7 @@ class AuthIntegrationTest {
 
     @DynamicPropertySource
     static void banco(DynamicPropertyRegistry registry) {
+        registry.add("nexo.auth.email-verification-enabled", () -> true);
         registry.add("spring.datasource.url", () -> System.getenv("NEXO_TEST_DB_URL"));
         registry.add("spring.datasource.username", () -> System.getenv().getOrDefault("NEXO_TEST_DB_USERNAME", "nexo_app"));
         registry.add("spring.datasource.password", () -> System.getenv().getOrDefault("NEXO_TEST_DB_PASSWORD", ""));

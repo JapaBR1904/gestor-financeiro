@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { cadastrar, login } from "../lib/auth";
 import { emailValido } from "../lib/formatacao";
-import { carregarConfiguracaoSaas } from "../lib/saas";
 import { validarSenha } from "../lib/politica-senha";
 import AuthCard from "./AuthCard";
 import PasswordFields from "./PasswordFields";
@@ -17,6 +16,8 @@ export default function AuthCredentialsForm({
   cadastro?: boolean;
 }) {
   const router = useRouter();
+  const trava = useRef(false);
+  const [preparando, setPreparando] = useState(false);
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -26,7 +27,7 @@ export default function AuthCredentialsForm({
 
   async function enviar(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (enviando) return;
+    if (trava.current) return;
     setErro("");
     if (!email.trim()) return setErro("Informe seu e-mail.");
     if (!emailValido(email)) return setErro("Informe um e-mail válido.");
@@ -36,31 +37,26 @@ export default function AuthCredentialsForm({
       if (erroSenha) return setErro(erroSenha);
     }
     if (!senha.trim()) return setErro("Informe sua senha.");
+    trava.current = true;
     setEnviando(true);
+    let redirecionando = false;
     try {
       if (cadastro) {
-        await cadastrar({ nome, email, senha, confirmacaoSenha: confirmacao });
+        const resultado = await cadastrar({ nome, email, senha, confirmacaoSenha: confirmacao });
         setSenha("");
         setConfirmacao("");
-        router.push(
-          `/verificar-codigo?${new URLSearchParams({ email: email.trim() })}${fragmentoConvite()}`,
-        );
+        if (resultado.verificacaoEmailNecessaria) {
+          router.replace(`/verificar-codigo?${new URLSearchParams({ email: email.trim() })}${fragmentoConvite()}`);
+        } else {
+          setPreparando(true);
+          router.replace(destinoConvite() ?? "/dashboard");
+        }
       } else {
         await login(email, senha);
         setSenha("");
-        const configuracao = await carregarConfiguracaoSaas();
-        const destino =
-          configuracao.perfilUso === "pessoal"
-            ? "/pessoal"
-            : configuracao.perfilUso === "empresa"
-              ? "/empresa"
-              : "/";
-        router.replace(
-          destinoConvite() ??
-            (configuracao.onboardingConcluido ? destino : "/onboarding"),
-        );
-        router.refresh();
+        router.replace(destinoConvite() ?? "/dashboard");
       }
+      redirecionando = true;
     } catch (error) {
       setErro(
         error instanceof Error
@@ -68,7 +64,10 @@ export default function AuthCredentialsForm({
           : "Não foi possível concluir. Tente novamente.",
       );
     } finally {
-      setEnviando(false);
+      if (!redirecionando) {
+        trava.current = false;
+        setEnviando(false);
+      }
     }
   }
 
@@ -77,10 +76,11 @@ export default function AuthCredentialsForm({
       titulo={cadastro ? "Criar conta" : "Bem-vindo de volta"}
       descricao={
         cadastro
-          ? "Comece com seus dados. Vamos confirmar seu e-mail antes de liberar o acesso."
+          ? "Seu primeiro passo para organizar as finanças. Comece com uma conta Free."
           : "Entre para acompanhar seu negócio com clareza."
       }
     >
+      {preparando ? <p className="auth-success-banner" role="status">Preparando seu espaço…</p> : null}
       <form
         className="auth-form"
         onSubmit={enviar}
