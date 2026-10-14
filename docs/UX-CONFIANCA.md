@@ -192,3 +192,26 @@ O checkout final é revisável localmente. Um bundle local contendo apenas os co
 Último acabamento: Business mostra documentos entre os cinco benefícios principais; condições repetidas foram reduzidas e resumo mobile do checkout compactado, mantendo preço e avisos. Os quatro checks axe e as seis transições adicionais foram feitos após esses ajustes. O guia vazio recomenda consulta a membros, com teste de papel e sem ação de gestão.
 
 Privacidade dos logs: dois testes independentes adicionais passaram para máscara de cookie completo, código e token base64url com hífens nas extremidades. São testes de arquivo temporário sintético, sem banco. Eles verificam que o diagnóstico não sensível permanece legível. Total backend: suíte completa de 234 e esses 2 testes novos em execução focada; nenhum teste existente removido.
+
+
+## Revalidação após recuperação — 13/10/2026, ambiente Windows
+
+Esta seção atualiza o estado de entrega; os resultados integrados acima pertencem à execução histórica e não foram repetidos neste ambiente. Durante a tentativa de reconstrução, os seis commits originais foram restaurados externamente no checkout, e a branch remota também foi atualizada externamente para `884d25ea75b10854415a4492a0302a78999d18b8`. Não foi necessário recriar nem sobrescrever esses commits. A execução atual não realizou o fast-forward registrado no reflog nem o push dos seis commits, e não atribui essas operações a si. Não se pode comprovar nesta execução que cada checkpoint histórico foi enviado separadamente.
+
+Conferência realizada: branch atual `nexo-next-spring`, HEAD local e remoto iguais a `884d25ea75b10854415a4492a0302a78999d18b8`, árvore limpa antes deste complemento. Main local e remota permaneceram em `8247ee36393d4a275f68ee2f14ae738176a31466`, igual ao início. Arquivos de ambiente, lockfiles e migrações não constam do diff entre o commit base e o recuperado. Nenhuma credencial foi adicionada por esta execução.
+
+### Checks repetidos agora
+
+- Maven verify: BUILD SUCCESS; 220 testes contabilizados, **149 executados com sucesso e 71 ignorados**, zero falhas/erros. Inclui os dois testes independentes de máscara de logs.
+- Frontend: **30 testes passaram**; ESLint, TypeScript sem emissão e build de produção passaram.
+- Playwright: **12 cenários passaram**, executando confianca.spec.ts e qualidade.spec.ts com Chrome instalado e frontend em porta 3100. Todas as APIs desses cenários são interceptadas; requisições desconhecidas são abortadas, sem alcançar o banco real.
+- Cenários: logout offline/503/duplo clique/retry/401; relatório 503→200; análise lenta/fora de ordem/CSV; onboarding protegido; drawer em sete larguras/foco/Escape/reduced-motion; formulário preservado em 503; falha na troca de espaço; próximos passos por objetivo/papel; IA timeout/consentimento; nomes/valores máximos, reflow equivalente a 200% e axe em planos. **Não equivale a cobertura axe completa de todas as telas**.
+- Cada cenário verificou ausência de exceções JavaScript; rede 4xx/5xx e contagem de console são registradas separadamente. Falhas sintéticas esperadas fazem parte da suíte, portanto não se declara console/rede sem erros globalmente.
+
+### Limites atuais
+
+Não há NEXO_TEST_DB_URL configurada neste processo. Integrações de autenticação, recuperação, relatório, assinatura, produto e coordenador de navegador foram explicitamente ignoradas. Nenhum banco foi criado, migrado, alterado ou apagado por esta revalidação. Não foram visitados serviços autenticados existentes nem executado login real contra nexo.
+
+Assim, cadastro/entrega externa de e-mail, revogação real de sessão, recuperação real, persistência financeira e de planos após login, permissões reais, convites/documentos e isolamento no PostgreSQL permanecem dependentes da evidência histórica acima ou de uma nova execução em banco exclusivo. Não se afirma que esses fluxos foram preservados por testes atuais. Permanecem pendentes FK legada de exclusão física, teste humano/leitor de tela e entrega externa de e-mail.
+
+Este complemento é um checkpoint documental adicional. Seu commit deve ser enviado somente a origin/nexo-next-spring, após conferência da branch, e o SHA remoto deve corresponder ao local. Sem merge, alteração de main, deploy ou publicação nesta execução.
