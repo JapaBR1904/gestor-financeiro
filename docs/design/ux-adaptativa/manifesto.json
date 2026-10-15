@@ -1,0 +1,114 @@
+[
+  {
+    "file": "cadastro-mobile.png",
+    "sha256": "7E2C8E4FD45B868966B7AF8B3D7C42CA875EB2FC3BE3A192E66FAF2BA35496E3",
+    "width": 390,
+    "height": 929,
+    "inspected": true
+  },
+  {
+    "file": "copiloto-business-dashboard.png",
+    "sha256": "9FFDBF4322C93033B55DED127C9EF298FAEDF3801F89F0FA30BF836DA43B850E",
+    "width": 1440,
+    "height": 1799,
+    "inspected": true
+  },
+  {
+    "file": "copiloto-business-fluxo.png",
+    "sha256": "44BAAFED54B85E486EE901321780365EB0D9A3AE7D43138FCCEA2DF61127DEDB",
+    "width": 1440,
+    "height": 1638,
+    "inspected": true
+  },
+  {
+    "file": "copiloto-business-metas.png",
+    "sha256": "48D69F7A1ADBD5776A72D1D291E4B5DDE2ABA3635543A42942EA216A365230D1",
+    "width": 1440,
+    "height": 1000,
+    "inspected": true
+  },
+  {
+    "file": "copiloto-mobile.png",
+    "sha256": "F0B3CB62555F5AA4482D7DCCC8E14CAA257FBF3CE2BE50ADEDCD5289BF9AF1FE",
+    "width": 390,
+    "height": 844,
+    "inspected": true
+  },
+  {
+    "file": "dashboard-empresa.png",
+    "sha256": "4E23BDF3024078E1E7708E9E9095EA6328B4BB9D4621CDC9A1CCAEBB7F1B955F",
+    "width": 1440,
+    "height": 1687,
+    "inspected": true
+  },
+  {
+    "file": "dashboard-negocio.png",
+    "sha256": "7DD00A72EDD2D67037CC963995AF20EC64326CCADF2F6DCBD461E7678869EFD0",
+    "width": 1440,
+    "height": 1483,
+    "inspected": true
+  },
+  {
+    "file": "dashboard-pessoal-completo.png",
+    "sha256": "B54956DCE4B6BE29FD98AA2307899B27205D5E7F526C85A13E69F22BE662428E",
+    "width": 1440,
+    "height": 1401,
+    "inspected": true
+  },
+  {
+    "file": "dashboard-pessoal-essencial.png",
+    "sha256": "4ABA865C9C84477D4D0B2ED816141CB612736B99A044C0C2D781997135A6E0EB",
+    "width": 1440,
+    "height": 1499,
+    "inspected": true
+  },
+  {
+    "file": "empty-state.png",
+    "sha256": "C5B27614C96193CD9A2C6CF8ABB6545E5FCFA86326F8635EA39BA8B924813410",
+    "width": 1440,
+    "height": 1509,
+    "inspected": true
+  },
+  {
+    "file": "ia-pro.png",
+    "sha256": "1355D695C523C9EBE5F371D6E2BB57AB262B7B2020F485A6726CC7ED8621AFB4",
+    "width": 1440,
+    "height": 1552,
+    "inspected": true
+  },
+  {
+    "file": "loading.png",
+    "sha256": "7062A9285E7CE6F74624BBFFB5CE3885B729B65A8F9E08FB681AB7A42A8DA59E",
+    "width": 1440,
+    "height": 1219,
+    "inspected": true
+  },
+  {
+    "file": "onboarding-perfis.png",
+    "sha256": "541021A7BE6D7BD031F6445D7CBF55DC540A353A3A8B37F8EA22E57533149264",
+    "width": 1440,
+    "height": 1000,
+    "inspected": true
+  },
+  {
+    "file": "recurso-plano.png",
+    "sha256": "A0639B6924DEA6BC5514D780EBE20DE46ADF24775F270465C0C84F896FE684E6",
+    "width": 1440,
+    "height": 1003,
+    "inspected": true
+  },
+  {
+    "file": "sem-permissao.png",
+    "sha256": "388E3A283375D8A42ACC3E13657CEA2E0896B1802FE5ECE2167F3C6470AA6035",
+    "width": 1440,
+    "height": 1314,
+    "inspected": true
+  },
+  {
+    "file": "sidebar-sweep.png",
+    "sha256": "F310ACFDFD70A66CC725C036B01FC8DC0FBBB312D5C919A1B1688446622D2391",
+    "width": 1440,
+    "height": 1687,
+    "inspected": true
+  }
+]

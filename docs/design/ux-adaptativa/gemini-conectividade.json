@@ -1,0 +1,9 @@
+{
+  "data": "2026-10-15T04:41:55.838Z",
+  "modelo": "gemini-flash-latest",
+  "configurada": true,
+  "ok": true,
+  "statusHttp": 200,
+  "respostaRecebida": true,
+  "categoriaErro": null
+}
