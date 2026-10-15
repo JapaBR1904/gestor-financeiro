@@ -42,3 +42,34 @@ test("adaptativa: linha de navegação respeita reduced motion", async ({ page }
   await page.emulateMedia({ reducedMotion: "reduce" });
   expect(await page.locator(".sidebar").evaluate(el => getComputedStyle(el, "::after").animationName)).toBe("none");
 });
+
+test("adaptativa: ocultar valores protege também o progresso editável das metas", async ({ page }) => {
+  await page.route("**/api/metas", route => route.fulfill({ json: [{ id: 1, titulo: "Reserva", unidade: "moeda", valorMeta: 10000, valorAtual: 6500, prazo: null, status: "ativa" }] }));
+  await page.goto("/metas");
+  await expect(page.getByLabel("Atualizar progresso", { exact: true })).toHaveValue("6500");
+  await page.getByRole("button", { name: "Ocultar valores", exact: true }).click();
+  await expect(page.getByLabel("Atualizar progresso", { exact: true })).toHaveCount(0);
+  await expect(page.locator(".pro-goal-card")).not.toContainText("6.500");
+  await page.getByRole("button", { name: "Revelar valores para atualizar progresso", exact: true }).click();
+  await expect(page.getByLabel("Atualizar progresso", { exact: true })).toHaveValue("6500");
+});
+
+test("adaptativa: valores não reaparecem ao abrir formulários de edição", async ({ page }) => {
+  await page.route("**/api/produtos/1", route => route.fulfill({ json: { id: 1, nome: "Produto sintético", precoVenda: 123.45, descricao: "", ingredientes: [], custoEstimado: 0 } }));
+  await page.route("**/api/despesas/1", route => route.fulfill({ json: { id: 1, descricao: "Despesa sintética", valor: 234.56, categoria: "Materiais", dataDespesa: "2026-10-01", formaPagamento: "pix" } }));
+  for (const [rota, campo, valor] of [["/produtos/1/editar", "Preço de venda *", "123,45"], ["/despesas/1/editar", "Valor *", "234,56"]]) {
+    await page.goto("/dashboard");
+    await page.getByRole("button", { name: "Ocultar valores", exact: true }).click();
+    await page.goto(rota);
+    await expect(page.getByRole("heading", { name: "Valores ocultos", exact: true })).toBeVisible();
+    await expect(page.getByLabel(campo, { exact: true })).toHaveCount(0);
+    await page.getByRole("button", { name: "Revelar valores para editar", exact: true }).click();
+    await expect(page.getByLabel(campo, { exact: true })).toHaveValue(valor);
+  }
+  await page.goto("/dashboard");
+  await page.getByRole("button", { name: "Ocultar valores", exact: true }).click();
+  await page.goto("/pessoal?novo=1");
+  await expect(page.getByRole("heading", { name: "Valores ocultos", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Revelar valores para editar", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Novo lançamento", exact: true })).toBeVisible();
+});

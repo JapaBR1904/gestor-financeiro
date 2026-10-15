@@ -84,7 +84,7 @@ test("marca: sidebar, grupos acessíveis e estados ativos em sete larguras", asy
       ? page.getByRole("dialog", { name: "Navegação do Nexo" })
       : page.locator(".sidebar");
     const operacao = menu.getByRole("button", {
-      name: "Operação",
+      name: "Análises e clientes",
       exact: true,
     });
     await expect(operacao).toHaveAttribute("aria-expanded", "false");
@@ -92,11 +92,11 @@ test("marca: sidebar, grupos acessíveis e estados ativos em sete larguras", asy
     expect(await page.locator(`[id="${id}"]`).count()).toBe(1);
     await operacao.click();
     await expect(
-      menu.getByRole("link", { name: "Produtos", exact: true }),
+      menu.getByRole("link", { name: "Clientes", exact: true }),
     ).toBeVisible();
     await operacao.click();
     await expect(
-      menu.getByRole("link", { name: "Produtos", exact: true }),
+      menu.getByRole("link", { name: "Clientes", exact: true }),
     ).toBeHidden();
     expect(
       await page
@@ -109,7 +109,7 @@ test("marca: sidebar, grupos acessíveis e estados ativos em sete larguras", asy
       menu.getByRole("button", { name: "Gestão", exact: true }),
     ).toBeFocused();
     await expect(
-      menu.getByRole("link", { name: "Visão geral", exact: true }),
+      menu.getByRole("link", { name: "Resumo", exact: true }),
     ).toHaveAttribute("aria-current", "page");
     expect(
       (

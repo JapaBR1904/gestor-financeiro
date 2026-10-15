@@ -66,19 +66,33 @@ class AssinaturaBrowserTest {
         var frontend = Path.of(System.getProperty("user.dir")).resolve("../frontend").normalize();
         assertTrue(Files.exists(frontend.resolve("package.json")), "Frontend deve estar ao lado do backend.");
         var log = Files.createTempFile("nexo-assinatura-browser-", ".log");
-        var comando = new ProcessBuilder("npm", "run", "test:e2e").directory(frontend.toFile()).redirectErrorStream(true).redirectOutput(log.toFile());
+        var argumentos = comandoNpm();
+        var filtro = System.getenv("NEXO_E2E_GREP");
+        if (filtro != null && !filtro.isBlank()) argumentos.addAll(java.util.List.of("--", "--grep", filtro));
+        var comando = new ProcessBuilder(argumentos).directory(frontend.toFile()).redirectErrorStream(true).redirectOutput(log.toFile());
         comando.environment().put("NEXO_E2E_API_URL", "http://localhost:" + porta);
         comando.environment().put("NEXT_PUBLIC_API_URL", "http://localhost:" + porta);
         comando.environment().put("NEXO_E2E_EMAIL_INBOX", caixa.toString());
         comando.environment().put("NEXO_E2E_EMAILS", String.join(",", emails));
-        var filtro = System.getenv("NEXO_E2E_GREP");
-        if (filtro != null && !filtro.isBlank()) comando.command("npm", "run", "test:e2e", "--", "--grep", filtro);
         var processo = comando.start();
         try {
             assertTrue(processo.waitFor(15, TimeUnit.MINUTES), "Navegador não terminou. Consulte " + log);
             assertEquals(0, processo.exitValue(), () -> "Falha no navegador: " + log + "\n" + lerLog(log));
             System.out.println(lerLog(log));
         } finally { if (processo.isAlive()) processo.destroyForcibly(); Files.deleteIfExists(caixa); }
+    }
+    private ArrayList<String> comandoNpm() {
+        if (!System.getProperty("os.name").startsWith("Windows"))
+            return new ArrayList<>(java.util.List.of("npm", "run", "test:e2e"));
+        // Node executa o CLI diretamente; .cmd exige shell e não é um executável Win32.
+        String configurado=System.getenv("NEXO_NPM_CLI");
+        Path cli=configurado==null || configurado.isBlank() ? null : Path.of(configurado);
+        if (cli==null) for (String pasta : System.getenv("PATH").split(java.io.File.pathSeparator)) {
+            var candidato=Path.of(pasta.replace("\"", ""),"node_modules","npm","bin","npm-cli.js");
+            if (Files.isRegularFile(candidato)) { cli=candidato; break; }
+        }
+        if (cli==null || !Files.isRegularFile(cli)) throw new IllegalStateException("Configure NEXO_NPM_CLI com o caminho de npm-cli.js para executar o navegador no Windows.");
+        return new ArrayList<>(java.util.List.of("node",cli.toString(),"run","test:e2e"));
     }
     private String lerLog(Path caminho) {
         try {

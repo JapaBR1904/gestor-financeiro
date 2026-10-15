@@ -323,7 +323,7 @@ test("finanças, Pro, Business, convite, documentos e downgrade preservam dados"
     ["despesa", "Material de trabalho", "350"],
   ]) {
     await page
-      .getByRole("button", { name: "+ Novo lançamento", exact: true })
+      .getByRole("button", { name: "+ Nova movimentação", exact: true })
       .click();
     await expect(
       page.getByRole("heading", { name: "Novo lançamento", exact: true }),
@@ -379,7 +379,7 @@ test("finanças, Pro, Business, convite, documentos e downgrade preservam dados"
   });
   await page.goto("/ia");
   await expect(
-    page.getByText("A configuração ainda precisa ser concluída", {
+    page.getByText("Assistente temporariamente indisponível.", {
       exact: false,
     }),
   ).toBeVisible();
@@ -634,9 +634,9 @@ test("cadastro, confirmação, onboarding pessoal e recuperação mantêm o aces
   await page.getByRole("button", { name: /Controlar gastos/ }).click();
   await page.getByRole("button", { name: "Continuar", exact: true }).click();
   await page
-    .getByRole("button", { name: "Começar a usar", exact: true })
+    .getByRole("button", { name: "Registrar minha primeira entrada ou gasto", exact: true })
     .click();
-  await expect(page).toHaveURL(/\/pessoal$/);
+  await expect(page).toHaveURL(/\/pessoal\?novo=1$/);
   await page.goto("/conta");
   await expect(
     page.getByText("Controlar gastos", { exact: true }),
@@ -704,9 +704,9 @@ test("membro legado cria espaço próprio sem assumir a empresa", async ({
   await page.getByRole("button", { name: "Continuar", exact: true }).click();
   await page.getByRole("button", { name: "Continuar", exact: true }).click();
   await page
-    .getByRole("button", { name: "Começar a usar", exact: true })
+    .getByRole("button", { name: "Registrar minha primeira entrada ou gasto", exact: true })
     .click();
-  await expect(page).toHaveURL(/\/pessoal$/);
+  await expect(page).toHaveURL(/\/pessoal\?novo=1$/);
   await expect(page.locator(".workspace-bar")).toContainText("Meu espaço");
   await page.goto("/empresa");
   await page.getByRole("button", { name: /^Organização sintética/ }).click();
@@ -752,7 +752,7 @@ test("polish em sete larguras, drawer, teclado, gráfico e movimento reduzido", 
     }
     await page.goto("/dashboard");
     await expect(
-      page.getByRole("heading", { name: "Visão geral", exact: true }),
+      page.getByRole("heading", { name: "Resumo da empresa", exact: true }),
     ).toBeVisible();
     if (largura < 1024) {
       const abrir = page.getByRole("button", {
@@ -864,18 +864,18 @@ test("telas de acesso em sete larguras e estados visuais da IA sem serviço exte
   });
   await page.goto("/ia");
   await expect(
-    page.getByRole("heading", { name: "Qual decisão você quer entender?" }),
+    page.getByRole("heading", { name: "Seus números, com mais clareza" }),
   ).toBeVisible();
   await page
     .getByRole("button", {
-      name: "Como calcular a margem de um produto?",
+      name: "Analisar meu mês",
       exact: true,
     })
     .click();
   await expect(page.getByLabel("Sua pergunta", { exact: true })).toBeFocused();
   await page.getByRole("button", { name: "Perguntar ao assistente" }).click();
   await expect(
-    page.getByText("Preparando uma orientação…", { exact: true }),
+    page.getByText("Analisando seu contexto…", { exact: true }),
   ).toBeVisible();
   await page.screenshot({
     path: testInfo.outputPath("ia-carregando.png"),
@@ -884,7 +884,7 @@ test("telas de acesso em sete larguras e estados visuais da IA sem serviço exte
   await expect.poll(() => Boolean(responder)).toBe(true);
   responder!();
   await expect(
-    page.getByRole("heading", { name: "Uma orientação para você" }),
+    page.getByRole("heading", { name: "Nexo", exact: true }),
   ).toBeVisible();
   await page.screenshot({
     path: testInfo.outputPath("ia-resposta.png"),

@@ -134,11 +134,11 @@ test("navegação: sete larguras, drawer com grupos recolhidos, foco e redução
     const menu = width < 1024 ? page.getByRole("dialog", { name: "Navegação do Nexo" }) : page.locator(".sidebar");
     const abrir = page.getByRole("button", { name: "Abrir menu" });
     if (width < 1024) await abrir.click();
-    const operacao = menu.getByRole("button", { name: "Operação", exact: true });
+    const operacao = menu.getByRole("button", { name: "Análises e clientes", exact: true });
     await expect(operacao).toHaveAttribute("aria-expanded", "false");
-    await expect(menu.getByRole("link", { name: "Vendas", exact: true })).not.toBeVisible();
+    await expect(menu.getByRole("link", { name: "Clientes", exact: true })).not.toBeVisible();
     await operacao.click();
-    await expect(menu.getByRole("link", { name: "Vendas", exact: true })).toBeVisible();
+    await expect(menu.getByRole("link", { name: "Clientes", exact: true })).toBeVisible();
     await operacao.click();
     if (width < 1024) {
       for (let i=0;i<18;i++) { await page.keyboard.press("Tab"); expect(await menu.evaluate(e => e.contains(document.activeElement))).toBe(true); }
@@ -216,7 +216,7 @@ test("IA: pergunta sem resumo por padrão, timeout e consentimento específico",
     await route.fulfill(enviados.length === 1 ? { status: 504, json: {} } : { status: 200, json: { resposta: "Resposta sintética, sem serviço externo.", modelo: "teste" } });
   });
   await page.goto("/ia");
-  const consentimento = page.getByRole("checkbox", { name: /Autorizar o envio do resumo/ });
+  const consentimento = page.getByRole("checkbox", { name: /Autorizar dados deste contexto/ });
   await expect(consentimento).not.toBeChecked();
   await page.getByLabel("Sua pergunta", { exact: true }).fill("Como organizar custos?");
   await page.getByRole("button", { name: "Perguntar ao assistente" }).click();
@@ -225,21 +225,21 @@ test("IA: pergunta sem resumo por padrão, timeout e consentimento específico",
   await expect(page.getByLabel("Sua pergunta", { exact: true })).toHaveValue("Como organizar custos?");
   await consentimento.check();
   await page.getByRole("button", { name: "Perguntar ao assistente" }).click();
-  await expect(page.locator(".ia-answer")).toContainText("resumo deste mês autorizado");
+  await expect(page.locator(".ia-message.answer")).toContainText("Dados autorizados");
   expect(enviados[1].incluirResumo).toBe(true);
   await consentimento.uncheck();
-  await expect(page.locator(".ia-answer-context")).toContainText("resumo deste mês autorizado");
+  await expect(page.locator(".ia-message.answer small")).toContainText("Dados autorizados");
 });
 
-test("guia: membro recebe tarefa de consulta no vazio, sem ação de gestão", async ({ page }) => {
+test("guia: membro registra conforme o backend sem acesso à gestão", async ({ page }) => {
   await page.route("**/api/assinatura", route => route.fulfill({ status: 200, json: { ...(fixtures["/api/assinatura"] as Record<string, unknown>), podeGerenciar: false } }));
   await page.route("**/api/auth/me", route => route.fulfill({ status: 200, json: { id: 900009, nome: "Membro de apresentação", email: "membro@example.com", organizacaoId: 900001, organizacaoNome: "Espaço de apresentação", papel: "membro" } }));
   await page.route("**/api/financeiro/resumo?*", route => { const q = new URL(route.request().url()).searchParams; return route.fulfill({ status: 200, json: { inicio: q.get("inicio"), fim: q.get("fim"), receitas: 0, despesas: 0, saldo: 0, movimentacoes: [] } }); });
   await page.goto("/dashboard");
   await page.locator(".first-steps > summary").click();
-  await expect(page.locator(".first-steps")).toContainText("Seu papel permite acompanhar os registros da equipe");
-  await expect(page.getByRole("link", { name: "Consultar lançamentos", exact: true })).toHaveAttribute("href", "/pessoal");
-  await expect(page.getByRole("button", { name: "+ Novo lançamento", exact: true })).toHaveCount(0);
+  await expect(page.locator(".first-steps")).toContainText("Registre uma entrada ou saída");
+  await expect(page.getByRole("link", { name: "Abrir lançamentos", exact: true })).toHaveAttribute("href", "/pessoal");
+  await expect(page.getByRole("button", { name: "+ Nova movimentação", exact: true })).toBeVisible();
 });
 
 
@@ -248,7 +248,7 @@ test("entrada: deep link preserva grupo aberto e item ativo da navegação", asy
   const produtos = page.locator(".sidebar").getByRole("link", { name: "Produtos", exact: true });
   await expect(produtos).toBeVisible();
   await expect(produtos).toHaveAttribute("aria-current", "page");
-  await expect(page.locator(".sidebar").getByRole("button", { name: "Operação", exact: true })).toHaveAttribute("aria-expanded", "true");
+  await expect(page.locator(".sidebar").getByRole("link", { name: "Resumo", exact: true })).not.toHaveAttribute("aria-current", "page");
   await page.locator(".sidebar .brand").click();
   await expect(page).toHaveURL(/\/dashboard$/);
   await expect(page.getByRole("heading", { name: "Visão geral", exact: true })).toBeVisible();

@@ -14,7 +14,8 @@ test("qualidade: nomes e valores máximos em sete larguras, detalhes, contraste 
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/dashboard");
     await expect(page.locator(".income-card > strong")).toContainText("999.999.999.999,99");
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    const overflow = await page.evaluate(() => Array.from(document.querySelectorAll("body *")).filter(el => { const r=el.getBoundingClientRect(); return r.width > 0 && (r.right > innerWidth+1 || r.left < -1); }).map(el => ({ tag: el.tagName, classe: el.className, direita: el.getBoundingClientRect().right, largura: el.getBoundingClientRect().width })).slice(0,15));
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), JSON.stringify({ width, overflow })).toBe(true);
     const valores = await page.locator(".finance-summary strong").evaluateAll(es => es.map(e => e.scrollWidth <= e.clientWidth));
     expect(valores.every(Boolean)).toBe(true);
     await page.screenshot({ path: info.outputPath(`valores-altos-${width}.png`), fullPage: true });

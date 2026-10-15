@@ -32,6 +32,9 @@ test("copiloto: Pro mantém IA com contexto, período e consentimento explícito
   await page.getByRole("button", { name: "Perguntar ao assistente", exact: true }).click();
   await expect(page.locator(".ia-message.answer")).toHaveCount(2);
   expect(pedidos[1].incluirResumo).toBe(true);
+  await page.getByLabel("Sua pergunta", { exact: true }).fill("Quais metas precisam de atenção?");
+  await expect(page.getByRole("checkbox", { name: /Autorizar dados deste contexto/ })).not.toBeChecked();
+  await expect(page.locator(".copilot-context")).toContainText("Progresso atual das metas");
   await page.getByRole("button", { name: "Ocultar valores", exact: true }).click();
   await expect(page.locator(".ia-message.answer").first()).toContainText("Resposta protegida");
   await expect(page.locator(".ia-message.answer").first()).not.toContainText("Resposta sintética");
@@ -71,4 +74,46 @@ test("copiloto: falha do serviço é distinta de restrição do plano", async ({
   await page.goto("/ia");
   await expect(page.getByRole("heading", { name: "Assistente temporariamente indisponível." })).toBeVisible();
   await expect(page.getByRole("link", { name: "Conhecer Pro", exact: true })).toHaveCount(0);
+});
+
+test("copiloto: sincroniza período carregado, renova consentimento e limpa conversa ao trocar organização", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  let organizacaoId = 900001;
+  await page.route("**/api/auth/me", route => route.fulfill({ json: { ...(fixtures["/api/auth/me"] as object), organizacaoId } }));
+  let liberar!: () => void;
+  const espera = new Promise<void>(resolve => { liberar = resolve; });
+  await page.route("**/api/financeiro/analise?*", async route => {
+    const q = new URL(route.request().url()).searchParams;
+    if (q.get("inicio") === "2026-08-01") await espera;
+    const atual = { ...(fixtures["/api/financeiro/resumo"] as object), inicio: q.get("inicio"), fim: q.get("fim") };
+    await route.fulfill({ json: { atual, anterior: { ...atual, inicio: "2026-07-01", fim: "2026-07-31" }, categorias: {}, evolucao: [] } });
+  });
+  const pedidos: { contexto: { inicio: string; fim: string; pagina: string }; incluirResumo: boolean }[] = [];
+  await page.route("**/api/ia/perguntar", route => {
+    pedidos.push(route.request().postDataJSON());
+    return route.fulfill({ json: { resposta: "Resposta exclusiva desta organização para testar limpeza.", modelo: "nexo-ia" } });
+  });
+  await page.goto("/fluxo-caixa");
+  await expect(page.locator(".income-card")).toContainText("6.000");
+  await page.getByRole("button", { name: "Nexo Copiloto", exact: true }).click();
+  await page.getByRole("checkbox", { name: /Autorizar dados deste contexto/ }).check();
+  await page.getByLabel("De", { exact: true }).fill("2026-08-01");
+  await page.getByLabel("Até", { exact: true }).fill("2026-08-31");
+  await page.getByRole("button", { name: "Comparar período", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Perguntar ao assistente", exact: true })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Exportar CSV", exact: true })).toBeDisabled();
+  liberar();
+  await expect(page.locator(".copilot-context")).toContainText("2026-08-01 a 2026-08-31");
+  await expect(page.getByRole("checkbox", { name: /Autorizar dados deste contexto/ })).not.toBeChecked();
+  await page.getByLabel("Sua pergunta", { exact: true }).fill("Analise meu fluxo");
+  await page.getByRole("checkbox", { name: /Autorizar dados deste contexto/ }).check();
+  await page.getByRole("button", { name: "Perguntar ao assistente", exact: true }).click();
+  await expect(page.locator(".ia-message.answer")).toBeVisible();
+  expect(pedidos).toEqual([expect.objectContaining({ incluirResumo: true, contexto: expect.objectContaining({ pagina: "/fluxo-caixa", inicio: "2026-08-01", fim: "2026-08-31" }) })]);
+  organizacaoId = 900002;
+  await page.evaluate(() => window.dispatchEvent(new Event("nexo:workspace")));
+  await expect(page.locator(".copilot-panel")).toHaveCount(0);
+  await page.getByRole("button", { name: "Nexo Copiloto", exact: true }).click();
+  await expect(page.locator(".ia-message.answer")).toHaveCount(0);
+  await expect(page.getByRole("checkbox", { name: /Autorizar dados deste contexto/ })).not.toBeChecked();
 });
