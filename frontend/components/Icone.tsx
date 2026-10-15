@@ -1,5 +1,6 @@
 import type { SVGProps } from "react";
 const desenhos = {
+  expandir: "m6 9 6 6 6-6",
   circulo: "M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0",
   mais: "M12 5v14 M5 12h14",
   chevrons: "m9 8 3-3 3 3 M9 16l3 3 3-3",

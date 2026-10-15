@@ -3,7 +3,7 @@ import { Icone } from "./Icone";
 import { Marca } from "./Marca";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { logout } from "../lib/auth";
 import { useWorkspace } from "../lib/workspace";
 import { nomePlano, planoPermite } from "../lib/planos";
@@ -27,6 +27,16 @@ const grupos = [
   ] },
   { nome: "Ferramentas", itens: [{ href: "/ia", nome: "Assistente IA", icone: "ia", plano: "pro" }] },
 ] as const;
+function GrupoNavegacao({ nome, recolhivel, expandido, alternar, children }: {
+  nome: string; recolhivel: boolean; expandido: boolean; alternar: () => void; children: ReactNode;
+}) {
+  const id = useId();
+  return <div className="nav-group">
+    {recolhivel ? <button className="nav-group-label nav-group-toggle" aria-expanded={expandido} aria-controls={id} onClick={alternar}>{nome}<Icone nome="expandir"/></button> : <span className="nav-group-label">{nome}</span>}
+    <div id={id} className="nav-group-items" data-expanded={expandido} aria-hidden={!expandido} inert={!expandido}><div>{children}</div></div>
+  </div>;
+}
+
 export function Sidebar(props: {
   ativo?:
     | "dashboard"
@@ -172,9 +182,7 @@ export function Sidebar(props: {
             const grupoAtivo = grupo.itens.some(item => pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href + "/")));
             const recolhivel = grupo.nome === "Operação" || grupo.nome === "Gestão";
             const expandido = grupoAtivo || !recolhivel || Boolean(gruposAbertos[grupo.nome]);
-            return <div className="nav-group" key={grupo.nome}>
-              {recolhivel ? <button className="nav-group-label nav-group-toggle" aria-expanded={expandido} onClick={() => setGruposAbertos(atual => ({ ...atual, [grupo.nome]: !expandido }))}>{grupo.nome}<Icone nome="chevrons" /></button> : <span className="nav-group-label">{grupo.nome}</span>}
-              <div hidden={!expandido}>
+            return <GrupoNavegacao key={grupo.nome} nome={grupo.nome} recolhivel={recolhivel} expandido={expandido} alternar={() => setGruposAbertos(atual => ({ ...atual, [grupo.nome]: !expandido }))}>
               {grupo.itens.map((item) => {
                 const analiseAtiva = item.nome === "Análises" && ["/relatorios", "/fluxo-caixa", "/metas"].some(rota => pathname === rota);
                 const ativo = analiseAtiva || pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href + "/")) || (!pathname && props.ativo === "dashboard" && item.href === "/dashboard");
@@ -186,8 +194,7 @@ export function Sidebar(props: {
                   {bloqueado ? <span className="nav-lock" title={`Disponível no ${nomePlano(minimo)}`}>{nomePlano(minimo)}</span> : null}
                 </Link>;
               })}
-              </div>
-            </div>;
+            </GrupoNavegacao>;
           })}
       </nav>
       <div className="sidebar-footer">

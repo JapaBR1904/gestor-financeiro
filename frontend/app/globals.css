@@ -22,8 +22,8 @@
   --text-subtle: #475569;
   --border: #e2e8f0;
   --border-strong: #64748b;
-  --accent: #1d4ed8;
-  --accent-hover: #1e40af;
+  --accent: var(--brand-blue);
+  --accent-hover: #1d4ed8;
   --accent-soft: #eff6ff;
   --accent-ink: #123778;
   --success: #166534;
@@ -36,7 +36,7 @@
   --negative: #b91c1c;
   --on-accent: #ffffff;
   --shadow-sm: 0 2px 8px #0f172a0a;
-  --shadow-md: var(--shadow-sm);
+  --shadow-md: 0 6px 22px #0714260a;
   --shadow-lg: 0 12px 32px #0f172a1f;
   --focus-ring: 0 0 0 3px #1d4ed81c;
   /* Identidade azul: luz e profundidade com valores centralizados. */
@@ -44,9 +44,9 @@
   --cyan-light: #86e2f8;
   --ambient-blue: #4b83ff26;
   --ambient-cyan: #34c4e31f;
-  --gradient-primary: linear-gradient(135deg, #2866e8, #1c4bc5);
+  --gradient-primary: linear-gradient(125deg, var(--brand-blue), #1d4ed8);
   --gradient-primary-hover: linear-gradient(135deg, #2058cf, #153ea8);
-  --gradient-premium: linear-gradient(135deg, #0b1b38, #153567);
+  --gradient-premium: linear-gradient(135deg, var(--brand-navy), #143767);
   --gradient-highlight: linear-gradient(135deg, #ffffff, #eef4ff);
   --gradient-pro:
     radial-gradient(ellipse at 100% 0, #78b5ff33, transparent 65%),
@@ -54,10 +54,10 @@
   --light-border: #ffffff99;
   --surface-glass: #ffffffed;
   --shimmer: #ffffffa6;
-  --shadow-accent: var(--shadow-button);
-  --shadow-accent-hover: var(--shadow-sm);
+  --shadow-accent: 0 4px 12px #2563eb24;
+  --shadow-accent-hover: 0 7px 18px #2563eb30;
   --shadow-premium: var(--shadow-sm);
-  --nav-bg: #0b1931;
+  --nav-bg: var(--brand-navy);
   --nav-surface: #132643;
   --nav-hover: #1c3558;
   --nav-text: #f3f7ff;
@@ -65,8 +65,8 @@
   --nav-subtle: #a3b7d7;
   --nav-border: #2b4265;
   --nav-accent: #8bc6ff;
-  --nav-active: #eff6ff;
-  --nav-active-ink: #123778;
+  --nav-active: #143767;
+  --nav-active-ink: #f3f7ff;
   --radius-sm: 10px;
   --radius: 10px;
   --radius-lg: 14px;
@@ -83,10 +83,10 @@
   --text-lg: 1.0625rem;
   --text-title: clamp(1.625rem, 2.6vw, 1.875rem);
   --text-number: clamp(1.625rem, 2.35vw, 2.125rem);
-  --duration-fast: 120ms;
-  --duration: 180ms;
-  --duration-slow: 220ms;
-  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --duration-fast: var(--motion-fast);
+  --duration: var(--motion-normal);
+  --duration-slow: var(--motion-slow);
+  --ease: var(--ease-standard);
   /* Compatibilidade dos módulos existentes. */
   --nexo-ink: var(--ink);
   --nexo-muted: var(--text-secondary);
@@ -233,7 +233,7 @@ svg {
 }
 .primary-button {
   color: var(--on-accent);
-  background: var(--accent);
+  background: var(--gradient-primary);
   border-color: var(--accent);
   box-shadow: var(--shadow-accent);
 }
@@ -241,7 +241,7 @@ svg {
   background: var(--accent-hover);
   border-color: var(--accent-hover);
   box-shadow: var(--shadow-accent-hover);
-
+  transform: translateY(-1px);
 }
 .secondary-button {
   color: var(--ink);
@@ -283,6 +283,7 @@ svg {
   ):active:not(:disabled) {
 
   box-shadow: none;
+  transform: translateY(0) scale(.98);
 }
 .text-button {
   display: inline-flex;

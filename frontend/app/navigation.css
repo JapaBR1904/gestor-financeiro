@@ -28,7 +28,7 @@
     radial-gradient(ellipse at 0 0, var(--ambient-blue), transparent 65%),
     var(--nav-bg);
   border-right: 1px solid var(--border);
-  box-shadow: none;
+  box-shadow: 6px 0 24px #0714260d;
   overflow-y: auto;
   scrollbar-width: thin;
 }
@@ -50,7 +50,8 @@
   height: 36px;
   display: grid;
   place-items: center;
-  background: var(--gradient-primary);
+  background: var(--brand-navy);
+  border: 1px solid var(--nav-border);
   color: var(--on-accent);
   box-shadow: var(--shadow-accent);
   border-radius: var(--radius);
@@ -62,7 +63,7 @@
 .brand strong {
   font-size: 25px;
   font-weight: 650;
-  letter-spacing: -0.065em;
+  letter-spacing: -0.045em;
 }
 .brand small {
   display: block;
@@ -110,6 +111,8 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 3px;
   scrollbar-width: thin;
 }
 .nav-group {
@@ -145,10 +148,11 @@
 .menu-item:hover {
   background: var(--surface-interactive);
   color: var(--ink);
-
+  transform: translateX(2px);
 }
 .menu-item.active {
-  background: var(--nav-active);
+  background: linear-gradient(105deg, var(--nav-active), var(--nav-surface));
+  box-shadow: inset 0 0 0 1px #3882f640, 0 3px 12px #00000014;
   color: var(--nav-active-ink);
   font-weight: 650;
 }
@@ -160,7 +164,9 @@
   bottom: var(--space-3);
   width: 3px;
   border-radius: 2px;
-  background: var(--accent);
+  background: var(--brand-cyan);
+  box-shadow: 0 0 10px #22d3ee40;
+  animation: nav-indicator var(--motion-normal) var(--ease-emphasized);
 }
 .menu-item .menu-icon {
   color: var(--nav-accent);
@@ -171,6 +177,7 @@
 .menu-item:hover .menu-icon {
 
   color: var(--on-accent);
+  transform: scale(1.04);
 }
 .menu-icon {
   display: grid;
@@ -472,3 +479,14 @@
 .analysis-navigation a[aria-current] { color: var(--accent-ink); background: var(--accent-soft); font-weight: 650; }
 
 .menu-item.active .nav-lock { color: var(--nav-active-ink); border-color: var(--nav-active-ink); }
+
+/* Acordeões pequenos, acionados pelo usuário; inert retira os links fechados do teclado. */
+.nav-group-items { display: grid; grid-template-rows: 0fr; transition: grid-template-rows var(--motion-normal) var(--ease-emphasized); }
+.nav-group-items > div { min-height: 0; overflow: hidden; opacity: 0; transform: translateY(-3px); transition: opacity var(--motion-fast), transform var(--motion-normal) var(--ease-standard); }
+.nav-group-items[data-expanded="true"] { grid-template-rows: 1fr; }
+.nav-group-items[data-expanded="true"] > div { opacity: 1; transform: none; }
+.nav-group-toggle svg { transform: rotate(-90deg); transition: transform var(--motion-normal) var(--ease-emphasized); }
+.nav-group-toggle[aria-expanded="true"] svg { transform: rotate(0); }
+.menu-item:focus-visible { outline-color: var(--brand-cyan); outline-offset: -2px; }
+.menu-item.active .menu-icon { color: var(--brand-cyan); }
+@keyframes nav-indicator { from { opacity: 0; transform: translateY(-5px) scaleY(.6); } to { opacity: 1; transform: translateY(0) scaleY(1); } }
