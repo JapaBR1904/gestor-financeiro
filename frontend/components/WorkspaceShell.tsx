@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Sidebar } from "./Sidebar";
 import { useWorkspace } from "../lib/workspace";
 import { Icone } from "./Icone";
+import { ControlesVisuais } from "./PreferenciasProvider";
 export function WorkspaceShell({
   titulo,
   descricao,
@@ -56,6 +57,7 @@ export function WorkspaceShell({
           </div>
           {acoes}
         </header>
+        <ControlesVisuais />
         {erro ? (
           <p className="form-error-banner" role="alert">
             {erro}{" "}

@@ -1,19 +1,11 @@
 "use client";
+import { useMoeda } from "../../../../components/PreferenciasProvider";
 
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Sidebar } from "../../../../components/Sidebar";
-import {
-  atualizarProduto,
-  calcularCustoIngrediente,
-  calcularCustoProduto,
-  carregarProduto,
-  formatarMoeda,
-  IngredienteProduto,
-  Produto,
-  Unidade,
-} from "../../../../lib/produtos";
+import { atualizarProduto, calcularCustoIngrediente, calcularCustoProduto, carregarProduto, IngredienteProduto, Produto, Unidade } from "../../../../lib/produtos";
 
 type FormErrors = {
   nome?: string;
@@ -64,6 +56,7 @@ function paraIngrediente(ingrediente: IngredienteEdicao): IngredienteProduto {
 }
 
 export default function EditarProdutoPage() {
+  const formatarMoeda = useMoeda();
   const params = useParams<{ id: string }>();
   const produtoId = params.id;
   const router = useRouter();

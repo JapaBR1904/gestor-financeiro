@@ -15,13 +15,16 @@ import {
   UnidadeMeta,
 } from "../../lib/metas";
 import { planoPermite } from "../../lib/planos";
+import { usePreferencias } from "../../components/PreferenciasProvider";
 
-function valor(meta: Meta, numero: number) {
+function formatarValorMeta(meta: Meta, numero: number) {
   return meta.unidade === "moeda"
     ? numero.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
     : `${numero.toLocaleString("pt-BR")}${meta.unidade === "percentual" ? "%" : ""}`;
 }
 export default function MetasPage() {
+  const { ocultarValores } = usePreferencias();
+  const valor = (meta: Meta, numero: number) => ocultarValores ? "••••••" : formatarValorMeta(meta, numero);
   const { config, usuario } = useWorkspace();
   const liberado = config && planoPermite(config.plano, "pro");
   const gestao =

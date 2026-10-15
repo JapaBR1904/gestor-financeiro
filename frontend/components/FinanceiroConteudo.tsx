@@ -2,7 +2,7 @@
 import { PrimeirosPassos } from "./PrimeirosPassos";
 import Link from "next/link";
 import { Icone } from "./Icone";
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { WorkspaceShell } from "./WorkspaceShell";
 import { useWorkspace } from "../lib/workspace";
 import { VazioProduto } from "./EstadoProduto";
@@ -16,11 +16,17 @@ import {
   resumoFinanceiro,
   salvarLancamento,
 } from "../lib/financeiro";
-import { formatarMoeda } from "../lib/produtos";
+import { useMoeda, usePreferencias } from "./PreferenciasProvider";
+import { ConfirmarExclusao } from "./ConfirmarExclusao";
 import { planoPermite } from "../lib/planos";
 
 export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
   const { config, usuario } = useWorkspace();
+  const { detalhes, alterar } = usePreferencias();
+  const formatarMoeda = useMoeda();
+  const perfil = config?.perfilUso ?? "negocio";
+  const completo = detalhes === "completo";
+  const [exclusao, setExclusao] = useState<Movimentacao | null>(null);
   const trava = useRef(false);
   const chaveEnvio = useRef<string | undefined>(undefined);
   const [dados, setDados] = useState<ResumoFinanceiro | null>(null);
@@ -46,6 +52,7 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
   });
   const podeGerenciar =
     usuario?.papel === "proprietario" || usuario?.papel === "administrador";
+  const podeRegistrar = Boolean(usuario && (podeGerenciar || config?.plano === "business"));
   const pro = config && planoPermite(config.plano, "pro");
   useEffect(() => {
     let ativo = true;
@@ -67,7 +74,7 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
       ativo = false;
     };
   }, [periodo, revisao, usuario?.organizacaoId]);
-  function novo() {
+  const novo = useCallback(() => {
     chaveEnvio.current = crypto.randomUUID();
     setEditar(undefined);
     setLancamento({
@@ -80,7 +87,14 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
     });
     setFormulario(true);
     setSucesso("");
-  }
+  }, []);
+  const aberturaInicial = useRef(false);
+  useEffect(() => {
+    if (pessoal && usuario && !carregando && !erro && !aberturaInicial.current && new URLSearchParams(window.location.search).get("novo") === "1") {
+      aberturaInicial.current = true;
+      queueMicrotask(novo);
+    }
+  }, [pessoal, usuario, carregando, erro, novo]);
   function editarItem(item: Movimentacao) {
     setEditar(item.id);
     setLancamento({
@@ -120,16 +134,11 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
     }
   }
   async function excluir(id: number) {
-    if (
-      ocupado ||
-      !window.confirm(
-        "Excluir este lançamento? Esta ação não altera vendas ou despesas comerciais.",
-      )
-    )
-      return;
+    if (ocupado) return;
     setOcupado(true);
     try {
       await removerLancamento(id);
+      setExclusao(null);
       setRevisao((r) => r + 1);
       setSucesso("Lançamento excluído.");
     } catch (error) {
@@ -167,22 +176,27 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
       );
   return (
     <WorkspaceShell
-      titulo={pessoal ? "Lançamentos" : "Visão geral"}
+      titulo={pessoal ? "Movimentações" : perfil === "pessoal" ? "Seu dinheiro" : perfil === "empresa" ? "Resumo da empresa" : "Visão geral"}
       descricao={
         pessoal
           ? "Entradas e saídas organizadas por data, categoria e conta."
-          : "O que entrou, o que saiu e o resultado do seu período."
+          : perfil === "pessoal" ? "Suas entradas, seus gastos e o próximo passo para cuidar do seu dinheiro." : perfil === "empresa" ? "Os números do espaço atual e as responsabilidades da sua equipe." : "Suas vendas e despesas, com clareza para tocar o negócio."
       }
       acoes={
-        podeGerenciar && !formulario ? <button
+        podeRegistrar && !formulario ? <button
           className="primary-button"
           onClick={novo}
           disabled={!usuario || carregando || ocupado}
         >
-          + Novo lançamento
+          + Nova movimentação
         </button> : null
       }
     >
+      {!pessoal ? <section className="profile-guidance" aria-label="Seu próximo passo">
+        <div><h2>{perfil === "pessoal" ? "Simples para cuidar do seu mês" : perfil === "empresa" ? "Um espaço, responsabilidades claras" : "O essencial para tocar seu negócio"}</h2>
+        <p>{perfil === "pessoal" ? "Registre uma entrada ou gasto. Seu resultado é a diferença entre os dois, sem confundir com dinheiro disponível." : perfil === "empresa" ? "Confira o período e acompanhe quem registra, consulta e administra este espaço." : "Vendas registradas não comprovam recebimento. O resultado abaixo é entradas menos saídas; os custos dos produtos podem ser consultados nos relatórios."}</p></div>
+        <nav aria-label="Atalhos do seu perfil">{perfil === "pessoal" ? <Link className="text-button" href="/metas">Suas metas →</Link> : perfil === "empresa" ? <><Link className="text-button" href="/equipe">Ver responsabilidades →</Link><Link className="text-button" href="/documentos">Documentos →</Link></> : <><Link className="text-button" href="/vendas/nova">Nova venda →</Link><Link className="text-button" href="/despesas/nova">Nova despesa →</Link></>}</nav>
+      </section> : null}
       <details className="period-details" open={pessoal || undefined}>
         <summary>{periodo ? "Período selecionado" : "Este mês"}{dados ? ` · ${new Date(`${dados.inicio}T12:00:00`).toLocaleDateString("pt-BR")} a ${new Date(`${dados.fim}T12:00:00`).toLocaleDateString("pt-BR")}` : ""}<span>Alterar período</span></summary>
       <form
@@ -251,9 +265,9 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
       ) : null}
       <section className={`finance-summary${dados && Math.max(Math.abs(dados.saldo), dados.receitas, dados.despesas) >= 1_000_000 ? " long-values" : ""}`} aria-label="Resumo financeiro" aria-busy={carregando}>
         {[
-          { nome: "Saldo do período", valor: dados?.saldo, texto: "Entradas menos saídas", classe: "balance-card" },
-          { nome: "Entradas", valor: dados?.receitas, texto: "Receitas e vendas", classe: "income-card" },
-          { nome: "Saídas", valor: dados?.despesas, texto: "Gastos do período", classe: "expense-card" },
+          { nome: perfil === "pessoal" ? "Resultado do período" : "Resultado estimado", valor: dados?.saldo, texto: "Entradas menos saídas; não é saldo disponível", classe: "balance-card" },
+          { nome: "Entradas", valor: dados?.receitas, texto: perfil === "pessoal" ? "Suas entradas registradas" : "Receitas e vendas registradas", classe: "income-card" },
+          { nome: "Saídas", valor: dados?.despesas, texto: perfil === "pessoal" ? "Seus gastos no período" : "Despesas do período", classe: "expense-card" },
         ].map((item) => (
           <article className={`summary-card ${item.classe}`} key={item.nome}>
             <span className="summary-label">
@@ -400,7 +414,8 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
           </form>
         </section>
       ) : null}
-      <div className={pessoal ? "" : "product-two-columns"}>
+      {!pessoal && perfil !== "pessoal" && completo && dados ? <p className="permission-note">Vendas registradas no período: <strong>{formatarMoeda(dados.movimentacoes.filter(item => item.origem === "venda").reduce((total, item) => total + item.valor, 0))}</strong>. Não há controle de recebimento nesta etapa. <Link href="/relatorios">Consultar custos registrados</Link>.</p> : null}
+      <div className={pessoal || !completo ? "" : "product-two-columns"}>
         <section className="panel">
           <div className="panel-header">
             <h2>
@@ -423,9 +438,9 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
           ) : movimentos.length === 0 ? (
             <VazioProduto
               titulo={periodo ? "Nenhum lançamento neste período" : "Seu primeiro lançamento começa aqui"}
-              texto={periodo ? "Experimente outro intervalo para encontrar suas movimentações." : "Registre uma entrada ou saída para acompanhar o período. Vendas e despesas comerciais aparecem sem duplicação."}
+              texto={periodo ? "Experimente outro intervalo para encontrar suas movimentações." : perfil === "pessoal" ? "Registre sua primeira entrada ou gasto. Seus números aparecerão aqui, sem complicação." : "Registre sua primeira venda ou despesa. Movimentações comerciais aparecem aqui sem duplicação."}
               acao={
-                periodo ? <button className="secondary-button" onClick={() => { setPeriodo(null); setCarregando(true); }}>Limpar filtros</button> : podeGerenciar ? <button className="text-button" onClick={novo}>Adicionar lançamento</button> : null
+                periodo ? <button className="secondary-button" onClick={() => { setPeriodo(null); setCarregando(true); }}>Limpar filtros</button> : podeRegistrar ? <button className="text-button" onClick={novo}>Adicionar lançamento</button> : null
               }
             />
           ) : (
@@ -481,7 +496,7 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
                                 </button>
                                 <button
                                   className="text-button danger-text"
-                                  onClick={() => excluir(item.id)}
+                                  onClick={() => setExclusao(item)}
                                   disabled={ocupado}
                                 >
                                   Excluir
@@ -509,7 +524,7 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
             </div>
           )}
         </section>
-        {!pessoal ? (
+        {!pessoal && completo ? (
           <section className="panel">
             <div className="panel-header">
               <h2>Para onde vai o dinheiro</h2>
@@ -542,6 +557,9 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
           </section>
         ) : null}
       </div>
+      {!pessoal && !completo ? <div className="detail-reveal"><button className="text-button" onClick={() => alterar({ detalhes: "completo" })}>Ver detalhes do período →</button><p className="subtitle">Mais análises visuais, com os recursos do seu plano.</p></div> : null}
+      {!pessoal && perfil === "empresa" ? <section className="panel team-responsibilities"><h2>Como a equipe trabalha</h2><p>Membros consultam e registram movimentações, vendas e despesas. Proprietário e administrador também editam e administram os acessos; somente o proprietário gerencia administradores. Documentos exigem Business, e envio e análise de documentos exigem gestão. A exportação depende do Pro ou Business.</p><Link className="text-button" href="/equipe">Consultar acessos da equipe →</Link></section> : null}
+      {exclusao ? <ConfirmarExclusao descricao={exclusao.descricao} ocupado={ocupado} cancelar={() => setExclusao(null)} confirmar={() => void excluir(exclusao.id)} /> : null}
 
       {!pessoal && !carregando && dados ? <PrimeirosPassos temMovimentos={dados.movimentacoes.length > 0} /> : null}
     </WorkspaceShell>

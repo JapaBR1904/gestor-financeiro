@@ -1,13 +1,15 @@
 "use client";
+import { useMoeda } from "../../components/PreferenciasProvider";
 import { Icone } from "../../components/Icone";
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Sidebar } from "../../components/Sidebar";
-import { formatarMoeda } from "../../lib/produtos";
+
 import { carregarDespesas, Despesa, nomeFormaPagamentoDespesa } from "../../lib/despesas";
 
 export default function DespesasPage() {
+  const formatarMoeda = useMoeda();
   const [despesas, setDespesas] = useState<Despesa[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");

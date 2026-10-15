@@ -6,13 +6,14 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { WorkspaceShell } from "../../components/WorkspaceShell";
 import { useWorkspace } from "../../lib/workspace";
-import { formatarMoeda } from "../../lib/produtos";
+import { useMoeda } from "../../components/PreferenciasProvider";
 import { carregarRelatorioResumo, RelatorioResumo } from "../../lib/relatorios";
 import { nomeFormaPagamento } from "../../lib/vendas";
 
 type Secao = "produtos" | "recebimentos" | "despesas" | "clientes";
 
 export default function RelatoriosPage() {
+  const formatarMoeda = useMoeda();
   const { usuario } = useWorkspace();
   const [revisao, setRevisao] = useState(0);
   const [relatorio, setRelatorio] = useState<RelatorioResumo | null>(null);

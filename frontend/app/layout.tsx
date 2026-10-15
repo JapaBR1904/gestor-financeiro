@@ -15,6 +15,7 @@ import "./pro.css";
 import "./ia.css";
 import "./product.css";
 import "./ambient.css";
+import "./adaptativa.css";
 import { WorkspaceProvider } from "../components/WorkspaceProvider";
 
 const manrope = localFont({

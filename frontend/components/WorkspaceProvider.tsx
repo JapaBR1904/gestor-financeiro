@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation";
 import { carregarUsuarioAtual } from "../lib/auth";
 import { carregarConfiguracaoSaas } from "../lib/saas";
 import { carregarAssinatura } from "../lib/assinatura";
+import { PreferenciasProvider } from "./PreferenciasProvider";
 
 export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const caminho = usePathname();
@@ -105,6 +106,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     !/^\/(empresa|conta|planos|checkout)(\/|$)/.test(caminho);
   return (
     <Contexto.Provider value={{ ...estado, atualizar }}>
+      <PreferenciasProvider>
       <div
         key={
           estado.usuario
@@ -133,6 +135,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
           children
         )}
       </div>
+      </PreferenciasProvider>
     </Contexto.Provider>
   );
 }

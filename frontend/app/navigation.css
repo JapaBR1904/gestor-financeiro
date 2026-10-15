@@ -38,6 +38,19 @@
   justify-content: space-between;
   padding: 0 10px;
 }
+/* Assinatura luminosa: uma passagem curta seguida de repouso, ciclo de 9s. */
+@keyframes sidebar-sweep {
+  0%, 58% { transform:translateY(-15vh); opacity:0; }
+  64% { opacity:.55; }
+  87% { transform:translateY(95vh); opacity:.45; }
+  92%, 100% { transform:translateY(110vh); opacity:0; }
+}
+@media (min-width:1024px) and (prefers-reduced-motion:no-preference) {
+  .sidebar::after { content:""; position:absolute; pointer-events:none; width:1px; height:78px; left:1px; top:0; background:linear-gradient(transparent,#68d7f5,transparent); box-shadow:0 0 12px 2px #4aaee933; opacity:0; animation:sidebar-sweep 9s ease-in-out infinite; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .sidebar::after { display:none; animation:none; }
+}
 .brand,
 .saas-brand {
   display: flex;

@@ -42,13 +42,13 @@ export default function PasswordFields({
       {nova ? (
         <div className="auth-password-policy">
           <p id={`${id}-ajuda`} className="auth-help">
-            Use uma senha exclusiva. Acentos e emojis podem ocupar mais de um
-            byte.
+            Use 16 ou mais caracteres, com letras maiúsculas e minúsculas, número e símbolo.
           </p>
           <ul
             id={`${id}-requisitos`}
             className="auth-password-requirements"
             aria-label="Requisitos da senha"
+            hidden={!senha}
           >
             {requisitos.map((requisito) => (
               <li key={requisito.id} data-atendido={requisito.atendido}>
@@ -62,9 +62,9 @@ export default function PasswordFields({
               </li>
             ))}
           </ul>
-          <p className="auth-help" role="status">
+          {senha ? <p className="auth-help">
             {atendidos} de {requisitos.length} requisitos atendidos.
-          </p>
+          </p> : null}
         </div>
       ) : null}
       {setConfirmacao ? (

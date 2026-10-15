@@ -1,13 +1,15 @@
 "use client";
+import { useMoeda } from "../../../components/PreferenciasProvider";
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Sidebar } from "../../../components/Sidebar";
-import { formatarMoeda } from "../../../lib/produtos";
+
 import { carregarDespesa, Despesa, excluirDespesa, nomeFormaPagamentoDespesa } from "../../../lib/despesas";
 
 export default function DespesaDetalhePage() {
+  const formatarMoeda = useMoeda();
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const [despesa, setDespesa] = useState<Despesa | null>(null);

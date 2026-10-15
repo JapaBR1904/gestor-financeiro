@@ -1,11 +1,12 @@
 "use client";
+import { useMoeda } from "../../../components/PreferenciasProvider";
 
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "../../../components/Sidebar";
 import { carregarClientes, Cliente } from "../../../lib/clientes";
-import { carregarProdutos, formatarMoeda, Produto } from "../../../lib/produtos";
+import { carregarProdutos, Produto } from "../../../lib/produtos";
 import { FormaPagamento, salvarVenda } from "../../../lib/vendas";
 
 type LinhaVenda = { id: string; produtoId: string; quantidade: string };
@@ -15,6 +16,7 @@ function novaLinha(id = `item-${Date.now()}`): LinhaVenda {
 }
 
 export default function NovaVendaPage() {
+  const formatarMoeda = useMoeda();
   const router = useRouter();
   const envioEmCurso = useRef(false);
   const [produtos, setProdutos] = useState<Produto[]>([]);

@@ -1,7 +1,7 @@
 "use client";
 import { useId, useState } from "react";
 import type { AnaliseFinanceira } from "../lib/financeiro";
-import { formatarMoeda } from "../lib/produtos";
+import { useMoeda, usePreferencias } from "./PreferenciasProvider";
 
 type Dia = AnaliseFinanceira["evolucao"][number];
 const dataCurta = (data: string) =>
@@ -17,6 +17,8 @@ const valorEixo = new Intl.NumberFormat("pt-BR", {
 });
 
 export function GraficoSaldo({ dias }: { dias: Dia[] }) {
+  const formatarMoeda = useMoeda();
+  const { ocultarValores } = usePreferencias();
   const [selecionado, setSelecionado] = useState<number | null>(null);
   const descricao = useId();
   const gradiente = useId();
@@ -48,7 +50,7 @@ export function GraficoSaldo({ dias }: { dias: Dia[] }) {
         <div className="chart-axis" aria-hidden="true">
           {[0, 1, 2, 3, 4].map((i) => (
             <span key={i}>
-              {valorEixo.format(maximo - (amplitude * i) / 4)}
+              {ocultarValores ? "•••" : valorEixo.format(maximo - (amplitude * i) / 4)}
             </span>
           ))}
         </div>

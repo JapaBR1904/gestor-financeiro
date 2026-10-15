@@ -1,12 +1,14 @@
 "use client";
+import { useMoeda } from "../../../components/PreferenciasProvider";
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Sidebar } from "../../../components/Sidebar";
-import { alterarStatusProduto, carregarProduto, formatarMoeda, Produto } from "../../../lib/produtos";
+import { alterarStatusProduto, carregarProduto, Produto } from "../../../lib/produtos";
 
 export default function ProdutoDetalhePage() {
+  const formatarMoeda = useMoeda();
   const params = useParams<{ id: string }>();
   const produtoId = params.id;
   const [produto, setProduto] = useState<Produto | null>(null);

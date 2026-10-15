@@ -1,11 +1,13 @@
 "use client";
+import { useMoeda } from "../../components/PreferenciasProvider";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Sidebar } from "../../components/Sidebar";
-import { alterarStatusProduto, carregarProdutos, formatarMoeda, Produto } from "../../lib/produtos";
+import { alterarStatusProduto, carregarProdutos, Produto } from "../../lib/produtos";
 
 export default function ProdutosPage() {
+  const formatarMoeda = useMoeda();
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [alterandoId, setAlterandoId] = useState<string | number | null>(null);

@@ -79,7 +79,7 @@ export default function AuthCredentialsForm({
       descricao={
         cadastro
           ? "Seu primeiro passo para organizar as finanças. Comece com uma conta Free."
-          : "Entre para acompanhar seu negócio com clareza."
+          : "Entre para acompanhar suas finanças com clareza."
       }
     >
       {preparando ? <p className="auth-success-banner brand-busy" role="status"><Marca/>Preparando seu espaço…</p> : null}

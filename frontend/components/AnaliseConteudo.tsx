@@ -10,12 +10,13 @@ import {
   datasDoMes,
   exportarFinanceiro,
 } from "../lib/financeiro";
-import { formatarMoeda } from "../lib/produtos";
+import { useMoeda } from "./PreferenciasProvider";
 import { GraficoSaldo } from "./GraficoSaldo";
 import { Icone } from "./Icone";
 import { planoPermite } from "../lib/planos";
 
 export function AnaliseConteudo() {
+  const formatarMoeda = useMoeda();
   const { config, usuario } = useWorkspace();
   const [dados, setDados] = useState<AnaliseFinanceira | null>(null);
   const [erro, setErro] = useState("");
@@ -143,7 +144,7 @@ export function AnaliseConteudo() {
                     anterior: dados.anterior.despesas,
                   },
                   {
-                    nome: "Saldo",
+                    nome: "Resultado",
                     valor: dados.atual.saldo,
                     anterior: dados.anterior.saldo,
                   },

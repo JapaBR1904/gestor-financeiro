@@ -1,5 +1,5 @@
 "use client";
-import { Icone } from "./Icone";
+import { Icone, type NomeIcone } from "./Icone";
 import { Marca } from "./Marca";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -8,7 +8,8 @@ import { logout } from "../lib/auth";
 import { useWorkspace } from "../lib/workspace";
 import { nomePlano, planoPermite } from "../lib/planos";
 
-const grupos = [
+type GrupoMenu = { nome: string; itens: { href: string; nome: string; icone: NomeIcone; plano?: "pro" | "business" }[] };
+const gruposBase: GrupoMenu[] = [
   { nome: "Financeiro", itens: [
     { href: "/dashboard", nome: "Visão geral", icone: "painel" },
     { href: "/pessoal", nome: "Lançamentos", icone: "movimentos" },
@@ -26,7 +27,7 @@ const grupos = [
     { href: "/documentos", nome: "Documentos", icone: "documento", plano: "business" },
   ] },
   { nome: "Ferramentas", itens: [{ href: "/ia", nome: "Assistente IA", icone: "ia", plano: "pro" }] },
-] as const;
+];
 function GrupoNavegacao({ nome, recolhivel, expandido, alternar, children }: {
   nome: string; recolhivel: boolean; expandido: boolean; alternar: () => void; children: ReactNode;
 }) {
@@ -49,6 +50,31 @@ export function Sidebar(props: {
   const pathname = usePathname();
   const router = useRouter();
   const { config, usuario } = useWorkspace();
+  const grupos: GrupoMenu[] = config?.perfilUso === "pessoal" ? [
+    { nome: "Seu dinheiro", itens: [
+      { href: "/dashboard", nome: "Resumo", icone: "painel" },
+      { href: "/pessoal", nome: "Movimentações", icone: "movimentos" },
+      { href: "/metas", nome: "Suas metas", icone: "meta", plano: "pro" as const },
+    ] },
+    { nome: "Explorar", itens: [
+      { href: "/fluxo-caixa", nome: "Fluxo de caixa", icone: "fluxo", plano: "pro" as const },
+      { href: "/ia", nome: "Nexo IA", icone: "ia", plano: "pro" as const },
+    ] },
+    { nome: "Gestão", itens: [{ href: "/empresa", nome: "Seus espaços", icone: "empresa" }] },
+  ] : config?.perfilUso === "negocio" ? [
+    { nome: "Dia a dia", itens: [
+      { href: "/dashboard", nome: "Resumo", icone: "painel" },
+      { href: "/vendas", nome: "Vendas", icone: "venda" },
+      { href: "/despesas", nome: "Despesas", icone: "despesa" },
+      { href: "/produtos", nome: "Produtos", icone: "produto" },
+    ] },
+    { nome: "Análises e clientes", itens: [
+      { href: "/pessoal", nome: "Movimentações", icone: "movimentos" },
+      { href: "/relatorios", nome: "Análises", icone: "relatorio" },
+      { href: "/clientes", nome: "Clientes", icone: "clientes" },
+    ] },
+    ...gruposBase.filter(grupo => ["Gestão", "Ferramentas"].includes(grupo.nome)),
+  ] : gruposBase;
   const [saindo, setSaindo] = useState(false);
   const [erroSaida, setErroSaida] = useState("");
   const travaSaida = useRef(false);
@@ -180,7 +206,7 @@ export function Sidebar(props: {
           )
           .map((grupo) => {
             const grupoAtivo = grupo.itens.some(item => pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href + "/")));
-            const recolhivel = grupo.nome === "Operação" || grupo.nome === "Gestão";
+            const recolhivel = ["Operação", "Gestão", "Análises e clientes", "Explorar"].includes(grupo.nome);
             const expandido = grupoAtivo || !recolhivel || Boolean(gruposAbertos[grupo.nome]);
             return <GrupoNavegacao key={grupo.nome} nome={grupo.nome} recolhivel={recolhivel} expandido={expandido} alternar={() => setGruposAbertos(atual => ({ ...atual, [grupo.nome]: !expandido }))}>
               {grupo.itens.map((item) => {

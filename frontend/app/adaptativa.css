@@ -1,0 +1,23 @@
+/* Preferências de apresentação são independentes do plano e das permissões. */
+.visual-preferences { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin:0 0 24px; }
+.detail-switch { display:inline-flex; gap:4px; padding:4px; border:1px solid var(--border); border-radius:12px; background:var(--surface); }
+.detail-switch button { border:0; border-radius:8px; background:transparent; color:var(--text-secondary); padding:8px 14px; font:inherit; font-size:.8rem; cursor:pointer; min-height:36px; }
+.detail-switch button[aria-pressed=true] { background:var(--accent-soft); color:var(--accent-ink); font-weight:750; }
+.privacy-toggle { font-size:.8rem; min-height:40px; }
+.auth-password-requirements[hidden] { display:none; }
+.profile-guidance { display:flex; gap:20px; align-items:center; justify-content:space-between; border:1px solid var(--border); padding:20px 24px; border-radius:18px; margin-bottom:24px; background:linear-gradient(120deg,var(--surface),var(--accent-soft)); }
+.profile-guidance p { color:var(--text-secondary); font-size:.86rem; line-height:1.6; margin:6px 0 0; max-width:65ch; }
+.profile-guidance nav { display:flex; flex-wrap:wrap; gap:12px; }
+.profile-guidance h2 { font-size:1rem; margin:0; }
+.detail-reveal { margin-top:20px; }
+.detail-reveal button { min-height:44px; }
+.team-responsibilities { margin-top:20px; }
+.team-responsibilities p { line-height:1.8; color:var(--text-secondary); }
+.confirmation-dialog { width:min(480px,calc(100% - 32px)); border:1px solid var(--border); border-radius:20px; padding:28px; color:var(--ink); background:var(--surface); }
+.confirmation-dialog::backdrop { background:#07142699; }
+.confirmation-dialog p { line-height:1.7; color:var(--text-secondary); }
+@media(max-width:600px) {
+  .profile-guidance { padding:18px; flex-direction:column; align-items:flex-start; gap:12px; }
+  .visual-preferences { gap:8px; margin-bottom:18px; }
+  .detail-switch button { padding:8px 10px; }
+}

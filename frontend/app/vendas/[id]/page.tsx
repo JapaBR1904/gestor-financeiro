@@ -1,13 +1,15 @@
 "use client";
+import { useMoeda } from "../../../components/PreferenciasProvider";
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Sidebar } from "../../../components/Sidebar";
-import { formatarMoeda } from "../../../lib/produtos";
+
 import { carregarVenda, nomeFormaPagamento, Venda } from "../../../lib/vendas";
 
 export default function VendaDetalhePage() {
+  const formatarMoeda = useMoeda();
   const params = useParams<{ id: string }>();
   const [venda, setVenda] = useState<Venda | null>(null);
   const [carregando, setCarregando] = useState(true);
