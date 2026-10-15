@@ -32,7 +32,7 @@
   width: 36px;
   height: 36px;
   border-radius: var(--radius);
-  background: var(--accent-ink);
+  background: var(--brand-navy);
   color: var(--on-accent);
 }
 .saas-brand div {
@@ -334,14 +334,16 @@
 }
 .pricing-card:hover {
   border-color: var(--border-strong);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-3px);
 }
 .pricing-card.plan-pro {
+  background: var(--gradient-pro);
 }
 .pricing-card.featured {
   border-color: color-mix(in srgb, var(--accent), var(--cyan-light) 25%);
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
+  background: var(--gradient-pro);
+  box-shadow: 0 8px 24px #2563eb12;
 }
 .pricing-card.featured .pricing-badge {
   color: var(--on-accent);

@@ -657,7 +657,7 @@ input[type="radio"] {
 }
 @keyframes page-enter {
   from {
-    opacity: 0;
+    opacity: .98;
     transform: translateY(4px);
   }
   to {

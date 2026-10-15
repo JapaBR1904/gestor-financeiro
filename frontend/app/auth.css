@@ -147,7 +147,7 @@
   width: 36px;
   height: 36px;
   border-radius: var(--radius);
-  background: var(--gradient-primary);
+  background: var(--brand-navy);
   color: var(--on-accent);
   box-shadow: var(--shadow-accent);
 }

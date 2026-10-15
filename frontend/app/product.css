@@ -13,8 +13,9 @@
 .finance-summary .income-card, .finance-summary .expense-card { background: var(--surface); }
 .income-card > strong, .income-card .summary-label svg { color: var(--positive); }
 .expense-card > strong, .expense-card .summary-label svg { color: var(--negative); }
-.finance-summary .balance-card { background: var(--accent-soft); color: var(--ink); border-color: var(--border); }
-.finance-summary .balance-card :is(span, small) { color: var(--text-secondary); }
+.finance-summary .balance-card { background: radial-gradient(ellipse at 100% 0, #22d3ee1a, transparent 60%), var(--gradient-premium); color: var(--nav-text); border-color: var(--nav-border); box-shadow: 0 10px 28px #07142614; }
+.finance-summary .balance-card > strong { color: var(--nav-text); }
+.finance-summary .balance-card :is(span, small) { color: var(--nav-secondary); }
 .summary-label {
   display: flex;
   align-items: center;
@@ -29,7 +30,7 @@
   background: color-mix(in srgb, currentColor, transparent 94%);
 }
 .balance-card .summary-label svg {
-  color: var(--accent);
+  color: var(--brand-cyan);
 }
 .product-empty {
   display: grid;

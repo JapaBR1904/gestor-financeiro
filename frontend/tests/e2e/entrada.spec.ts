@@ -1,7 +1,10 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { observar, registrarObservacoes } from "./observacoes";
-test.beforeEach(({ page }) => observar(page));
+test.beforeEach(async ({ page }) => {
+  observar(page);
+  await page.addInitScript(() => sessionStorage.setItem("nexo:brand-intro-seen", "1"));
+});
 test.afterEach(async ({ page }, info) => registrarObservacoes(page, info));
 
 test("entrada pública: sete larguras, axe, teclado, movimento reduzido e sem reload", async ({

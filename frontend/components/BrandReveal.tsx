@@ -9,13 +9,23 @@ export function BrandReveal() {
   useEffect(() => {
     const movimento = window.matchMedia("(prefers-reduced-motion: reduce)");
     let timer: ReturnType<typeof setTimeout> | undefined;
-    const encerrar = () => setVisivel(false);
+    let frame = 0;
+    const encerrar = () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(timer);
+      setVisivel(false);
+      window.removeEventListener("pointerdown", encerrar);
+      window.removeEventListener("keydown", encerrar);
+      movimento.removeEventListener("change", encerrar);
+    };
     // Marcar dentro do frame evita perder a apresentação no Strict Mode do dev.
-    const frame = requestAnimationFrame(() => {
+    frame = requestAnimationFrame(() => {
       try {
         if (sessionStorage.getItem(CHAVE)) return;
         sessionStorage.setItem(CHAVE, "1");
-      } catch { return; } // Sem armazenamento, preferimos não repetir a introdução.
+      } catch {
+        return;
+      } // Sem armazenamento, preferimos não repetir a introdução.
       if (movimento.matches) return;
       setVisivel(true);
       timer = setTimeout(encerrar, 1250);
@@ -31,9 +41,16 @@ export function BrandReveal() {
       movimento.removeEventListener("change", encerrar);
     };
   }, []);
-  return visivel ? <div className="brand-reveal" data-brand-intro aria-hidden="true">
-    <div className="brand-reveal-halo"/>
-    <div className="brand-reveal-signature"><Marca/><span>Nexo</span></div>
-    <span className="brand-reveal-caption">Clareza. Inteligência. Conexão.</span>
-  </div> : null;
+  return visivel ? (
+    <div className="brand-reveal" data-brand-intro aria-hidden="true">
+      <div className="brand-reveal-halo" />
+      <div className="brand-reveal-signature">
+        <Marca />
+        <span>Nexo</span>
+      </div>
+      <span className="brand-reveal-caption">
+        Clareza. Inteligência. Conexão.
+      </span>
+    </div>
+  ) : null;
 }

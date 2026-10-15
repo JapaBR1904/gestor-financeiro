@@ -1,7 +1,7 @@
-/* IA contextual, sem luzes ou movimento decorativo permanente. */
-.ia-workbench { max-width: 900px; }
+/* IA contextual: luz discreta, com movimento reservado ao processamento. */
+.ia-workbench { max-width: 900px; background: radial-gradient(ellipse at 100% 0, #3882f60d, transparent 45%), var(--surface); border-top-color: #3882f666; }
 .ia-intro { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-5); }
-.ia-intro > svg { width: 20px; height: 20px; color: var(--cyan); }
+.ia-intro > svg { width: 32px; height: 32px; padding: 6px; border-radius: 8px; color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 0 1px #3882f61a; }
 .ia-question-form { display: grid; gap: var(--space-4); }
 .ia-question-form .subtitle { margin: 0; font-size: var(--text-xs); }
 .ia-suggestions { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); }

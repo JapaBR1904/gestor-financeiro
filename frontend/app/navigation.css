@@ -57,8 +57,8 @@
   border-radius: var(--radius);
 }
 .brand-mark svg {
-  width: 23px;
-  height: 23px;
+  width: 29px;
+  height: 29px;
 }
 .brand strong {
   font-size: 25px;
@@ -472,7 +472,6 @@
 .nav-group-toggle { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 44px; border-radius: var(--radius); background: transparent; text-align: left; }
 .nav-group-toggle:hover { background: var(--nav-hover); color: var(--nav-text); }
 .nav-group-toggle svg { width: 16px; height: 16px; }
-.menu-item.active .menu-icon { color: var(--nav-active-ink); }
 .analysis-navigation { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-5); padding-bottom: var(--space-3); border-bottom: 1px solid var(--border); }
 .analysis-navigation a { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 44px; padding: var(--space-2) var(--space-3); border-radius: var(--radius); color: var(--text-secondary); font-size: var(--text-sm); }
 .analysis-navigation a:hover { color: var(--accent); background: var(--surface-interactive); }
@@ -487,6 +486,6 @@
 .nav-group-items[data-expanded="true"] > div { opacity: 1; transform: none; }
 .nav-group-toggle svg { transform: rotate(-90deg); transition: transform var(--motion-normal) var(--ease-emphasized); }
 .nav-group-toggle[aria-expanded="true"] svg { transform: rotate(0); }
-.menu-item:focus-visible { outline-color: var(--brand-cyan); outline-offset: -2px; }
+.menu-item:focus-visible, .nav-group-toggle:focus-visible { outline-color: var(--brand-cyan); outline-offset: -2px; }
 .menu-item.active .menu-icon { color: var(--brand-cyan); }
 @keyframes nav-indicator { from { opacity: 0; transform: translateY(-5px) scaleY(.6); } to { opacity: 1; transform: translateY(0) scaleY(1); } }

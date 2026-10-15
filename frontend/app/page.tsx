@@ -4,6 +4,7 @@ import { Marca } from "../components/Marca";
 import { Icone, type NomeIcone } from "../components/Icone";
 import { LandingMenu } from "../components/LandingMenu";
 import "./landing.css";
+import { LandingMotion } from "../components/LandingMotion";
 import { BrandReveal } from "../components/BrandReveal";
 
 export const metadata: Metadata = {
@@ -174,6 +175,7 @@ export default function HomePage() {
   return (
     <div className="landing">
       <BrandReveal />
+      <LandingMotion />
       <header className="landing-header">
         <div className="landing-container landing-header-inner">
           <Link
@@ -234,6 +236,7 @@ export default function HomePage() {
           </div>
         </section>
         <section
+          data-reveal
           id="como-funciona"
           className="landing-section landing-container"
         >
@@ -279,7 +282,7 @@ export default function HomePage() {
             ))}
           </ol>
         </section>
-        <section id="recursos" className="landing-features">
+        <section data-reveal id="recursos" className="landing-features">
           <div className="landing-container">
             <div className="landing-section-heading">
               <p className="landing-eyebrow">
@@ -312,7 +315,7 @@ export default function HomePage() {
             </div>
           </div>
         </section>
-        <section className="landing-container landing-benefit">
+        <section data-reveal className="landing-container landing-benefit">
           <div>
             <p className="landing-eyebrow">Clareza muda a rotina</p>
             <h2>
@@ -336,7 +339,7 @@ export default function HomePage() {
             </li>
           </ul>
         </section>
-        <section id="planos" className="landing-section landing-container">
+        <section data-reveal id="planos" className="landing-section landing-container">
           <div className="landing-section-heading landing-heading-centered">
             <p className="landing-eyebrow">Seu momento. Seu plano.</p>
             <h2>
@@ -450,7 +453,7 @@ export default function HomePage() {
             <Icone nome="empresa" /> Espaços com acessos separados
           </span>
         </section>
-        <section className="landing-final landing-container">
+        <section data-reveal className="landing-final landing-container">
           <div>
             <p className="landing-eyebrow">O próximo passo é seu</p>
             <h2>
