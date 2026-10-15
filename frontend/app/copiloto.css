@@ -29,7 +29,7 @@
 .ia-response-text { white-space:pre-wrap; line-height:1.85; font-size:.9rem; }
 .ia-thinking { display:grid; gap:12px; }
 .ia-thinking > svg { width:28px; height:28px; color:var(--accent-ink); }
-.copilot-trigger { position:fixed; z-index:35; bottom:24px; right:24px; display:flex; align-items:center; gap:10px; min-height:48px; padding:12px 18px; border:1px solid #60bbdf66; border-radius:30px; background:var(--brand-navy); color:#e2f4ff; box-shadow:0 5px 24px #07142625; font:inherit; font-size:.8rem; cursor:pointer; }
+.copilot-trigger { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:40px; padding:8px 12px; border:1px solid #60bbdf66; border-radius:12px; background:var(--brand-navy); color:#e2f4ff; font:inherit; font-size:.76rem; cursor:pointer; flex-shrink:0; }
 .copilot-trigger svg { width:24px; height:24px; }
 .copilot-panel,.copilot-drawer { color:var(--ink); background:var(--surface); border:1px solid var(--border); }
 .copilot-panel { position:fixed; inset:0 0 0 auto; width:360px; z-index:40; display:flex; flex-direction:column; box-shadow:-8px 0 28px #0714260d; }
@@ -50,6 +50,6 @@
 .copilot-drawer[open] { display:flex; flex-direction:column; }
 .copilot-drawer::backdrop { background:#0714268a; }
 body:has(.copilot-drawer[open]) { overflow:hidden; }
-@media(min-width:1280px) { .copilot-open:has(.copilot-panel) .app-shell { margin-right:360px; } .copilot-open:has(.copilot-panel) .copilot-trigger { display:none; } }
-@media(max-width:767px) { .ia-action-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .ia-action-grid button { padding:12px; font-size:.77rem; } .copilot-trigger { right:14px; bottom:14px; } .copilot-body { padding:18px; } .ia-premium-intro { padding-top:8px; } }
+@media(min-width:1280px) { .copilot-open:has(.copilot-panel) .app-shell { margin-right:360px; } }
+@media(max-width:767px) { .ia-action-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .ia-action-grid button { padding:12px; font-size:.77rem; } .copilot-trigger { padding:7px; min-width:40px; } .copilot-trigger span { display:none; } .copilot-body { padding:18px; } .ia-premium-intro { padding-top:8px; } }
 @media(prefers-reduced-motion:reduce) { .ia-thinking,.ia-signature,.copilot-trigger { animation:none; transition:none; } }

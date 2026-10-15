@@ -15,18 +15,18 @@ function observarDesktop(avisar: () => void) {
 export function CopilotoProvider({ children }: { children: React.ReactNode }) {
   const [tela, setTela] = useState<TelaFinanceira | null>(null);
   const [aberto, setAberto] = useState(false);
+  const gatilho = useRef<HTMLButtonElement | null>(null);
   const publicar = useCallback((nova: TelaFinanceira) => setTela(nova), []);
-  return <ContextoCopiloto.Provider value={{ tela, publicar }}><div className={aberto ? "copilot-open" : undefined}>{children}<CopilotoBusiness aberto={aberto} alternar={() => setAberto(atual => !atual)} fechar={() => setAberto(false)} /></div></ContextoCopiloto.Provider>;
+  useEffect(() => { if (!aberto) gatilho.current?.focus(); }, [aberto]);
+  return <ContextoCopiloto.Provider value={{ tela, publicar, aberto, alternar: elemento => { gatilho.current = elemento; setAberto(atual => !atual); } }}><div className={aberto ? "copilot-open" : undefined}>{children}<CopilotoBusiness aberto={aberto} fechar={() => setAberto(false)} /></div></ContextoCopiloto.Provider>;
 }
-function CopilotoBusiness({ aberto, alternar, fechar }: { aberto: boolean; alternar: () => void; fechar: () => void }) {
+function CopilotoBusiness({ aberto, fechar }: { aberto: boolean; fechar: () => void }) {
   const { config } = useWorkspace();
   const caminho = usePathname();
   const contexto = contextoDaPagina(caminho);
   const { tela } = useContext(ContextoCopiloto);
   const desktop = useSyncExternalStore(observarDesktop, () => window.matchMedia(mediaDesktop).matches, () => false);
   const dialog = useRef<HTMLDialogElement>(null);
-  const gatilho = useRef<HTMLButtonElement>(null);
-  const jaAbriu = useRef(false);
   const habilitado = config?.plano === "business" && contexto && caminho !== "/ia";
   useEffect(() => {
     if (!aberto || desktop || !habilitado) return;
@@ -34,10 +34,6 @@ function CopilotoBusiness({ aberto, alternar, fechar }: { aberto: boolean; alter
     elemento?.showModal();
     return () => elemento?.close();
   }, [aberto, desktop, habilitado]);
-  useEffect(() => {
-    if (aberto) jaAbriu.current = true;
-    else if (jaAbriu.current) gatilho.current?.focus();
-  }, [aberto]);
   if (!habilitado) return null;
   const sincronizar = ["/dashboard", "/pessoal", "/fluxo-caixa"].includes(contexto.pagina);
   const atual = tela?.rota === caminho ? tela : null;
@@ -48,7 +44,6 @@ function CopilotoBusiness({ aberto, alternar, fechar }: { aberto: boolean; alter
     <div className="copilot-body"><ConversaIa key={`${caminho}:${periodo?.inicio}:${periodo?.fim}`} pagina={contexto.pagina} periodo={periodo} carregandoContexto={carregando} compacto /></div>
   </>;
   return <>
-    <button ref={gatilho} className="copilot-trigger" aria-expanded={aberto} aria-controls="nexo-copilot-panel" onClick={alternar}><Marca />Nexo Copiloto</button>
     {aberto ? desktop ? <aside id="nexo-copilot-panel" className="copilot-panel" aria-labelledby="copilot-title" onKeyDown={e => { if (e.key === "Escape") { e.preventDefault(); fechar(); } }}>{conteudo}</aside> : <dialog ref={dialog} id="nexo-copilot-panel" className="copilot-drawer" aria-labelledby="copilot-title" onKeyDown={conterFocoNoDialog} onCancel={e => { e.preventDefault(); fechar(); }}>{conteudo}</dialog> : null}
   </>;
 }

@@ -3,7 +3,7 @@ import { createContext, useContext, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import type { AssuntoIa } from "./ia";
 export type TelaFinanceira = { rota: string; inicio?: string; fim?: string; carregando: boolean };
-export const ContextoCopiloto = createContext<{ tela: TelaFinanceira | null; publicar: (tela: TelaFinanceira) => void }>({ tela: null, publicar: () => {} });
+export const ContextoCopiloto = createContext<{ tela: TelaFinanceira | null; publicar: (tela: TelaFinanceira) => void; aberto: boolean; alternar: (gatilho: HTMLButtonElement) => void }>({ tela: null, publicar: () => {}, aberto: false, alternar: () => {} });
 export function usePublicarPeriodo(periodo: { inicio: string; fim: string } | null, carregando: boolean) {
   const { publicar } = useContext(ContextoCopiloto);
   const rota = usePathname();

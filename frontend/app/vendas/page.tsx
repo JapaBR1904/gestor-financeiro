@@ -13,13 +13,19 @@ export default function VendasPage() {
   const [vendas, setVendas] = useState<Venda[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
+  const [revisao, setRevisao] = useState(0);
 
   useEffect(() => {
-    carregarVendas()
-      .then(setVendas)
-      .catch((error) => setErro(error instanceof Error ? error.message : "Não foi possível carregar as vendas."))
-      .finally(() => setCarregando(false));
-  }, []);
+    let ativo = true;
+    queueMicrotask(() => {
+      if (!ativo) return;
+      setCarregando(true); setErro("");
+      carregarVendas().then(dados => { if (ativo) setVendas(dados); })
+        .catch(error => { if (ativo) setErro(error instanceof Error ? error.message : "Não foi possível carregar as vendas."); })
+        .finally(() => { if (ativo) setCarregando(false); });
+    });
+    return () => { ativo = false; };
+  }, [revisao]);
 
   const resumo = useMemo(() => {
     const faturamento = vendas.reduce((total, venda) => total + venda.totalVenda, 0);
@@ -37,18 +43,19 @@ export default function VendasPage() {
           <Link className="primary-button" href="/vendas/nova">+ Nova venda</Link>
         </header>
 
-        {erro ? <p className="form-error-banner">{erro}</p> : null}
+        <p className="permission-note">Todo o histórico de vendas deste espaço. A forma de pagamento registrada não comprova recebimento.</p>
+        {erro ? <p className="form-error-banner" role="alert">{erro} <button className="text-button" onClick={() => setRevisao(r => r+1)}>Tentar novamente</button></p> : null}
 
         <section className="summary-grid" aria-label="Resumo das vendas">
-          <article className="summary-card"><span>Vendas registradas</span><strong>{carregando ? "—" : vendas.length}</strong><small>{carregando ? "Carregando histórico..." : `${resumo.itensVendidos} item(ns) vendido(s) no total`}</small></article>
-          <article className="summary-card"><span>Faturamento</span><strong>{carregando ? "—" : formatarMoeda(resumo.faturamento)}</strong><small>Valor total recebido nas vendas</small></article>
-          <article className="summary-card"><span>Custo das vendas</span><strong>{carregando ? "—" : formatarMoeda(resumo.custo)}</strong><small>Custo histórico dos produtos vendidos</small></article>
+          <article className="summary-card"><span>Vendas registradas</span><strong>{carregando || erro ? "—" : vendas.length}</strong><small>{carregando ? "Carregando histórico..." : erro ? "Histórico indisponível" : `${resumo.itensVendidos} item(ns) vendido(s) no total`}</small></article>
+          <article className="summary-card"><span>Faturamento</span><strong>{carregando || erro ? "—" : formatarMoeda(resumo.faturamento)}</strong><small>Valor das vendas registradas</small></article>
+          <article className="summary-card"><span>Custo das vendas</span><strong>{carregando || erro ? "—" : formatarMoeda(resumo.custo)}</strong><small>Custo histórico dos produtos vendidos</small></article>
         </section>
 
         <article className="panel history-panel">
           <div className="panel-header"><div><p className="eyebrow">Histórico</p><h2>Vendas registradas</h2><p className="subtitle">Veja valor, pagamento e quantidade vendida sem precisar abrir cada registro.</p></div></div>
 
-          {carregando ? <div className="empty-state"><strong>Carregando vendas...</strong></div> : vendas.length === 0 ? (
+          {carregando ? <div className="empty-state" role="status"><strong>Carregando vendas...</strong></div> : erro ? <p className="empty-state">O histórico não pôde ser carregado. Tente novamente.</p> : vendas.length === 0 ? (
             <div className="empty-state"><span className="empty-icon">V</span><strong>Nenhuma venda registrada</strong><p>Cadastre a primeira venda para começar a alimentar o financeiro.</p></div>
           ) : (
             <div className="record-list sale-record-list">

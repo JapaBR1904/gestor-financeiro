@@ -10,6 +10,7 @@ import { Marca } from "./Marca";
 import { usePreferencias } from "./PreferenciasProvider";
 
 type Mensagem = { pergunta: string; dados: RespostaIa; base: string };
+const nomeAssunto: Record<AssuntoIa, string> = { resumo: "Resumo do período", despesas: "Despesas por categoria", fluxo: "Fluxo de caixa", metas: "Metas", comparativo: "Comparação de períodos", relatorios: "Relatórios", documentos: "Documentos" };
 const atalhos: { texto: string; assunto: AssuntoIa }[] = [
   { texto: "Analisar meu mês", assunto: "resumo" }, { texto: "Entender despesas", assunto: "despesas" },
   { texto: "Revisar metas", assunto: "metas" }, { texto: "Comparar períodos", assunto: "comparativo" },
@@ -68,7 +69,7 @@ export function ConversaIa({ pagina = "/ia", periodo, carregandoContexto = false
     try {
       const dados = await perguntarAoNexoIa(texto, consentimento, { pagina: tela.pagina, assunto, ...datasAtuais }, controle.signal);
       if (!controle.signal.aborted) {
-        setMensagens(atuais => [...atuais.slice(-7), { pergunta: texto, dados, base: dados.contexto?.periodo ?? (consentimento ? escopo : "Somente sua pergunta; dados financeiros não enviados") }]);
+        setMensagens(atuais => [...atuais.slice(-7), { pergunta: texto, dados, base: dados.contexto?.dadosAutorizados ? `Dados autorizados · ${dados.contexto.periodo}` : dados.contexto?.periodo ?? (consentimento ? `Dados autorizados · ${escopo}` : "Somente sua pergunta; dados financeiros não enviados") }]);
         setPergunta("");
       }
     } catch (e) { if (!controle.signal.aborted) setErro(e instanceof Error ? e.message : "Assistente temporariamente indisponível."); }
@@ -77,7 +78,7 @@ export function ConversaIa({ pagina = "/ia", periodo, carregandoContexto = false
   if (!config) return <p role="status">Carregando seu plano…</p>;
   if (!pro) return <BloqueioPlano plano="Pro" titulo="A IA do Nexo pode analisar seus números" descricao="Entenda seu mês, suas despesas e suas metas com contexto. O Pro inclui IA básica; o Business também oferece o copiloto nas principais telas." />;
   return <div className={`nexo-conversation${compacto ? " compact" : ""}`}>
-    <div className="copilot-context"><span>Contexto: <strong>{tela.titulo}</strong></span><small>{escopo}</small></div>
+    <div className="copilot-context"><span>Contexto: <strong>{tela.titulo}</strong></span>{nomeAssunto[assunto] !== tela.titulo ? <small>Análise: {nomeAssunto[assunto]}</small> : null}<small>{escopo}</small>{assunto === "comparativo" ? <small>Comparação com o intervalo anterior de mesma duração.</small> : null}</div>
     {!compacto ? <div className="ia-action-grid" aria-label="Análises disponíveis">{atalhos.map(item => <button type="button" key={item.texto} disabled={ocupado} onClick={() => escolher(item.texto, item.assunto)}><span aria-hidden="true">↗</span>{item.texto}</button>)}</div> : null}
     {configurada === null && !erro ? <p role="status">Verificando disponibilidade…</p> : null}
     {configurada === false ? <section className="ia-unavailable"><h2>Assistente temporariamente indisponível.</h2><p>Seu plano inclui a IA. Tente novamente em instantes; suas análises continuam disponíveis.</p><button className="secondary-button" onClick={() => { setConfigurada(null); setErro(""); setTentativa(t => t+1); }}>Verificar novamente</button></section> : null}
@@ -88,7 +89,7 @@ export function ConversaIa({ pagina = "/ia", periodo, carregandoContexto = false
     <div className="ia-context-suggestions" aria-label="Sugestões contextuais">{sugestoes(assunto, config.perfilUso).map(texto => <button className="secondary-button" key={texto} type="button" disabled={ocupado} onClick={() => escolher(texto, assuntoDaPergunta(texto, assunto))}>{texto}</button>)}</div>
     <form className="ia-question-form" onSubmit={perguntar} aria-busy={ocupado}>
       {selecionaDatas ? <div className="ia-period-fields"><label className="field"><span>De</span><input type="date" aria-label="Início da análise da IA" value={datas.inicio} required onChange={e => { setDatas({ ...datas, inicio: e.target.value }); setConsentimento(false); }} /></label><label className="field"><span>Até</span><input type="date" aria-label="Fim da análise da IA" value={datas.fim} required onChange={e => { setDatas({ ...datas, fim: e.target.value }); setConsentimento(false); }} /></label></div> : null}
-      <label className="field"><span>Sua pergunta</span><textarea ref={campo} aria-label="Sua pergunta" rows={compacto ? 3 : 4} maxLength={3000} required value={pergunta} onChange={e => setPergunta(e.target.value)} placeholder="Pergunte sobre seus números…" disabled={ocupado} /></label>
+      <label className="field"><span>Sua pergunta</span><textarea ref={campo} aria-label="Sua pergunta" rows={compacto ? 3 : 4} maxLength={3000} required value={pergunta} onChange={e => { const texto = e.target.value; setPergunta(texto); const novoAssunto = assuntoDaPergunta(texto, assunto); if (novoAssunto !== assunto) { setAssunto(novoAssunto); setConsentimento(false); } }} placeholder="Pergunte sobre seus números…" disabled={ocupado} /></label>
       {assunto !== "documentos" ? <label className="checkout-consent"><input type="checkbox" checked={consentimento} disabled={ocupado || carregandoContexto} onChange={e => setConsentimento(e.target.checked)} />Autorizar dados deste contexto e período para análise pelo Gemini, sem dados de clientes.</label> : <p className="permission-note">Selecione um arquivo na área de Documentos para autorizar sua análise. Esta conversa não envia documentos.</p>}
       <p className="ia-data-note">{consentimento ? "Serão enviados somente agregados relevantes; nas metas, até oito títulos e seus progressos." : "Sem autorização, somente a pergunta e o contexto da tela serão enviados."}</p>
       {carregandoContexto ? <p role="status">Aguarde a atualização do período antes de analisar.</p> : null}

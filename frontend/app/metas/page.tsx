@@ -16,6 +16,7 @@ import {
 } from "../../lib/metas";
 import { planoPermite } from "../../lib/planos";
 import { usePreferencias } from "../../components/PreferenciasProvider";
+import { EdicaoProtegida } from "../../components/EdicaoProtegida";
 
 function formatarValorMeta(meta: Meta, numero: number) {
   return meta.unidade === "moeda"
@@ -23,7 +24,7 @@ function formatarValorMeta(meta: Meta, numero: number) {
     : `${numero.toLocaleString("pt-BR")}${meta.unidade === "percentual" ? "%" : ""}`;
 }
 export default function MetasPage() {
-  const { ocultarValores } = usePreferencias();
+  const { ocultarValores, alterar } = usePreferencias();
   const valor = (meta: Meta, numero: number) => ocultarValores ? "••••••" : formatarValorMeta(meta, numero);
   const { config, usuario } = useWorkspace();
   const liberado = config && planoPermite(config.plano, "pro");
@@ -133,7 +134,7 @@ export default function MetasPage() {
                   >
                     <span style={{ width: `${progresso}%` }} />
                   </div>
-                  {gestao ? (
+                  {gestao && ocultarValores ? <p className="permission-note">O valor de edição está protegido. <button type="button" className="text-button" onClick={() => alterar({ ocultarValores: false })}>Revelar valores para atualizar progresso</button></p> : gestao ? (
                     <form
                       className="pro-goal-actions"
                       onSubmit={(e) => {
@@ -260,7 +261,7 @@ export default function MetasPage() {
           </section>
           <p className="goal-summary-hint">Metas não arquivadas</p>
           {formulario && gestao ? (
-            <section className="product-form-panel">
+            <EdicaoProtegida><section className="product-form-panel">
               <h2>Defina um objetivo</h2>
               <form onSubmit={criar}>
                 <div className="form-grid">
@@ -331,7 +332,7 @@ export default function MetasPage() {
                   </button>
                 </div>
               </form>
-            </section>
+            </section></EdicaoProtegida>
           ) : null}
           {!gestao ? (
             <p className="permission-note">

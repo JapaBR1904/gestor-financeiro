@@ -5,6 +5,7 @@ import Link from "next/link";
 import { FormEvent, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "../../../components/Sidebar";
+import { EdicaoProtegida } from "../../../components/EdicaoProtegida";
 import { calcularCustoIngrediente, calcularCustoProduto, IngredienteProduto, salvarProduto, Unidade } from "../../../lib/produtos";
 
 type FormErrors = {
@@ -168,7 +169,7 @@ export default function NovoProdutoPage() {
           </Link>
         </header>
 
-        <form className="product-form-stack" onSubmit={handleSubmit} noValidate>
+        <EdicaoProtegida><form className="product-form-stack" onSubmit={handleSubmit} noValidate>
           <section className="panel product-form">
             <div className="form-grid">
               <label className="field field-wide">
@@ -349,7 +350,7 @@ export default function NovoProdutoPage() {
               {salvando ? "Salvando..." : "Salvar produto"}
             </button>
           </div>
-        </form>
+        </form></EdicaoProtegida>
       </section>
     </main>
   );

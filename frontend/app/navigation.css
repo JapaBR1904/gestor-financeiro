@@ -311,8 +311,10 @@
   align-items: center;
   gap: 9px;
   min-width: 0;
+  flex: 1;
 }
 .workspace-context > span {
+  min-width: 0;
   white-space: normal;
   overflow-wrap: anywhere;
 }
@@ -320,6 +322,7 @@
   display: flex;
   align-items: center;
   gap: 14px;
+  flex-shrink: 0;
 }
 .plan-pill[data-plan="business"] {
   background: var(--gradient-premium);

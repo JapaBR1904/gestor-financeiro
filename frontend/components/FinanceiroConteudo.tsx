@@ -18,6 +18,7 @@ import {
 } from "../lib/financeiro";
 import { useMoeda, usePreferencias } from "./PreferenciasProvider";
 import { ConfirmarExclusao } from "./ConfirmarExclusao";
+import { EdicaoProtegida } from "./EdicaoProtegida";
 import { usePublicarPeriodo } from "../lib/contexto-copiloto";
 import { planoPermite } from "../lib/planos";
 
@@ -297,7 +298,7 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
         ))}
       </section>
       {formulario ? (
-        <section className="product-form-panel">
+        <EdicaoProtegida><section className="product-form-panel">
           <h2>{editar ? "Editar lançamento" : "Novo lançamento"}</h2>
           <form onSubmit={salvar}>
             <div className="form-grid">
@@ -414,7 +415,7 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
               </button>
             </div>
           </form>
-        </section>
+        </section></EdicaoProtegida>
       ) : null}
       {!pessoal && perfil !== "pessoal" && completo && dados ? <p className="permission-note">Vendas registradas no período: <strong>{formatarMoeda(dados.movimentacoes.filter(item => item.origem === "venda").reduce((total, item) => total + item.valor, 0))}</strong>. Não há controle de recebimento nesta etapa. <Link href="/relatorios">Consultar custos registrados</Link>.</p> : null}
       <div className={pessoal || !completo ? "" : "product-two-columns"}>

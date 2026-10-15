@@ -7,6 +7,7 @@ import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { logout } from "../lib/auth";
 import { useWorkspace } from "../lib/workspace";
 import { nomePlano, planoPermite } from "../lib/planos";
+import { BotaoCopiloto } from "./BotaoCopiloto";
 
 type GrupoMenu = { nome: string; itens: { href: string; nome: string; icone: NomeIcone; plano?: "pro" | "business" }[] };
 const gruposBase: GrupoMenu[] = [
@@ -39,6 +40,7 @@ function GrupoNavegacao({ nome, recolhivel, expandido, alternar, children }: {
 }
 
 export function Sidebar(props: {
+  copilotoNoHeader?: boolean;
   ativo?:
     | "dashboard"
     | "vendas"
@@ -224,6 +226,7 @@ export function Sidebar(props: {
           })}
       </nav>
       <div className="sidebar-footer">
+      {!props.copilotoNoHeader ? <BotaoCopiloto /> : null}
       {erroSaida ? <p className="sidebar-feedback" role="alert">{erroSaida} A saída não foi confirmada. Use Sair para tentar novamente.</p> : null}
         <Link
           className="plan-card"
@@ -272,6 +275,7 @@ export function Sidebar(props: {
     <>
       <div className="mobile-nav-bar">
         {marca}
+        {!props.copilotoNoHeader ? <BotaoCopiloto /> : null}
         <button
           ref={toggle}
           className="menu-toggle"

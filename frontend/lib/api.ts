@@ -1,4 +1,7 @@
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+export class ApiError extends Error {
+  constructor(mensagem: string, public readonly status: number) { super(mensagem); }
+}
 
 export async function lerResposta<T>(response: Response): Promise<T> {
   if (response.ok) {
@@ -20,7 +23,7 @@ export async function lerResposta<T>(response: Response): Promise<T> {
     window.location.replace(login.toString());
   }
 
-  throw new Error(mensagem);
+  throw new ApiError(mensagem, response.status);
 }
 
 export async function apiFetch<T>(caminho: string, init: RequestInit = {}): Promise<T> {

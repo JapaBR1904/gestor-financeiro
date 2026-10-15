@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Sidebar } from "../../../../components/Sidebar";
+import { EdicaoProtegida } from "../../../../components/EdicaoProtegida";
 import { atualizarDespesa, carregarDespesa, FormaPagamentoDespesa } from "../../../../lib/despesas";
 
 export default function EditarDespesaPage() {
@@ -75,7 +76,7 @@ export default function EditarDespesaPage() {
         </header>
 
         {carregando ? <article className="panel"><div className="empty-state"><strong>Carregando despesa...</strong></div></article> : (
-          <form className="product-form-stack" onSubmit={handleSubmit}>
+          <EdicaoProtegida><form className="product-form-stack" onSubmit={handleSubmit}>
             <section className="panel product-form">
               <div className="form-grid">
                 <label className="field field-wide"><span>Descrição *</span><input aria-label="Descrição *" maxLength={180} value={descricao} onChange={(e) => setDescricao(e.target.value)} /></label>
@@ -88,7 +89,7 @@ export default function EditarDespesaPage() {
             </section>
             {erro ? <p className="form-error-banner" role="alert">{erro}</p> : null}
             <div className="form-actions standalone-actions"><Link className="secondary-button" href={`/despesas/${params.id}`}>Cancelar</Link><button className="primary-button" disabled={salvando} type="submit">{salvando ? "Salvando..." : "Salvar alterações"}</button></div>
-          </form>
+          </form></EdicaoProtegida>
         )}
       </section>
     </main>

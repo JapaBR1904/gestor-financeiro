@@ -4,6 +4,7 @@ import { Sidebar } from "./Sidebar";
 import { useWorkspace } from "../lib/workspace";
 import { Icone } from "./Icone";
 import { ControlesVisuais } from "./PreferenciasProvider";
+import { BotaoCopiloto } from "./BotaoCopiloto";
 export function WorkspaceShell({
   titulo,
   descricao,
@@ -18,7 +19,7 @@ export function WorkspaceShell({
   const { usuario, config, erro } = useWorkspace();
   return (
     <main className="app-shell">
-      <Sidebar />
+      <Sidebar copilotoNoHeader />
       <section className="content" id="conteudo" tabIndex={-1}>
         <div className="workspace-bar">
           <div className="workspace-context" aria-label="Organização atual">
@@ -26,6 +27,7 @@ export function WorkspaceShell({
             <span title={usuario?.organizacaoNome}>{usuario?.organizacaoNome ?? "Seu espaço"}</span>
           </div>
           <div>
+            <BotaoCopiloto />
             <Link
               href="/conta/assinatura"
               className="plan-pill"

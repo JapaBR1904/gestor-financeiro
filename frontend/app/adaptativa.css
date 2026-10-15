@@ -5,6 +5,9 @@
 .detail-switch button[aria-pressed=true] { background:var(--accent-soft); color:var(--accent-ink); font-weight:750; }
 .privacy-toggle { font-size:.8rem; min-height:40px; }
 .auth-password-requirements[hidden] { display:none; }
+.sale-more-options { margin-top:18px; }
+.sale-more-options summary { cursor:pointer; font-size:.86rem; color:var(--accent-ink); padding:10px 0; }
+.sale-more-options .form-grid { margin-top:12px; }
 .profile-guidance { display:flex; gap:20px; align-items:center; justify-content:space-between; border:1px solid var(--border); padding:20px 24px; border-radius:18px; margin-bottom:24px; background:linear-gradient(120deg,var(--surface),var(--accent-soft)); }
 .profile-guidance p { color:var(--text-secondary); font-size:.86rem; line-height:1.6; margin:6px 0 0; max-width:65ch; }
 .profile-guidance nav { display:flex; flex-wrap:wrap; gap:12px; }

@@ -13,13 +13,19 @@ export default function DespesasPage() {
   const [despesas, setDespesas] = useState<Despesa[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
+  const [revisao, setRevisao] = useState(0);
 
   useEffect(() => {
-    carregarDespesas()
-      .then(setDespesas)
-      .catch((error) => setErro(error instanceof Error ? error.message : "Não foi possível carregar as despesas."))
-      .finally(() => setCarregando(false));
-  }, []);
+    let ativo = true;
+    queueMicrotask(() => {
+      if (!ativo) return;
+      setCarregando(true); setErro("");
+      carregarDespesas().then(dados => { if (ativo) setDespesas(dados); })
+        .catch(error => { if (ativo) setErro(error instanceof Error ? error.message : "Não foi possível carregar as despesas."); })
+        .finally(() => { if (ativo) setCarregando(false); });
+    });
+    return () => { ativo = false; };
+  }, [revisao]);
 
   const total = useMemo(() => despesas.reduce((soma, despesa) => soma + despesa.valor, 0), [despesas]);
 
@@ -36,16 +42,17 @@ export default function DespesasPage() {
           <Link className="primary-button" href="/despesas/nova">+ Nova despesa</Link>
         </header>
 
-        {erro ? <p className="form-error-banner">{erro}</p> : null}
+        <p className="permission-note">Todo o histórico de despesas comerciais deste espaço.</p>
+        {erro ? <p className="form-error-banner" role="alert">{erro} <button className="text-button" onClick={() => setRevisao(r => r+1)}>Tentar novamente</button></p> : null}
 
         <section className="summary-grid">
-          <article className="summary-card"><span>Despesas registradas</span><strong>{carregando ? "—" : despesas.length}</strong><small>Total de lançamentos</small></article>
-          <article className="summary-card"><span>Total gasto</span><strong>{carregando ? "—" : formatarMoeda(total)}</strong><small>Soma das despesas registradas</small></article>
+          <article className="summary-card"><span>Despesas registradas</span><strong>{carregando || erro ? "—" : despesas.length}</strong><small>Total de lançamentos</small></article>
+          <article className="summary-card"><span>Total gasto</span><strong>{carregando || erro ? "—" : formatarMoeda(total)}</strong><small>Soma das despesas registradas</small></article>
         </section>
 
         <article className="panel">
           <div className="panel-header"><div><p className="eyebrow">Histórico</p><h2>Despesas registradas</h2><p className="subtitle">Consulte cada lançamento e abra os detalhes quando precisar.</p></div></div>
-          {carregando ? <div className="empty-state"><strong>Carregando despesas...</strong></div> : despesas.length === 0 ? (
+          {carregando ? <div className="empty-state" role="status"><strong>Carregando despesas...</strong></div> : erro ? <p className="empty-state">O histórico não pôde ser carregado. Tente novamente.</p> : despesas.length === 0 ? (
             <div className="empty-state"><span className="empty-icon"><Icone nome="despesa" /></span><strong>Nenhuma despesa registrada</strong><p>Cadastre a primeira despesa para começar a acompanhar as saídas.</p></div>
           ) : (
             <div className="sales-history-list">

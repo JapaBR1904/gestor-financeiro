@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "../../../components/Sidebar";
+import { EdicaoProtegida } from "../../../components/EdicaoProtegida";
 import { FormaPagamentoDespesa, salvarDespesa } from "../../../lib/despesas";
 
 export default function NovaDespesaPage() {
@@ -50,7 +51,7 @@ export default function NovaDespesaPage() {
           <Link className="secondary-button" href="/despesas">Voltar para despesas</Link>
         </header>
 
-        <form className="product-form-stack" onSubmit={handleSubmit}>
+        <EdicaoProtegida><form className="product-form-stack" onSubmit={handleSubmit}>
           <section className="panel product-form">
             <div className="form-grid">
               <label className="field field-wide"><span>Descrição *</span><input aria-label="Descrição *" required maxLength={180} value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Ex.: Compra de embalagens" /></label>
@@ -64,7 +65,7 @@ export default function NovaDespesaPage() {
 
           {erro ? <p className="form-error-banner" role="alert">{erro}</p> : null}
           <div className="form-actions standalone-actions"><Link className="secondary-button" href="/despesas">Cancelar</Link><button className="primary-button" disabled={salvando} type="submit">{salvando ? "Registrando..." : "Registrar despesa"}</button></div>
-        </form>
+        </form></EdicaoProtegida>
       </section>
     </main>
   );

@@ -103,13 +103,6 @@ export default function NovaVendaPage() {
           <section className="panel product-form">
             <div className="form-grid">
               <label className="field">
-                <span>Cliente</span>
-                <select aria-label="Cliente" value={clienteId} onChange={(event) => setClienteId(event.target.value)}>
-                  <option value="">Venda sem cliente identificado</option>
-                  {clientes.map((cliente) => <option key={cliente.id} value={String(cliente.id)}>{cliente.nome}</option>)}
-                </select>
-              </label>
-              <label className="field">
                 <span>Forma de pagamento *</span>
                 <select aria-label="Forma de pagamento *" value={formaPagamento} onChange={(event) => setFormaPagamento(event.target.value as FormaPagamento)}>
                   <option value="pix">Pix</option>
@@ -119,11 +112,12 @@ export default function NovaVendaPage() {
                   <option value="outro">Outro</option>
                 </select>
               </label>
-              <label className="field field-wide">
-                <span>Observação</span>
-                <textarea aria-label="Observação" rows={3} value={observacao} onChange={(event) => setObservacao(event.target.value)} placeholder="Ex.: encomenda para retirada às 18h" />
-              </label>
             </div>
+            <details className="sale-more-options"><summary>Mais opções · cliente e observação</summary><div className="form-grid">
+              <label className="field"><span>Cliente (opcional)</span><select aria-label="Cliente" value={clienteId} onChange={event => setClienteId(event.target.value)}><option value="">Venda sem cliente identificado</option>{clientes.map(cliente => <option key={cliente.id} value={String(cliente.id)}>{cliente.nome}</option>)}</select></label>
+              <label className="field"><span>Observação (opcional)</span><textarea aria-label="Observação" rows={2} value={observacao} onChange={event => setObservacao(event.target.value)} placeholder="Ex.: retirada às 18h" /></label>
+            </div></details>
+            <p className="subtitle">A venda registra a forma de pagamento. A situação de recebimento ainda não é controlada.</p>
           </section>
 
           <section className="panel ingredient-panel">
@@ -167,7 +161,7 @@ export default function NovaVendaPage() {
             )}
           </section>
 
-          <section className="panel product-totals"><div><span>Total da venda</span><strong>{formatarMoeda(totalVenda)}</strong></div></section>
+          <section className="panel product-totals"><div><span>Total da venda</span><strong>{carregando ? "—" : formatarMoeda(totalVenda)}</strong></div></section>
 
           {erro ? <p className="form-error-banner" role="alert">{erro}</p> : null}
           <div className="form-actions standalone-actions">

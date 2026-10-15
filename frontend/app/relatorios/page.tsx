@@ -60,7 +60,7 @@ export default function RelatoriosPage() {
     <WorkspaceShell titulo="Relatórios comerciais" descricao="Histórico completo da operação comercial: vendas, custos dos produtos, despesas e clientes." acoes={<Link className="secondary-button" href="/fluxo-caixa">Análise por período</Link>}>
         <NavegacaoAnalises />
         <p className="permission-note"><strong>Todo o histórico comercial.</strong> Vendas e despesas comerciais, sem lançamentos manuais. Para incluir movimentos manuais e escolher datas, abra <Link href="/pessoal">Lançamentos</Link>.</p>
-        <details className="calculation-details"><summary>Como é calculado</summary><p>Faturamento soma as vendas. Lucro bruto desconta o custo registrado nos itens da venda; resultado comercial desconta despesas comerciais. Produtos usam ID e nome na venda; clientes usam ID e nome atual. Pessoas e produtos homônimos permanecem separados.</p></details>
+        <details className="calculation-details"><summary>Como é calculado</summary><p>Faturamento soma as vendas. Lucro bruto desconta o custo registrado nos itens da venda; resultado antes dos custos desconta despesas comerciais e ainda não desconta o custo dos produtos. Produtos usam ID e nome na venda; clientes usam ID e nome atual. Pessoas e produtos homônimos permanecem separados.</p></details>
 
         {erro ? <p className="form-error-banner" role="alert">{erro} <button className="text-button" disabled={carregando} onClick={() => { setErro(""); setCarregando(true); setRevisao(r => r + 1); }}>Tentar novamente</button></p> : null}
 
@@ -73,7 +73,7 @@ export default function RelatoriosPage() {
             <section className="summary-grid report-summary-grid">
               <article className="summary-card"><span>Faturamento</span><strong>{formatarMoeda(relatorio.faturamento)}</strong><small>{relatorio.quantidadeVendas} venda(s) registrada(s)</small></article>
               <article className="summary-card"><span>Despesas registradas</span><strong>{formatarMoeda(relatorio.totalDespesas)}</strong><small>{relatorio.quantidadeDespesas} lançamento(s)</small></article>
-              <article className="summary-card"><span>Resultado comercial</span><strong>{formatarMoeda(relatorio.saldoFinanceiro)}</strong><small>Faturamento menos despesas</small></article>
+              <article className="summary-card"><span>Resultado antes dos custos</span><strong>{formatarMoeda(relatorio.saldoFinanceiro)}</strong><small>Faturamento menos despesas</small></article>
               <article className="summary-card"><span>Lucro bruto</span><strong>{formatarMoeda(relatorio.lucroBruto)}</strong><small>Faturamento menos custo dos produtos</small></article>
             </section>
 
@@ -96,7 +96,7 @@ export default function RelatoriosPage() {
               </article>
 
               <article className="panel report-card">
-                <div className="report-card-header"><div><p className="eyebrow">Recebimentos</p><h2>Formas de pagamento</h2></div><span className="report-card-icon"><Icone nome="venda" /></span></div>
+                <div className="report-card-header"><div><p className="eyebrow">Pagamentos informados</p><h2>Formas de pagamento</h2></div><span className="report-card-icon"><Icone nome="venda" /></span></div>
                 {relatorio.formasPagamento.length === 0 ? <div className="empty-state compact-empty-state"><strong>Nenhuma venda registrada.</strong></div> : (
                   <div className="report-list">
                     {itensVisiveis(relatorio.formasPagamento, "recebimentos").map((item) => (
