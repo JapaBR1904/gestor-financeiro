@@ -41,6 +41,7 @@ class ProdutoIntegrationTest {
     @Autowired OrganizacaoService organizacoes;
     @Autowired AssinaturaService assinatura;
     @Autowired FinanceiroService financeiro;
+    @Autowired br.com.nexo.ia.ContextoIaService contextos;
     @Autowired EquipeService equipe;
     @Autowired DocumentoService documentos;
     @Autowired MembroRepository membros;
@@ -54,6 +55,18 @@ class ProdutoIntegrationTest {
     private void plano(BancoAssinaturaTeste.Conta c,String plano){var checkout=assinatura.criar(c.usuario(),plano,UUID.randomUUID(),false); assinatura.confirmar(c.usuario(),checkout.id(),ProvedorPagamento.Metodo.pix,ProvedorPagamento.Cenario.aprovado);}
     private FinanceiroService.Lancamento lancamento(String tipo,String descricao,String valor,LocalDate data){return new FinanceiroService.Lancamento(tipo,descricao,new BigDecimal(valor),data,"Serviços","Principal");}
     private String token(EquipeService.ConviteCriado convite){return URI.create(convite.linkAceite()).getFragment();}
+    @Test void contextoIaMantemIsolamentoRealECompartilhaSomenteAgregados() {
+        var a=conta();var b=conta();var dia=financeiro.periodo(null,null).fim();
+        plano(a,"pro");plano(b,"pro");
+        financeiro.salvar(a.usuario().organizacaoId(),null,lancamento("receita","Descrição privada A","12.34",dia));
+        financeiro.salvar(b.usuario().organizacaoId(),null,lancamento("receita","Descrição privada B","987654.32",dia));
+        var entrada=new br.com.nexo.ia.ContextoIaService.Entrada("/dashboard","resumo",dia,dia);
+        var contexto=contextos.montar(a.usuario().organizacaoId(),entrada,true);
+        assertTrue(contexto.texto().contains("12.34"));assertFalse(contexto.texto().contains("987654.32"));
+        assertFalse(contexto.texto().contains("Descrição privada"));assertFalse(contexto.texto().contains(a.email()));
+        var semDados=contextos.montar(a.usuario().organizacaoId(),entrada,false);
+        assertFalse(semDados.texto().contains("12.34"));
+    }
     private BancoAssinaturaTeste.Conta participar(BancoAssinaturaTeste.Conta dono,BancoAssinaturaTeste.Conta convidado,String papel){
         var convite=equipe.convidar(dono.usuario(),convidado.email(),papel);
         equipe.aceitar(convidado.usuario(),token(convite));
@@ -77,14 +90,14 @@ class ProdutoIntegrationTest {
         assertEquals(new BigDecimal("170.20"),financeiro.resumo(org,dia,dia).receitas());
     }
     @Test void criacaoIdempotenteRejeitaMudancaDePayloadEPermiteMesmaChaveEmOutraOrganizacao() throws Exception {
-        var c=conta();var outra=conta();var dados=lancamento("receita","Único","25.10",LocalDate.now());var chave=UUID.randomUUID();
+        var c=conta();var outra=conta();var dados=lancamento("receita","Único","25.10",financeiro.periodo(null,null).fim());var chave=UUID.randomUUID();
         try(var executor=java.util.concurrent.Executors.newFixedThreadPool(2)){
             var a=executor.submit(()->financeiro.salvar(c.usuario().organizacaoId(),null,dados,chave));
             var b=executor.submit(()->financeiro.salvar(c.usuario().organizacaoId(),null,dados,chave));
             assertEquals(a.get(10,java.util.concurrent.TimeUnit.SECONDS).id(),b.get(10,java.util.concurrent.TimeUnit.SECONDS).id());
         }
         assertEquals(1,jdbc.queryForObject("SELECT count(*) FROM movimentacoes WHERE organizacao_id=?",Integer.class,c.usuario().organizacaoId()));
-        assertThrows(IllegalArgumentException.class,()->financeiro.salvar(c.usuario().organizacaoId(),null,lancamento("receita","Outro","1",LocalDate.now()),chave));
+        assertThrows(IllegalArgumentException.class,()->financeiro.salvar(c.usuario().organizacaoId(),null,lancamento("receita","Outro","1",financeiro.periodo(null,null).fim()),chave));
         assertNotNull(financeiro.salvar(outra.usuario().organizacaoId(),null,dados,chave));
     }
     @Test void periodoValoresEComparativoUsamIntervalosReais(){
@@ -111,7 +124,7 @@ class ProdutoIntegrationTest {
     }
     @Test void conviteSoPodeSerAceitoUmaVezPeloEmailVerificadoSemMoverDados(){
         var dono=conta();var convidado=conta();var outro=conta();plano(dono,"business");
-        var original=convidado.usuario().organizacaoId();var registro=financeiro.salvar(original,null,lancamento("receita","Pessoal","15",LocalDate.now()));
+        var original=convidado.usuario().organizacaoId();var registro=financeiro.salvar(original,null,lancamento("receita","Pessoal","15",financeiro.periodo(null,null).fim()));
         var convite=equipe.convidar(dono.usuario(),convidado.email(),"membro");var segredo=token(convite);
         assertFalse(jdbc.queryForObject("SELECT token_hash FROM convites_organizacao WHERE id=?",String.class,convite.id()).contains(segredo));
         verify(emails).enviarConvite(eq(convidado.email()),eq(dono.usuario().organizacaoNome()),eq(convite.linkAceite()));
@@ -180,7 +193,7 @@ class ProdutoIntegrationTest {
         var dono=conta();var convidado=conta();plano(dono,"business");var membro=participar(dono,convidado,"membro");var org=dono.usuario().organizacaoId();
         var doc=documentos.salvar(dono.usuario(),"saldo.txt","Resumo", "Receitas 10".getBytes(StandardCharsets.UTF_8));
         var meta=metas.criar(org,"Objetivo atingido","moeda",BigDecimal.TEN,BigDecimal.TEN,null);assertEquals("concluida",meta.status());
-        financeiro.salvar(org,null,lancamento("receita","Preservado","10",LocalDate.now()));plano(dono,"free");
+        financeiro.salvar(org,null,lancamento("receita","Preservado","10",financeiro.periodo(null,null).fim()));plano(dono,"free");
         assertEquals(403,requisicao("GET","/api/financeiro/resumo",null,membro.token()).statusCode());
         assertThrows(AcessoNegadoException.class,()->documentos.arquivo(org,doc.id()));assertEquals(1,financeiro.resumo(org,null,null).movimentacoes().size());
         assertNotNull(membros.vinculo(convidado.usuario().id(),org));assertEquals(1,jdbc.queryForObject("SELECT count(*) FROM documentos_organizacao WHERE id=?",Integer.class,doc.id()));
@@ -214,7 +227,7 @@ class ProdutoIntegrationTest {
         var legado=new br.com.nexo.auth.Usuario(organizacoes.buscarPorId(org),"Pessoa legada",UUID.randomUUID()+"@example.com",new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder(4).encode(BancoAssinaturaTeste.SENHA));
         legado.verificarEmail();usuarios.save(legado);jdbc.update("UPDATE usuarios SET papel='membro' WHERE id=?",legado.getId());
         var login=auth.login(legado.getEmail(),BancoAssinaturaTeste.SENHA);assertEquals("membro",login.usuario().papel());
-        var registro=financeiro.salvar(org,null,lancamento("receita","Pertence à empresa","10",LocalDate.now()));
+        var registro=financeiro.salvar(org,null,lancamento("receita","Pertence à empresa","10",financeiro.periodo(null,null).fim()));
         equipe.alterarMembro(dono.usuario(),legado.getId(),null,true);
         var pessoal=auth.login(legado.getEmail(),BancoAssinaturaTeste.SENHA).usuario();assertNotEquals(org,pessoal.organizacaoId());assertEquals("proprietario",pessoal.papel());
         assertTrue(financeiro.resumo(pessoal.organizacaoId(),null,null).movimentacoes().isEmpty());assertEquals(registro.id(),financeiro.resumo(org,null,null).movimentacoes().getFirst().id());

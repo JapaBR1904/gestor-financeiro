@@ -3,7 +3,6 @@ package br.com.nexo.produto;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.time.LocalDate;
 import java.util.List;
 
 import br.com.nexo.despesa.DespesaService;
@@ -124,7 +123,7 @@ public class ProdutoService {
                     "Compra de " + item.nome().trim(),
                     item.precoCompra(),
                     "Ingredientes",
-                    LocalDate.now(),
+                    null,
                     "outro",
                     "Quantidade comprada: " + quantidade + " " + unidade
             ));

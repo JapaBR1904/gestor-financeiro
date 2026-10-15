@@ -15,10 +15,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class DespesaService {
     private final OrganizacaoService organizacaoService;
     private final DespesaRepository despesaRepository;
+    private final br.com.nexo.financeiro.CalendarioFinanceiro calendario;
 
-    public DespesaService(OrganizacaoService organizacaoService, DespesaRepository despesaRepository) {
+    public DespesaService(OrganizacaoService organizacaoService, DespesaRepository despesaRepository, br.com.nexo.financeiro.CalendarioFinanceiro calendario) {
         this.organizacaoService = organizacaoService;
         this.despesaRepository = despesaRepository;
+        this.calendario = calendario;
     }
 
     @Transactional
@@ -91,7 +93,7 @@ public class DespesaService {
         String descricao = textoObrigatorio(dados.descricao(), "A descrição é obrigatória.", 180);
         String categoria = textoObrigatorio(dados.categoria(), "A categoria é obrigatória.", 80);
         BigDecimal valor = validarValor(dados.valor());
-        LocalDate dataDespesa = dados.dataDespesa() == null ? LocalDate.now() : dados.dataDespesa();
+        LocalDate dataDespesa = dados.dataDespesa() == null ? calendario.hoje() : dados.dataDespesa();
         String formaPagamento = normalizarFormaPagamento(dados.formaPagamento());
         String observacao = normalizarTexto(dados.observacao(), 2000);
         return new DadosValidados(descricao, valor, categoria, dataDespesa, formaPagamento, observacao);

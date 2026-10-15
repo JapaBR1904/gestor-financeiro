@@ -51,7 +51,7 @@ public class ContextoIaService {
             if (assunto.equals("metas")) {
                 // Metas representam o progresso atual, não um saldo histórico reconstruído.
                 var lista = metas.listar(org);
-                var hoje = LocalDate.now(java.time.ZoneId.of("America/Sao_Paulo"));
+                var hoje = LocalDate.now(br.com.nexo.financeiro.CalendarioFinanceiro.ZONA);
                 dados.put("dataObservacao", hoje);
                 dados.put("metasAtuais", lista.stream()
                     .sorted(Comparator.comparing((MetaService.MetaResumo meta) -> !meta.status().equals("ativa"))
@@ -73,6 +73,8 @@ public class ContextoIaService {
                 var analise = financeiro.analise(org, contexto.inicio(), contexto.fim());
                 dados.put("atual", totais(analise.atual()));
                 dados.put("anteriorMesmaDuracao", totais(analise.anterior()));
+                dados.put("categoriasAtuais", maioresCategorias(analise.atual()));
+                dados.put("categoriasAnteriores", maioresCategorias(analise.anterior()));
                 analise.evolucao().stream().min(Comparator.comparing(FinanceiroService.Evolucao::saldo))
                     .ifPresent(dia -> dados.put("menorResultadoAcumulado", Map.of("data", dia.data(), "resultado", dia.saldo())));
                 periodo = intervalo(analise.atual());
@@ -80,12 +82,7 @@ public class ContextoIaService {
                 var resumo = financeiro.resumo(org, contexto.inicio(), contexto.fim());
                 dados.put("resumo", totais(resumo));
                 if (assunto.equals("despesas")) {
-                    var categorias = new java.util.HashMap<String,BigDecimal>();
-                    resumo.movimentacoes().stream().filter(item -> item.tipo().equals("despesa"))
-                        .forEach(item -> categorias.merge(item.categoria(), item.valor(), BigDecimal::add));
-                    dados.put("maioresCategorias", categorias.entrySet().stream()
-                        .sorted(Map.Entry.<String,BigDecimal>comparingByValue().reversed()).limit(5)
-                        .map(item -> Map.of("categoria", item.getKey(), "total", item.getValue())).toList());
+                    dados.put("maioresCategorias", maioresCategorias(resumo));
                 }
                 periodo = intervalo(resumo);
             }
@@ -98,7 +95,15 @@ public class ContextoIaService {
 
     private Map<String,Object> totais(FinanceiroService.Resumo resumo) {
         return Map.of("inicio", resumo.inicio(), "fim", resumo.fim(), "entradasRegistradas", resumo.receitas(),
-            "saidasRegistradas", resumo.despesas(), "resultadoPeriodo", resumo.saldo(), "quantidadeMovimentacoes", resumo.movimentacoes().size());
+            "saidasRegistradas", resumo.despesas(), "resultadoPeriodo", resumo.saldo(), "quantidadeMovimentacoes", resumo.movimentacoes().size(),
+            "vendasRegistradas", resumo.movimentacoes().stream().filter(item -> item.origem().equals("venda")).map(FinanceiroService.Movimentacao::valor).reduce(BigDecimal.ZERO, BigDecimal::add));
+    }
+    private List<Map<String,Object>> maioresCategorias(FinanceiroService.Resumo resumo) {
+        var categorias = new java.util.HashMap<String,BigDecimal>();
+        resumo.movimentacoes().stream().filter(item -> item.tipo().equals("despesa"))
+            .forEach(item -> categorias.merge(item.categoria(), item.valor(), BigDecimal::add));
+        return categorias.entrySet().stream().sorted(Map.Entry.<String,BigDecimal>comparingByValue().reversed()).limit(5)
+            .map(item -> Map.<String,Object>of("categoria", item.getKey(), "total", item.getValue())).toList();
     }
     private String intervalo(FinanceiroService.Resumo resumo) { return resumo.inicio()+" a "+resumo.fim(); }
     public record Entrada(String pagina, String assunto, LocalDate inicio, LocalDate fim) {}

@@ -70,9 +70,8 @@ export async function exportarFinanceiro(inicio: string, fim: string) {
   URL.revokeObjectURL(url);
 }
 export function datasDoMes() {
-  const hoje = new Date();
-  const fim = new Date(hoje.getTime() - hoje.getTimezoneOffset() * 60000)
-    .toISOString()
-    .slice(0, 10);
+  const partes = new Intl.DateTimeFormat("en", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
+  const parte = (tipo: string) => partes.find(item => item.type === tipo)!.value;
+  const fim = `${parte("year")}-${parte("month")}-${parte("day")}`;
   return { inicio: `${fim.slice(0, 7)}-01`, fim };
 }

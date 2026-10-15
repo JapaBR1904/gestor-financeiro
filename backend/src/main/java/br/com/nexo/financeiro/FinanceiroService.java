@@ -15,11 +15,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class FinanceiroService {
     private final JdbcTemplate jdbc;
     private final AcessoPlanoService acesso;
-    public FinanceiroService(JdbcTemplate jdbc, AcessoPlanoService acesso) { this.jdbc = jdbc; this.acesso = acesso; }
+    private final CalendarioFinanceiro calendario;
+    public FinanceiroService(JdbcTemplate jdbc, AcessoPlanoService acesso, CalendarioFinanceiro calendario) { this.jdbc = jdbc; this.acesso = acesso; this.calendario = calendario; }
 
     public Periodo periodo(LocalDate inicio, LocalDate fim) {
-        LocalDate primeiro = inicio == null ? LocalDate.now(java.time.ZoneId.of("America/Sao_Paulo")).withDayOfMonth(1) : inicio;
-        LocalDate ultimo = fim == null ? LocalDate.now(java.time.ZoneId.of("America/Sao_Paulo")) : fim;
+        LocalDate hoje = calendario.hoje();
+        LocalDate primeiro = inicio == null ? hoje.withDayOfMonth(1) : inicio;
+        LocalDate ultimo = fim == null ? hoje : fim;
         if (ultimo.isBefore(primeiro) || ChronoUnit.DAYS.between(primeiro, ultimo) > 366)
             throw new IllegalArgumentException("Escolha um período de até 12 meses, com início anterior ao fim.");
         return new Periodo(primeiro, ultimo);
