@@ -1,0 +1,64 @@
+{
+  "verificacaoEmail": true,
+  "aprovados": 8,
+  "ignorados": 0,
+  "observacao": "Reexecução dos seis casos de marca, entrada pública e qualidade após o ajuste de contraste do ícone do header mobile.",
+  "observacoes": [
+    {
+      "cenario": "entrada-entrada-pública-se-3293d-mento-reduzido-e-sem-reload",
+      "resultado": "aprovado",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    },
+    {
+      "cenario": "marca-marca-clique-usa-int-bfdd1-intro-e-ícones-são-servidos",
+      "resultado": "aprovado",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    },
+    {
+      "cenario": "marca-marca-gesto-de-teclado-dispensa-sem-capturar-foco",
+      "resultado": "aprovado",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    },
+    {
+      "cenario": "marca-marca-landing-refina-3165b-s-públicas-em-sete-larguras",
+      "resultado": "aprovado",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    },
+    {
+      "cenario": "marca-marca-reduced-motion-e59ae-nível-mantêm-entrada-direta",
+      "resultado": "aprovado",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    },
+    {
+      "cenario": "marca-marca-reveal-curto-u-c9ac7-sessão-e-interação-imediata",
+      "resultado": "aprovado",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    },
+    {
+      "cenario": "marca-marca-sidebar-grupos-72896-dos-ativos-em-sete-larguras",
+      "resultado": "aprovado",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    },
+    {
+      "cenario": "qualidade-qualidade-nomes--706b7-ste-e-zoom-equivalente-200-",
+      "resultado": "aprovado",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    }
+  ]
+}

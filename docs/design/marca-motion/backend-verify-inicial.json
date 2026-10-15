@@ -1,0 +1,197 @@
+{
+  "comando": "NEXO_E2E_VERIFICATION=true /workspace/nexo-tools/ux-e2e.sh verify",
+  "fusoJVM": "UTC",
+  "totais": {
+    "tests": 243,
+    "failures": 1,
+    "errors": 2,
+    "skipped": 0
+  },
+  "observacao": "Três testes existentes usam LocalDate.now() da JVM e comparam com período padrão America/Sao_Paulo; execução entre 00h e 03h UTC. Reexecução com fuso alinhado registrada separadamente.",
+  "suites": [
+    {
+      "name": "br.com.nexo.auth.AuthHttpIntegrationTest",
+      "tests": "4",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "11.7"
+    },
+    {
+      "name": "br.com.nexo.auth.AuthIntegrationTest",
+      "tests": "18",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "40.375"
+    },
+    {
+      "name": "br.com.nexo.auth.AuthRateLimitFilterTest",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.002"
+    },
+    {
+      "name": "br.com.nexo.auth.CadastroDiretoIntegrationTest",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "1.587"
+    },
+    {
+      "name": "br.com.nexo.auth.ConfiguracaoCadastroTest",
+      "tests": "5",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.024"
+    },
+    {
+      "name": "br.com.nexo.auth.ConfiguracaoEmailTest",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.276"
+    },
+    {
+      "name": "br.com.nexo.auth.DiagnosticoSmtpProcessoTest",
+      "tests": "3",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "7.471"
+    },
+    {
+      "name": "br.com.nexo.auth.DiagnosticoSmtpTest",
+      "tests": "21",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "1.239"
+    },
+    {
+      "name": "br.com.nexo.auth.EmailCodigoServiceTest",
+      "tests": "11",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.224"
+    },
+    {
+      "name": "br.com.nexo.auth.PoliticaSenhaTest",
+      "tests": "13",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.026"
+    },
+    {
+      "name": "br.com.nexo.auth.RecuperacaoEnvioIntegrationTest",
+      "tests": "9",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "6.165"
+    },
+    {
+      "name": "br.com.nexo.auth.RecuperacaoResendIntegrationTest",
+      "tests": "12",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "11.517"
+    },
+    {
+      "name": "br.com.nexo.email.ConfiguracaoResendTest",
+      "tests": "30",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.131"
+    },
+    {
+      "name": "br.com.nexo.email.DiagnosticoResendProcessoTest",
+      "tests": "4",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "8.4"
+    },
+    {
+      "name": "br.com.nexo.email.DiagnosticoResendTest",
+      "tests": "13",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.045"
+    },
+    {
+      "name": "br.com.nexo.email.ResendEmailProviderTest",
+      "tests": "17",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.639"
+    },
+    {
+      "name": "br.com.nexo.ia.IaServiceTest",
+      "tests": "10",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.814"
+    },
+    {
+      "name": "br.com.nexo.relatorio.RelatorioIntegrationTest",
+      "tests": "3",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.622"
+    },
+    {
+      "name": "br.com.nexo.saas.AssinaturaBrowserTest",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "282.845"
+    },
+    {
+      "name": "br.com.nexo.saas.AssinaturaIntegrationTest",
+      "tests": "22",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "1.182"
+    },
+    {
+      "name": "br.com.nexo.saas.IsolamentoSimuladorTest",
+      "tests": "22",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.232"
+    },
+    {
+      "name": "br.com.nexo.saas.LogNavegadorTest",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.014"
+    },
+    {
+      "name": "br.com.nexo.saas.ProdutoIntegrationTest",
+      "tests": "18",
+      "failures": "1",
+      "errors": "2",
+      "skipped": "0",
+      "time": "1.312"
+    }
+  ]
+}

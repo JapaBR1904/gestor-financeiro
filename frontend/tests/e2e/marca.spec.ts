@@ -133,7 +133,12 @@ test("marca: sidebar, grupos acessíveis e estados ativos em sete larguras", asy
       await expect(
         page.getByRole("button", { name: "Abrir menu", exact: true }),
       ).toBeFocused();
-      if (width === 390) await page.screenshot({ path: info.outputPath("dashboard-390.png"), fullPage: true, animations: "disabled" });
+      if (width === 390)
+        await page.screenshot({
+          path: info.outputPath("dashboard-390.png"),
+          fullPage: true,
+          animations: "disabled",
+        });
     }
   }
   await page.emulateMedia({ reducedMotion: "reduce" });
@@ -166,6 +171,21 @@ test("marca: landing refinada, header ao rolar e telas públicas em sete largura
     await expect(page.locator(".landing-header")).toHaveClass(/is-scrolled/);
     expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
     if (width < 801) {
+      // O ícone também precisa trocar de contraste junto com o fundo, sem fade escuro.
+      const cores = await page
+        .locator(".landing-header")
+        .evaluate((header) => ({
+          icone: getComputedStyle(
+            header.querySelector(".landing-mobile-menu > summary svg")!,
+          ).color,
+          texto: getComputedStyle(header).color,
+        }));
+      expect(cores.icone).toBe(cores.texto);
+      if (width === 390)
+        await page.screenshot({
+          path: info.outputPath("header-mobile-390.png"),
+          animations: "disabled",
+        });
       await page.getByLabel("Menu de navegação", { exact: true }).click();
       expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
       await page.keyboard.press("Escape");

@@ -1,0 +1,28 @@
+{
+  "verificacaoEmail": false,
+  "aprovados": 3,
+  "ignorados": 0,
+  "observacoes": [
+    {
+      "cenario": "entrada-cadastro-direto-OF-1437b-t-público-e-login-existente",
+      "resultado": "aprovado",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    },
+    {
+      "cenario": "entrada-entrada-pública-se-3293d-mento-reduzido-e-sem-reload",
+      "resultado": "aprovado",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    },
+    {
+      "cenario": "entrada-recuperação-transp-6ec3d-lidade-sem-solicitar-código",
+      "resultado": "aprovado",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    }
+  ]
+}

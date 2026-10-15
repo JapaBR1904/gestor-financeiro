@@ -1,0 +1,28 @@
+{
+  "comando": "NEXO_E2E_VERIFICATION=false NEXO_E2E_GREP=\"cadastro direto OFF|entrada pública|recuperação: transporte\" /workspace/nexo-tools/ux-e2e.sh -Duser.timezone=America/Sao_Paulo -Dtest=ProdutoIntegrationTest,AssinaturaBrowserTest test",
+  "fusoJVM": "America/Sao_Paulo",
+  "totais": {
+    "tests": 19,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "suites": [
+    {
+      "name": "br.com.nexo.saas.ProdutoIntegrationTest",
+      "tests": "18",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "2.45"
+    },
+    {
+      "name": "br.com.nexo.saas.AssinaturaBrowserTest",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "37.356"
+    }
+  ]
+}
