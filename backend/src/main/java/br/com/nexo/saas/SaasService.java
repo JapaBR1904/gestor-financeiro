@@ -88,6 +88,12 @@ public class SaasService {
         return perfilNormalizado;
     }
 
+    @Transactional(readOnly = true)
+    public String perfilAtual(Long organizacaoId) {
+        var perfis = jdbcTemplate.queryForList("SELECT perfil_uso FROM configuracoes_saas WHERE organizacao_id = ?", String.class, organizacaoId);
+        return !perfis.isEmpty() && perfis.getFirst() != null && PERFIS.contains(perfis.getFirst()) ? perfis.getFirst() : "negocio";
+    }
+
     private String escreverObjetivos(List<String> objetivos) {
         return objetivos.stream()
                 .filter(item -> item != null && !item.isBlank())

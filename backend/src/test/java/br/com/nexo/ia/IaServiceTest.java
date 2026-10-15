@@ -25,6 +25,9 @@ class IaServiceTest {
     private final AcessoPlanoService acesso=mock(AcessoPlanoService.class);
     private final FinanceiroService financeiro=mock(FinanceiroService.class);
     private final DocumentoService documentos=mock(DocumentoService.class);
+    private final br.com.nexo.meta.MetaService metas=mock(br.com.nexo.meta.MetaService.class);
+    private final br.com.nexo.relatorio.RelatorioService relatorios=mock(br.com.nexo.relatorio.RelatorioService.class);
+    private final br.com.nexo.saas.SaasService saas=mock(br.com.nexo.saas.SaasService.class);
     private final AtomicReference<String> corpo=new AtomicReference<>();
     private final AtomicReference<String> header=new AtomicReference<>();
     private String resposta="{\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"raciocínio privado\",\"thought\":true},{\"text\":\"Organize o orçamento.\"}]}}]}";
@@ -36,7 +39,7 @@ class IaServiceTest {
             byte[] bytes=resposta.getBytes(StandardCharsets.UTF_8);exchange.sendResponseHeaders(status,bytes.length);exchange.getResponseBody().write(bytes);exchange.close();
         });servidor.start();service=criar("chave-ficticia-para-teste",Duration.ofSeconds(2));
     }
-    private IaService criar(String chave,Duration timeout){return new IaService(acesso,financeiro,documentos,chave,"gemini-flash-latest",HttpClient.newHttpClient(),URI.create("http://127.0.0.1:"+servidor.getAddress().getPort()+"/generateContent"),timeout);}
+    private IaService criar(String chave,Duration timeout){return new IaService(acesso,documentos,new ContextoIaService(financeiro,metas,relatorios,saas),chave,"gemini-flash-latest",HttpClient.newHttpClient(),URI.create("http://127.0.0.1:"+servidor.getAddress().getPort()+"/generateContent"),timeout);}
     @AfterEach void encerrar(){service.encerrar();servidor.stop(0);}
     @Test void usaContratoGenerateContentHeaderETextoPublicoSemEnviarResumoPorPadrao(){
         assertEquals("Organize o orçamento.",service.perguntar(7L,"Como planejar meu mês?").resposta());
@@ -45,7 +48,7 @@ class IaServiceTest {
     }
     @Test void resumoDependeDeConsentimentoEUsaSoAgregadosDaOrganizacao(){
         when(financeiro.resumo(7L,null,null)).thenReturn(new FinanceiroService.Resumo(LocalDate.of(2026,10,1),LocalDate.of(2026,10,12),BigDecimal.TEN,BigDecimal.ONE,new BigDecimal("9"),List.of()));
-        service.perguntar(7L,"Como planejar?",true);verify(financeiro).resumo(7L,null,null);assertTrue(corpo.get().contains("receitas 10, despesas 1, saldo 9"));
+        service.perguntar(7L,"Como planejar?",true);verify(financeiro).resumo(7L,null,null);assertTrue(corpo.get().contains("entradasRegistradas"));assertTrue(corpo.get().contains("resultadoPeriodo"));assertFalse(corpo.get().contains("movimentacoes"));
     }
     @Test void documentoExigeBusinessConsentimentoEConsultaIsolada(){
         assertThrows(IllegalArgumentException.class,()->service.documento(7L,8L,"Resuma",false));verifyNoInteractions(documentos);

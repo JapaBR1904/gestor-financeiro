@@ -26,14 +26,15 @@ public class IaController {
             @CookieValue(name = SessaoContexto.COOKIE, required = false) String token,
             @Valid @RequestBody PerguntaRequest request
     ) {
-        return iaService.perguntar(sessaoContexto.organizacaoId(token), request.pergunta(), Boolean.TRUE.equals(request.incluirResumo()));
+        return iaService.perguntar(sessaoContexto.organizacaoId(token), request.pergunta(), Boolean.TRUE.equals(request.incluirResumo()), request.contexto());
     }
 
     public record PerguntaRequest(
             @NotBlank(message = "Escreva o que você quer calcular ou entender.")
             @Size(max = 3000, message = "A solicitação está muito longa.")
             String pergunta,
-            Boolean incluirResumo
+            Boolean incluirResumo,
+            ContextoIaService.Entrada contexto
     ) {}
     @org.springframework.web.bind.annotation.GetMapping("/status")
     public IaService.StatusIa status(@CookieValue(name=SessaoContexto.COOKIE,required=false)String token){return iaService.status(sessaoContexto.organizacaoId(token));}
