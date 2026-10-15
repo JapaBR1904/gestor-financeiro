@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { Marca } from "./Marca";
 import { WorkspaceShell } from "./WorkspaceShell";
 import { Contexto, Workspace } from "../lib/workspace";
 import { usePathname } from "next/navigation";
@@ -74,7 +75,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
           id="conteudo"
           tabIndex={-1}
         >
-          <h1>Nexo</h1>
+          <div className="brand-loading"><Marca/><h1>Nexo</h1></div>
           {estado.erro ? (
             <>
               <p className="form-error-banner" role="alert">

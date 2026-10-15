@@ -7,6 +7,7 @@ import { cadastrar, login } from "../lib/auth";
 import { emailValido } from "../lib/formatacao";
 import { validarSenha } from "../lib/politica-senha";
 import AuthCard from "./AuthCard";
+import { Marca } from "./Marca";
 import PasswordFields from "./PasswordFields";
 import { destinoConvite, fragmentoConvite } from "../lib/convite";
 
@@ -81,7 +82,7 @@ export default function AuthCredentialsForm({
           : "Entre para acompanhar seu negócio com clareza."
       }
     >
-      {preparando ? <p className="auth-success-banner" role="status">Preparando seu espaço…</p> : null}
+      {preparando ? <p className="auth-success-banner brand-busy" role="status"><Marca/>Preparando seu espaço…</p> : null}
       <form
         className="auth-form"
         onSubmit={enviar}

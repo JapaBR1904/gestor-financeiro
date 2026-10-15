@@ -4,6 +4,7 @@ import { Marca } from "../components/Marca";
 import { Icone, type NomeIcone } from "../components/Icone";
 import { LandingMenu } from "../components/LandingMenu";
 import "./landing.css";
+import { BrandReveal } from "../components/BrandReveal";
 
 export const metadata: Metadata = {
   title: "Nexo — Suas finanças, finalmente claras",
@@ -172,6 +173,7 @@ function Demonstracao() {
 export default function HomePage() {
   return (
     <div className="landing">
+      <BrandReveal />
       <header className="landing-header">
         <div className="landing-container landing-header-inner">
           <Link

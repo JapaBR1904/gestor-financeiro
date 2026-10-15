@@ -1,5 +1,15 @@
 /* Nexo: tokens globais e componentes compartilhados. */
 :root {
+  --brand-navy: #071426;
+  --brand-blue: #2563eb;
+  --brand-blue-secondary: #3882f6;
+  --brand-cyan: #22d3ee;
+  --brand-halo: #2563eb38;
+  --motion-fast: 120ms;
+  --motion-normal: 260ms;
+  --motion-slow: 560ms;
+  --ease-standard: cubic-bezier(.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(.16, 1, .3, 1);
   --background: #f6f8fc;
   --surface: #ffffff;
   --surface-raised: #ffffff;

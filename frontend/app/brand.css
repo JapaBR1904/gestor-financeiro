@@ -1,0 +1,33 @@
+/* Identidade oficial; a introdução nunca captura foco, clique ou scroll. */
+.brand-reveal {
+  position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 16px; overflow: hidden;
+  background: var(--brand-navy); color: var(--on-accent); pointer-events: none;
+  animation: brand-curtain 1200ms var(--ease-emphasized) both;
+}
+.brand-reveal-halo {
+  position: absolute; width: min(650px, 130vw); aspect-ratio: 1; pointer-events: none;
+  background: radial-gradient(circle, var(--brand-halo), transparent 65%);
+  animation: brand-halo 1100ms var(--ease-standard) both;
+}
+.brand-reveal-signature { position: relative; display: flex; align-items: center; gap: 18px; }
+.brand-reveal .brand-reveal-signature > svg { width: 78px; height: 78px; }
+.brand-reveal-signature > span {
+  font-size: 60px; font-weight: 650; letter-spacing: -.055em;
+  animation: brand-wordmark 500ms 180ms var(--ease-emphasized) both;
+}
+.brand-reveal .marca-traco { stroke-dasharray: 90; animation: brand-connect 600ms var(--ease-emphasized) both; }
+.brand-reveal .marca-ponto { transform-box: fill-box; transform-origin: center; animation: brand-node 300ms 200ms var(--ease-emphasized) both; }
+.brand-reveal .marca-ponto-fim { animation-delay: 360ms; }
+.brand-reveal-caption { position: relative; font-size: 11px; letter-spacing: .13em; color: var(--nav-secondary); animation: brand-wordmark 400ms 350ms both; }
+.brand-busy { display: inline-flex; align-items: center; justify-content: center; gap: 10px; }
+.brand-busy > svg { width: 26px; height: 26px; flex-shrink: 0; }
+.brand-loading { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.brand-loading > svg { width: 42px; height: 42px; }
+@keyframes brand-curtain { 0% { opacity: 0; } 8%,65% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes brand-connect { from { stroke-dashoffset: 90; opacity: .4; } to { stroke-dashoffset: 0; opacity: 1; } }
+@keyframes brand-node { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: scale(1); } }
+@keyframes brand-wordmark { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes brand-halo { from { opacity: 0; transform: scale(.85); } to { opacity: .8; transform: scale(1); } }
+@media (max-width: 480px) { .brand-reveal-signature > span { font-size: 48px; } .brand-reveal .brand-reveal-signature > svg { width: 62px; height: 62px; } }
+@media (prefers-reduced-motion: reduce) { .brand-reveal { display: none; } }
