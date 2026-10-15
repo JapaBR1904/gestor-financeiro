@@ -9,6 +9,7 @@ import { carregarUsuarioAtual } from "../lib/auth";
 import { carregarConfiguracaoSaas } from "../lib/saas";
 import { carregarAssinatura } from "../lib/assinatura";
 import { PreferenciasProvider } from "./PreferenciasProvider";
+import { CopilotoProvider } from "./CopilotoProvider";
 
 export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const caminho = usePathname();
@@ -107,6 +108,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   return (
     <Contexto.Provider value={{ ...estado, atualizar }}>
       <PreferenciasProvider>
+      <CopilotoProvider key={estado.usuario ? `${estado.usuario.id}:${estado.usuario.organizacaoId}` : "publico"}>
       <div
         key={
           estado.usuario
@@ -135,6 +137,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
           children
         )}
       </div>
+      </CopilotoProvider>
       </PreferenciasProvider>
     </Contexto.Provider>
   );

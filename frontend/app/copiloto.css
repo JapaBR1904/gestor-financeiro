@@ -1,0 +1,55 @@
+.ia-premium-intro { padding:28px 0 30px; max-width:700px; }
+.ia-signature { display:flex; align-items:center; gap:10px; font-size:.76rem; text-transform:uppercase; letter-spacing:.12em; color:var(--accent-ink); }
+.ia-signature svg { width:28px; height:28px; }
+.ia-premium-intro h2 { margin:16px 0 10px; font-size:clamp(1.5rem,3vw,2.2rem); letter-spacing:-.04em; }
+.ia-premium-intro p { color:var(--text-secondary); line-height:1.8; }
+.nexo-conversation { display:grid; gap:22px; min-width:0; }
+.copilot-context { display:grid; gap:7px; padding:14px 16px; border:1px solid var(--border); border-radius:12px; background:var(--surface-soft); font-size:.85rem; overflow-wrap:anywhere; }
+.copilot-context small { color:var(--text-secondary); line-height:1.6; }
+.ia-action-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+.ia-action-grid button { display:flex; gap:10px; align-items:center; text-align:left; background:var(--surface); border:1px solid var(--border); border-radius:12px; color:var(--ink); padding:16px; font:inherit; font-size:.85rem; cursor:pointer; }
+.ia-action-grid button:hover { border-color:var(--accent); background:var(--accent-soft); }
+.ia-action-grid button span { color:var(--accent-ink); font-size:1.2rem; }
+.ia-welcome { padding:20px 12px; text-align:center; }
+.ia-welcome > svg { width:42px; height:42px; color:var(--accent-ink); }
+.ia-welcome h2 { font-size:1.15rem; }
+.ia-welcome p { max-width:56ch; margin:10px auto 0; font-size:.87rem; color:var(--text-secondary); line-height:1.8; }
+.ia-context-suggestions { display:flex; gap:8px; flex-wrap:wrap; }
+.ia-context-suggestions button { font-size:.76rem; padding:9px 12px; min-height:40px; text-align:left; white-space:normal; }
+.ia-period-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.nexo-conversation .ia-question-form { display:grid; gap:14px; }
+.ia-data-note { color:var(--text-secondary); font-size:.76rem; line-height:1.7; margin:0; }
+.ia-thread { display:grid; gap:22px; }
+.ia-exchange { display:grid; gap:12px; }
+.ia-message { border:1px solid var(--border); border-radius:14px; padding:18px 20px; min-width:0; overflow-wrap:anywhere; }
+.ia-message h3 { margin:0 0 8px; font-size:.78rem; color:var(--accent-ink); }
+.ia-message.question { margin-left:24px; background:var(--surface-soft); }
+.ia-message p { font-size:.88rem; line-height:1.8; margin:0; }
+.ia-message small { display:block; color:var(--text-secondary); font-size:.72rem; line-height:1.7; margin-bottom:12px; }
+.ia-response-text { white-space:pre-wrap; line-height:1.85; font-size:.9rem; }
+.ia-thinking { display:grid; gap:12px; }
+.ia-thinking > svg { width:28px; height:28px; color:var(--accent-ink); }
+.copilot-trigger { position:fixed; z-index:35; bottom:24px; right:24px; display:flex; align-items:center; gap:10px; min-height:48px; padding:12px 18px; border:1px solid #60bbdf66; border-radius:30px; background:var(--brand-navy); color:#e2f4ff; box-shadow:0 5px 24px #07142625; font:inherit; font-size:.8rem; cursor:pointer; }
+.copilot-trigger svg { width:24px; height:24px; }
+.copilot-panel,.copilot-drawer { color:var(--ink); background:var(--surface); border:1px solid var(--border); }
+.copilot-panel { position:fixed; inset:0 0 0 auto; width:360px; z-index:40; display:flex; flex-direction:column; box-shadow:-8px 0 28px #0714260d; }
+.copilot-header { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:22px 20px; border-bottom:1px solid var(--border); }
+.copilot-header > div { display:flex; align-items:center; gap:10px; }
+.copilot-header svg { width:30px; height:30px; color:var(--accent-ink); }
+.copilot-header h2 { margin:0; font-size:.95rem; }
+.copilot-header p { margin:4px 0 0; font-size:.73rem; color:var(--text-secondary); }
+.copilot-header button { font-size:1.3rem; padding:6px 12px; min-height:40px; }
+.copilot-body { overflow-y:auto; min-height:0; padding:20px; overscroll-behavior:contain; scrollbar-width:thin; }
+.compact .ia-welcome { padding:10px 0; }
+.compact .ia-welcome p { font-size:.8rem; }
+.compact .ia-message { padding:14px; }
+.compact .ia-message.question { margin-left:10px; }
+.compact .checkout-consent { font-size:.76rem; }
+.compact .primary-button { width:100%; }
+.copilot-drawer { padding:0; width:min(520px,100%); max-width:100%; max-height:94dvh; height:94dvh; margin:auto 0 0 auto; border-radius:22px 0 0 0; }
+.copilot-drawer[open] { display:flex; flex-direction:column; }
+.copilot-drawer::backdrop { background:#0714268a; }
+body:has(.copilot-drawer[open]) { overflow:hidden; }
+@media(min-width:1280px) { .copilot-open:has(.copilot-panel) .app-shell { margin-right:360px; } .copilot-open:has(.copilot-panel) .copilot-trigger { display:none; } }
+@media(max-width:767px) { .ia-action-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .ia-action-grid button { padding:12px; font-size:.77rem; } .copilot-trigger { right:14px; bottom:14px; } .copilot-body { padding:18px; } .ia-premium-intro { padding-top:8px; } }
+@media(prefers-reduced-motion:reduce) { .ia-thinking,.ia-signature,.copilot-trigger { animation:none; transition:none; } }

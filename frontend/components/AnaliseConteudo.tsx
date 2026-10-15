@@ -11,6 +11,7 @@ import {
   exportarFinanceiro,
 } from "../lib/financeiro";
 import { useMoeda } from "./PreferenciasProvider";
+import { usePublicarPeriodo } from "../lib/contexto-copiloto";
 import { GraficoSaldo } from "./GraficoSaldo";
 import { Icone } from "./Icone";
 import { planoPermite } from "../lib/planos";
@@ -28,6 +29,7 @@ export function AnaliseConteudo() {
   const [campos, setCampos] = useState({ inicio: "", fim: "" });
   const [exportando, setExportando] = useState(false);
   const pro = config && planoPermite(config.plano, "pro");
+  usePublicarPeriodo(dados?.atual ?? null, carregando || !dados);
   useEffect(() => {
     if (!pro) return;
     let ativo = true;

@@ -18,6 +18,7 @@ import {
 } from "../lib/financeiro";
 import { useMoeda, usePreferencias } from "./PreferenciasProvider";
 import { ConfirmarExclusao } from "./ConfirmarExclusao";
+import { usePublicarPeriodo } from "../lib/contexto-copiloto";
 import { planoPermite } from "../lib/planos";
 
 export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
@@ -54,6 +55,7 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
     usuario?.papel === "proprietario" || usuario?.papel === "administrador";
   const podeRegistrar = Boolean(usuario && (podeGerenciar || config?.plano === "business"));
   const pro = config && planoPermite(config.plano, "pro");
+  usePublicarPeriodo(dados, carregando || !dados);
   useEffect(() => {
     let ativo = true;
     const escolhido = periodo ?? datasDoMes();
