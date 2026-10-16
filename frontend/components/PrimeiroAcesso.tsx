@@ -94,6 +94,7 @@ export function PrimeiroAcesso() {
       <div className="first-use-options">
         {opcoes.map((opcao) => (
           <button
+            aria-label={opcao.titulo}
             className="first-use-option"
             type="button"
             key={opcao.id}
