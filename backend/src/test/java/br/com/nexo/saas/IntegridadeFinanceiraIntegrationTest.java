@@ -35,7 +35,7 @@ class IntegridadeFinanceiraIntegrationTest {
     private BancoAssinaturaTeste.Conta conta(){return BancoAssinaturaTeste.criar(organizacoes,usuarios,auth);}
     private HttpResponse<String> post(BancoAssinaturaTeste.Conta c,String rota,String body)throws Exception{
         return HttpClient.newHttpClient().send(HttpRequest.newBuilder(URI.create("http://localhost:"+porta+rota)).header("Content-Type","application/json")
-                .header("Cookie","nexo_session="+c.token()).header("X-Nexo-Organizacao",c.usuario().organizacaoId().toString())
+                .header("Idempotency-Key", UUID.randomUUID().toString()).header("Cookie","nexo_session="+c.token()).header("X-Nexo-Organizacao",c.usuario().organizacaoId().toString())
                 .POST(HttpRequest.BodyPublishers.ofString(body)).build(),HttpResponse.BodyHandlers.ofString());
     }
     @Test void ausenciaDeCustoPermaneceDesconhecidaNoProdutoVendaERelatorioSemReescreverSnapshot(){

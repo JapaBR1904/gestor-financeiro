@@ -49,6 +49,24 @@ public class Venda {
     @Column(name = "criado_em", nullable = false)
     private OffsetDateTime criadoEm;
 
+    @Column(nullable = false, length = 16)
+    private String status = "registrada";
+    @Column(name = "cancelamento_motivo", length = 500)
+    private String cancelamentoMotivo;
+    @Column(name = "cancelado_em")
+    private OffsetDateTime canceladoEm;
+    @Column(name = "cancelado_por")
+    private Long canceladoPor;
+
+    public void cancelar(Long autor, String motivo) {
+        if (status.equals("cancelada")) return;
+        status = "cancelada"; canceladoPor = autor; cancelamentoMotivo = motivo; canceladoEm = OffsetDateTime.now(java.time.ZoneOffset.UTC).truncatedTo(java.time.temporal.ChronoUnit.MICROS);
+    }
+    public String getStatus() { return status; }
+    public String getCancelamentoMotivo() { return cancelamentoMotivo; }
+    public OffsetDateTime getCanceladoEm() { return canceladoEm; }
+    public Long getCanceladoPor() { return canceladoPor; }
+
     protected Venda() {}
 
     public Venda(Organizacao organizacao, Cliente cliente, String formaPagamento, String observacao, BigDecimal totalVenda, BigDecimal custoTotal, BigDecimal lucroTotal) {

@@ -52,9 +52,34 @@ Listas de ingredientes/itens exigem elementos não nulos. A resposta 400 identif
 - Java: precisão/faixa/null e totais derivados, snapshots desconhecidos preservados, custo zero e contexto de IA incompleto. **32 aprovados** nas suítes focadas de integridade financeira, produto, relatório e contexto IA.
 - A primeira execução nova de teste Java omitia a data obrigatória da despesa; a fixture foi completada para verificar o campo monetário de fato. No E2E, o seletor de alert foi restringido para distinguir a mensagem da aplicação do anunciador de rota do Next. Nenhuma asserção de domínio foi enfraquecida.
 
+## A04 — Venda idempotente
+
+`POST /api/vendas` exige `Idempotency-Key` (UUID). A chave é escopada à organização e à operação de venda, com constraint de unicidade no banco. Um lock transacional por organização/chave serializa concorrência antes de criar qualquer venda/item. O fingerprint SHA-256 usa o payload normalizado versionado; o resultado original completo fica em JSONB junto da venda, no mesmo commit. Payload diferente com a mesma chave recebe 409 `idempotencia_conflitante`, sem disparar a troca de contexto do frontend.
+
+Retry idêntico devolve o resultado original, mesmo se o catálogo mudou depois. Uma falha de validação não reserva a chave. O formulário gera uma chave na primeira tentativa e a conserva nos retries, inclusive após resposta perdida; não troca automaticamente a chave para contornar um conflito de payload. Após conflito, é possível restaurar o payload original e recuperar o resultado. Uma nova abertura do formulário representa outra intenção e recebe outra chave. Vendas legítimas com chaves diferentes não são deduplicadas por valor/data.
+
+Se uma criação for repetida após cancelamento, o snapshot de criação continua sendo o resultado original; GET/detalhe devolve o estado atual cancelado. O retry não reativa nem duplica a venda.
+
+## A05 — Cancelamento rastreável
+
+`POST /api/vendas/{id}/cancelamento` exige motivo de 3–500 caracteres e gestão autorizada. Proprietário pode cancelar; administrador somente no contexto Business válido; membro e usuário de outro espaço são recusados pelo servidor. O serviço revalida o papel, além do interceptor.
+
+A venda original e seus itens/valores permanecem. São gravados status `cancelada`, motivo, ator e timestamp UTC com precisão de microssegundos do PostgreSQL. Um lock na venda serializa confirmações; repetir o cancelamento preserva o primeiro autor/motivo/data. Não há DELETE nem lançamento manual negativo de compensação.
+
+Vendas canceladas são excluídas do faturamento, custos/lucro agregados, itens/rankings comerciais, consultas por período e exportação financeira. Lançamentos manuais, despesas e outras vendas permanecem. A exclusão vale nas consultas de qualquer período; o registro original segue no histórico com badge e motivo. Isso corrige registros do produto; não representa devolução bancária ou cancelamento de cobrança externa.
+
+A UI oferece “Cancelar venda”, confirmação com motivo, estado ocupado, erro recuperável, Escape/foco e histórico após refresh. A migração incremental `13_vendas_idempotencia_cancelamento.sql` adiciona unicidade/snapshot e metadados de cancelamento com constraints. Foi aplicada apenas em `nexo_test`; deve ser aplicada uma vez no destino após a `12`, antes do backend atualizado.
+
+### Validação de vendas
+
+- Cinco testes Java novos: POSTs concorrentes + retry após edição de catálogo; payload diferente 409; chave independente por organização; chave obrigatória/validação; cancelamento com preservação e reflexo nas análises; permissões de proprietário/administrador/membro e isolamento. **Todos aprovados**.
+- As outras 27 regressões focadas de custo/produto/relatório passaram na primeira execução. O teste novo de timestamp revelou diferença nanosegundo/microssegundo na repetição; a gravação foi corrigida e os cinco testes foram reexecutados com sucesso, sem relaxar a comparação.
+- E2E com PostgreSQL: servidor confirma e a resposta é abortada; alteração de payload recebe conflito; restauração + clique duplo recupera a única venda com a mesma chave; confirmação de cancelamento, Escape/foco, refresh, histórico e exclusão dos totais. **Aprovado**. Erro de transporte/409 nesse caso são intencionais.
+- TypeScript/lint e build de produção usados pelo navegador aprovados. Capturas de confirmação/cancelamento mobile em `docs/design/confiabilidade/`.
+
 ## Blocos restantes
 
-A04/A05 (venda repetível/cancelável), A07 (contexto operacional) e A09 (privacidade documental) serão documentados com suas validações nos próximos checkpoints.
+A07 (contexto operacional) e A09 (privacidade documental) serão documentados com suas validações no próximo checkpoint.
 
 ## Preservação e próximas fases
 

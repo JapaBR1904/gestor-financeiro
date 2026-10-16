@@ -11,6 +11,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
+    @ExceptionHandler(ConflitoOperacaoException.class)
+    public ResponseEntity<Map<String, Object>> tratarConflito(ConflitoOperacaoException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("erro", "idempotencia_conflitante", "mensagem", e.getMessage()));
+    }
+
     @ExceptionHandler(br.com.nexo.validacao.DadosInvalidosException.class)
     public ResponseEntity<Map<String, Object>> tratarCampo(br.com.nexo.validacao.DadosInvalidosException e) {
         return ResponseEntity.badRequest().body(Map.of("erro", "validacao", "mensagem", "Confira os campos enviados.", "campos", Map.of(e.campo(), e.getMessage())));
@@ -73,7 +78,9 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler({org.springframework.http.converter.HttpMessageNotReadableException.class,
             org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class,
-            org.springframework.web.multipart.support.MissingServletRequestPartException.class})
+            org.springframework.web.multipart.support.MissingServletRequestPartException.class,
+            org.springframework.web.bind.MissingRequestHeaderException.class,
+            org.springframework.web.bind.MissingServletRequestParameterException.class})
     public ResponseEntity<Map<String, Object>> tratarFormato(Exception exception) {
         return ResponseEntity.badRequest().body(Map.of("erro", "dados_invalidos", "mensagem", "Confira os campos enviados."));
     }

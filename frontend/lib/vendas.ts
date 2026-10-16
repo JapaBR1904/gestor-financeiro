@@ -25,6 +25,10 @@ export type Venda = {
   lucroTotal: number | null;
   criadoEm: string;
   itens: VendaItem[];
+  status: "registrada" | "cancelada";
+  cancelamentoMotivo: string | null;
+  canceladoEm: string | null;
+  canceladoPor: number | null;
 };
 
 export type ResumoVendas = {
@@ -46,9 +50,10 @@ export async function carregarResumoVendas(): Promise<ResumoVendas> {
   return apiFetch<ResumoVendas>("/api/vendas/resumo");
 }
 
-export async function salvarVenda(dados: { clienteId?: number | string | null; formaPagamento: FormaPagamento; observacao?: string; itens: Array<{ produtoId: number | string; quantidade: number }> }): Promise<Venda> {
+export async function salvarVenda(dados: { clienteId?: number | string | null; formaPagamento: FormaPagamento; observacao?: string; itens: Array<{ produtoId: number | string; quantidade: number }> }, chaveIdempotencia: string): Promise<Venda> {
   return apiFetch<Venda>("/api/vendas", {
     method: "POST",
+    headers: { "Idempotency-Key": chaveIdempotencia },
     body: JSON.stringify({
       clienteId: dados.clienteId ? Number(dados.clienteId) : null,
       formaPagamento: dados.formaPagamento,
@@ -61,3 +66,5 @@ export async function salvarVenda(dados: { clienteId?: number | string | null; f
 export function nomeFormaPagamento(forma: FormaPagamento) {
   return ({ pix: "Pix", dinheiro: "Dinheiro", debito: "Cartão de débito", credito: "Cartão de crédito", outro: "Outro" } as const)[forma] ?? forma;
 }
+
+export const cancelarVenda = (id: number, motivo: string) => apiFetch<Venda>(`/api/vendas/${id}/cancelamento`, { method: "POST", body: JSON.stringify({ motivo }) });

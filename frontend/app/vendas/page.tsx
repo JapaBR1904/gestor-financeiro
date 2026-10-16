@@ -28,10 +28,11 @@ export default function VendasPage() {
   }, [revisao]);
 
   const resumo = useMemo(() => {
-    const faturamento = vendas.reduce((total, venda) => total + venda.totalVenda, 0);
-    const custo = vendas.some(venda => venda.custoTotal === null) ? null : vendas.reduce((total, venda) => total + (venda.custoTotal ?? 0), 0);
-    const itensVendidos = vendas.reduce((total, venda) => total + venda.itens.reduce((subtotal, item) => subtotal + item.quantidade, 0), 0);
-    return { faturamento, custo, itensVendidos };
+    const ativas = vendas.filter(venda => venda.status !== "cancelada");
+    const faturamento = ativas.reduce((total, venda) => total + venda.totalVenda, 0);
+    const custo = ativas.some(venda => venda.custoTotal === null) ? null : ativas.reduce((total, venda) => total + (venda.custoTotal ?? 0), 0);
+    const itensVendidos = ativas.reduce((total, venda) => total + venda.itens.reduce((subtotal, item) => subtotal + item.quantidade, 0), 0);
+    return { faturamento, custo, itensVendidos, quantidade: ativas.length };
   }, [vendas]);
 
   return (
@@ -47,8 +48,8 @@ export default function VendasPage() {
         {erro ? <p className="form-error-banner" role="alert">{erro} <button className="text-button" onClick={() => setRevisao(r => r+1)}>Tentar novamente</button></p> : null}
 
         <section className="summary-grid" aria-label="Resumo das vendas">
-          <article className="summary-card"><span>Vendas registradas</span><strong>{carregando || erro ? "—" : vendas.length}</strong><small>{carregando ? "Carregando histórico..." : erro ? "Histórico indisponível" : `${resumo.itensVendidos} item(ns) vendido(s) no total`}</small></article>
-          <article className="summary-card"><span>Faturamento</span><strong>{carregando || erro ? "—" : formatarMoeda(resumo.faturamento)}</strong><small>Valor das vendas registradas</small></article>
+          <article className="summary-card"><span>Vendas registradas</span><strong>{carregando || erro ? "—" : resumo.quantidade}</strong><small>{carregando ? "Carregando histórico..." : erro ? "Histórico indisponível" : `${resumo.itensVendidos} item(ns) vendido(s) no total`}</small></article>
+          <article className="summary-card"><span>Faturamento</span><strong>{carregando || erro ? "—" : formatarMoeda(resumo.faturamento)}</strong><small>Vendas não canceladas</small></article>
           <article className="summary-card"><span>Custo das vendas</span><strong>{carregando || erro ? "—" : formatarMoeda(resumo.custo)}</strong><small>Custo histórico dos produtos vendidos</small></article>
         </section>
 
@@ -66,7 +67,7 @@ export default function VendasPage() {
                   <article className="record-card sale-record-card" key={venda.id}>
                     <span className="record-icon record-icon-sale"><Icone nome="venda" /></span>
                     <div className="record-main">
-                      <strong>Venda #{venda.id}</strong>
+                      <strong>Venda #{venda.id}</strong>{venda.status === "cancelada" ? <span className="status-badge status-inactive">Cancelada</span> : null}
                       <span>{dataVenda.toLocaleDateString("pt-BR")} · {quantidadeItens} item{quantidadeItens === 1 ? "" : "s"}</span>
                     </div>
                     <span className="record-badge">{nomeFormaPagamento(venda.formaPagamento)}</span>

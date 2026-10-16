@@ -1,0 +1,10 @@
+{
+  "errosJavascript": [],
+  "errosConsole": 2,
+  "rede": [
+    {
+      "caminho": "/api/vendas",
+      "status": 409
+    }
+  ]
+}

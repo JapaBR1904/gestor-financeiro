@@ -14,6 +14,7 @@ public interface VendaItemRepository extends JpaRepository<VendaItem, Long> {
             from VendaItem i
             where i.organizacao.id = :organizacaoId
               and i.venda.organizacao.id = :organizacaoId
+              and i.venda.status = 'registrada'
               and i.produto.organizacao.id = :organizacaoId
             order by i.id
             """)

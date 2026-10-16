@@ -4,7 +4,7 @@ Os scripts desta pasta pertencem à aplicação Spring/Next. Eles foram preserva
 
 ## Banco novo
 
-Crie o usuário `nexo_app` com senha definida de forma segura no seu PostgreSQL. Como administrador, execute `01_criar_banco.sql` conectado ao banco `postgres`. Depois, conectado ao banco `nexo`, execute os scripts `02` a `12` em ordem, usando `psql -v ON_ERROR_STOP=1 -f caminho/do/script.sql` ou o Query Tool do pgAdmin.
+Crie o usuário `nexo_app` com senha definida de forma segura no seu PostgreSQL. Como administrador, execute `01_criar_banco.sql` conectado ao banco `postgres`. Depois, conectado ao banco `nexo`, execute os scripts `02` a `13` em ordem, usando `psql -v ON_ERROR_STOP=1 -f caminho/do/script.sql` ou o Query Tool do pgAdmin.
 
 Depois dos scripts, conceda os privilégios de desenvolvimento ao usuário da aplicação:
 
@@ -51,3 +51,7 @@ Configure `NEXO_TEST_DB_URL`, `NEXO_TEST_DB_USERNAME` e `NEXO_TEST_DB_PASSWORD` 
 ## Custo desconhecido — Fase 1 de integridade
 
 Aplique uma vez `12_custo_desconhecido.sql` depois da `11`, como proprietário das tabelas. Ela permite NULL nos snapshots de custo/lucro das vendas novas quando não há ficha de custo, com constraints de coerência. Zero explícito continua zero. Não modifica os valores das vendas históricas nem as despesas. O código atualizado deve iniciar somente após a migração. Prepare também o banco exclusivo de testes; não reaplique scripts antigos.
+
+## Vendas repetíveis e cancelamento
+
+Depois da `12`, aplique uma vez `13_vendas_idempotencia_cancelamento.sql` como proprietário das tabelas. Adiciona chave/payload/resultado original com unicidade por organização e o estado de cancelamento com autor, motivo e data. Vendas antigas ficam registradas; valores/itens históricos não são recalculados. Não reaplique as migrações anteriores. O backend atualizado exige a estrutura nova; prepare também o banco exclusivo de testes.

@@ -52,6 +52,7 @@ public class VendaController {
     @ResponseStatus(HttpStatus.CREATED)
     public VendaService.VendaDetalhe criar(
             @CookieValue(name = SessaoContexto.COOKIE, required = false) String token,
+            @org.springframework.web.bind.annotation.RequestHeader(name = "Idempotency-Key", required = false) java.util.UUID chave,
             @Valid @RequestBody CriarVendaRequest request
     ) {
         return vendaService.criar(new VendaService.NovaVenda(
@@ -60,8 +61,15 @@ public class VendaController {
                 request.formaPagamento(),
                 request.observacao(),
                 request.itens().stream().map(item -> new VendaService.NovoItem(item.produtoId(), item.quantidade())).toList()
-        ));
+        ), chave);
     }
+
+    @PostMapping("/{vendaId}/cancelamento")
+    public VendaService.VendaDetalhe cancelar(@CookieValue(name = SessaoContexto.COOKIE, required = false) String token,
+            @PathVariable Long vendaId, @Valid @RequestBody CancelamentoRequest request) {
+        return vendaService.cancelar(sessaoContexto.usuario(token), vendaId, request.motivo());
+    }
+    public record CancelamentoRequest(@NotBlank(message = "Informe o motivo do cancelamento.") @Size(min = 3, max = 500, message = "O motivo deve ter de 3 a 500 caracteres.") String motivo) {}
 
     public record CriarVendaRequest(
             Long clienteId,

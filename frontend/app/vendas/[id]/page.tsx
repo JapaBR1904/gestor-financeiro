@@ -3,13 +3,20 @@ import { useMoeda } from "../../../components/PreferenciasProvider";
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Sidebar } from "../../../components/Sidebar";
 
+import { useWorkspace } from "../../../lib/workspace";
+import { CancelarVendaDialog } from "../../../components/CancelarVendaDialog";
 import { carregarVenda, nomeFormaPagamento, Venda } from "../../../lib/vendas";
 
 export default function VendaDetalhePage() {
   const formatarMoeda = useMoeda();
+  const { usuario } = useWorkspace();
+  const gerencia = usuario?.papel === "proprietario" || usuario?.papel === "administrador";
+  const [confirmando, setConfirmando] = useState(false);
+  const botaoCancelar = useRef<HTMLButtonElement>(null);
+  const titulo = useRef<HTMLHeadingElement>(null);
   const params = useParams<{ id: string }>();
   const [venda, setVenda] = useState<Venda | null>(null);
   const [carregando, setCarregando] = useState(true);
@@ -29,7 +36,7 @@ export default function VendaDetalhePage() {
         <header className="topbar">
           <div>
             <p className="eyebrow">Histórico de vendas</p>
-            <h1>{venda ? `Venda #${venda.id}` : "Venda"}</h1>
+            <h1 ref={titulo} tabIndex={-1}>{venda ? `Venda #${venda.id}` : "Venda"}</h1>
             <p className="subtitle">Confira os produtos e as informações registradas nessa venda.</p>
           </div>
           <Link className="secondary-button" href="/vendas">Voltar para vendas</Link>
@@ -39,6 +46,8 @@ export default function VendaDetalhePage() {
           <article className="panel"><div className="empty-state"><strong>Não foi possível carregar a venda</strong><p>{erro}</p></div></article>
         ) : (
           <div className="product-form-stack">
+            {venda.status === "cancelada" ? <section className="permission-note" aria-label="Venda cancelada"><h2>Venda cancelada</h2><p>Motivo: {venda.cancelamentoMotivo}</p><p>Cancelada em {venda.canceladoEm ? new Date(venda.canceladoEm).toLocaleString("pt-BR") : "—"} · Responsável #{venda.canceladoPor}</p><p>Os registros originais foram preservados. Esta venda não compõe os totais financeiros.</p></section> : gerencia ? <button ref={botaoCancelar} className="secondary-button" onClick={() => setConfirmando(true)}>Cancelar venda</button> : null}
+            {confirmando ? <CancelarVendaDialog venda={venda} fechar={() => { setConfirmando(false); requestAnimationFrame(() => botaoCancelar.current?.focus()); }} concluido={nova => { setVenda(nova); setConfirmando(false); requestAnimationFrame(() => titulo.current?.focus()); }} /> : null}
             <section className="summary-grid">
               <article className="summary-card"><span>Total da venda</span><strong>{formatarMoeda(venda.totalVenda)}</strong><small>Valor registrado no momento da venda</small></article>
               <article className="summary-card"><span>Forma de pagamento</span><strong>{nomeFormaPagamento(venda.formaPagamento)}</strong><small>Forma utilizada na venda</small></article>

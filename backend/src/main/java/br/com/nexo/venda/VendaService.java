@@ -25,21 +25,34 @@ public class VendaService {
     private final ProdutoService produtoService;
     private final VendaRepository vendaRepository;
     private final VendaItemRepository vendaItemRepository;
+    private final VendaIdempotenciaRepository idempotencia;
+    private final br.com.nexo.organizacao.MembroRepository membros;
+    private final br.com.nexo.organizacao.PoliticaOrganizacao politica;
+    private final br.com.nexo.saas.AcessoPlanoService planos;
 
-    public VendaService(OrganizacaoService organizacaoService, ClienteService clienteService, ProdutoRepository produtoRepository, ProdutoService produtoService, VendaRepository vendaRepository, VendaItemRepository vendaItemRepository) {
+    public VendaService(OrganizacaoService organizacaoService, ClienteService clienteService, ProdutoRepository produtoRepository, ProdutoService produtoService, VendaRepository vendaRepository, VendaItemRepository vendaItemRepository, VendaIdempotenciaRepository idempotencia, br.com.nexo.organizacao.MembroRepository membros, br.com.nexo.organizacao.PoliticaOrganizacao politica, br.com.nexo.saas.AcessoPlanoService planos) {
         this.organizacaoService = organizacaoService;
         this.clienteService = clienteService;
         this.produtoRepository = produtoRepository;
         this.produtoService = produtoService;
         this.vendaRepository = vendaRepository;
         this.vendaItemRepository = vendaItemRepository;
+        this.idempotencia = idempotencia; this.membros = membros; this.politica = politica; this.planos = planos;
     }
 
     @Transactional
-    public VendaDetalhe criar(NovaVenda dados) {
+    public VendaDetalhe criar(NovaVenda dados) { return criar(dados, java.util.UUID.randomUUID()); }
+
+    @Transactional
+    public VendaDetalhe criar(NovaVenda dados, java.util.UUID chave) {
         if (dados == null || dados.organizacaoId() == null) throw new IllegalArgumentException("A organização é obrigatória.");
         if (dados.itens() == null || dados.itens().isEmpty()) throw new IllegalArgumentException("Adicione pelo menos um produto à venda.");
 
+        if (chave == null) throw new DadosInvalidosException("Idempotency-Key", "Identifique a tentativa de venda.");
+        var payload = new NovaVenda(dados.organizacaoId(), dados.clienteId(), normalizarFormaPagamento(dados.formaPagamento()), normalizarTexto(dados.observacao()), dados.itens());
+        var fingerprint = idempotencia.fingerprint(payload);
+        var original = idempotencia.original(dados.organizacaoId(), chave, fingerprint);
+        if (original.isPresent()) return original.get();
         Organizacao organizacao = organizacaoService.buscarPorId(dados.organizacaoId());
         Cliente cliente = dados.clienteId() == null ? null : clienteService.buscarEntidade(dados.organizacaoId(), dados.clienteId());
         if (cliente != null && !cliente.isAtivo()) throw new IllegalArgumentException("O cliente selecionado está inativo.");
@@ -59,7 +72,21 @@ public class VendaService {
             vendaItemRepository.save(new VendaItem(organizacao, venda, item.produto(), item.produto().getNome(), item.quantidade(), item.precoUnitario(), item.custoUnitario(), item.subtotal(), item.custoSubtotal(), item.lucroSubtotal()));
         }
 
-        return montarDetalhe(venda);
+        var detalhe = montarDetalhe(venda);
+        idempotencia.guardar(dados.organizacaoId(), chave, fingerprint, detalhe);
+        return detalhe;
+    }
+
+    @Transactional
+    public VendaDetalhe cancelar(br.com.nexo.auth.AuthService.UsuarioAutenticado usuario, Long id, String motivo) {
+        var atual = membros.usuarioAtual(usuario);
+        politica.exigirGestao(atual);
+        if (!atual.papel().equals("proprietario")) planos.exigir(atual.organizacaoId(), br.com.nexo.saas.RecursoPlano.EQUIPE);
+        String texto = normalizarTexto(motivo);
+        if (texto == null || texto.length() < 3 || texto.length() > 500) throw new DadosInvalidosException("motivo", "Informe o motivo do cancelamento, de 3 a 500 caracteres.");
+        var venda = vendaRepository.bloquear(id, atual.organizacaoId()).orElseThrow(() -> new IllegalArgumentException("Venda não encontrada neste espaço."));
+        venda.cancelar(atual.id(), texto);
+        return montarDetalhe(vendaRepository.saveAndFlush(venda));
     }
 
     @Transactional(readOnly = true)
@@ -78,7 +105,7 @@ public class VendaService {
 
     @Transactional(readOnly = true)
     public VendaResumo resumo(Long organizacaoId) {
-        List<VendaDetalhe> vendas = listar(organizacaoId);
+        List<VendaDetalhe> vendas = listar(organizacaoId).stream().filter(v -> v.status().equals("registrada")).toList();
         BigDecimal faturamento = vendas.stream().map(VendaDetalhe::totalVenda).reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, RoundingMode.HALF_UP);
         BigDecimal custo = vendas.stream().anyMatch(v -> v.custoTotal() == null) ? null : vendas.stream().map(VendaDetalhe::custoTotal).reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, RoundingMode.HALF_UP);
         BigDecimal lucro = vendas.stream().anyMatch(v -> v.lucroTotal() == null) ? null : vendas.stream().map(VendaDetalhe::lucroTotal).reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, RoundingMode.HALF_UP);
@@ -108,7 +135,7 @@ public class VendaService {
                 .map(item -> new ItemDetalhe(item.getId(), item.getProduto().getId(), item.getProdutoNome(), item.getQuantidade(), item.getPrecoUnitario(), item.getCustoUnitario(), item.getSubtotal(), item.getCustoSubtotal(), item.getLucroSubtotal()))
                 .toList();
         Cliente cliente = venda.getCliente();
-        return new VendaDetalhe(venda.getId(), cliente == null ? null : cliente.getId(), cliente == null ? null : cliente.getNome(), venda.getFormaPagamento(), venda.getObservacao(), venda.getTotalVenda(), venda.getCustoTotal(), venda.getLucroTotal(), venda.getCriadoEm(), itens);
+        return new VendaDetalhe(venda.getId(), cliente == null ? null : cliente.getId(), cliente == null ? null : cliente.getNome(), venda.getFormaPagamento(), venda.getObservacao(), venda.getTotalVenda(), venda.getCustoTotal(), venda.getLucroTotal(), venda.getCriadoEm(), itens, venda.getStatus(), venda.getCancelamentoMotivo(), venda.getCanceladoEm(), venda.getCanceladoPor());
     }
 
     private String normalizarFormaPagamento(String valor) {
@@ -123,6 +150,6 @@ public class VendaService {
     public record NovoItem(Long produtoId, Integer quantidade) {}
     private record ItemCalculado(Produto produto, Integer quantidade, BigDecimal precoUnitario, BigDecimal custoUnitario, BigDecimal subtotal, BigDecimal custoSubtotal, BigDecimal lucroSubtotal) {}
     public record ItemDetalhe(Long id, Long produtoId, String produtoNome, Integer quantidade, BigDecimal precoUnitario, BigDecimal custoUnitario, BigDecimal subtotal, BigDecimal custoSubtotal, BigDecimal lucroSubtotal) {}
-    public record VendaDetalhe(Long id, Long clienteId, String clienteNome, String formaPagamento, String observacao, BigDecimal totalVenda, BigDecimal custoTotal, BigDecimal lucroTotal, OffsetDateTime criadoEm, List<ItemDetalhe> itens) {}
+    public record VendaDetalhe(Long id, Long clienteId, String clienteNome, String formaPagamento, String observacao, BigDecimal totalVenda, BigDecimal custoTotal, BigDecimal lucroTotal, OffsetDateTime criadoEm, List<ItemDetalhe> itens, String status, String cancelamentoMotivo, OffsetDateTime canceladoEm, Long canceladoPor) {}
     public record VendaResumo(int quantidadeVendas, BigDecimal faturamento, BigDecimal custo, BigDecimal lucro) {}
 }

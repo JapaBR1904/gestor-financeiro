@@ -135,3 +135,64 @@ test("integridade custo: ingrediente parcial valida, ficha não cria despesa e z
   await page.setViewportSize({ width: 390, height: 900 });
   await page.screenshot({ path: info.outputPath("custo-desconhecido-mobile.png"), fullPage: true });
 });
+
+test("integridade venda: resposta perdida, payload conflitante, retry e cancelamento persistente", async ({ page }, info) => {
+  await entrar(page);
+  const produto = await (await page.request.post(`${api}/api/produtos`, { headers: { "X-Nexo-Organizacao": String(orgA) }, data: { nome: "Venda repetível", precoVenda: 50, ingredientes: [{ nome: "Referência", precoCompra: 20, quantidadeCompra: 1, unidadeCompra: "kg", quantidadeUsada: 100, unidadeUso: "g" }] } })).json();
+  const chaves: string[] = [];
+  let primeira = true;
+  let vendaId = 0;
+  await page.route("**/api/vendas", async route => {
+    if (route.request().method() !== "POST") return route.continue();
+    chaves.push(route.request().headers()["idempotency-key"]);
+    expect(route.request().headers()["x-nexo-organizacao"]).toBe(String(orgA));
+    const resposta = await route.fetch();
+    if (primeira) {
+      primeira = false;
+      expect(resposta.status()).toBe(201);
+      vendaId = (await resposta.json()).id;
+      return route.abort("failed"); // Servidor já confirmou; a resposta não chega à tela.
+    }
+    return route.fulfill({ response: resposta });
+  });
+  await page.goto("/vendas/nova");
+  await page.getByLabel("Produto", { exact: true }).selectOption(String(produto.id));
+  await page.getByLabel("Quantidade", { exact: true }).fill("2");
+  await page.getByRole("button", { name: "Registrar venda", exact: true }).click();
+  await expect(page.getByText(/Não foi possível conectar ao servidor/)).toBeVisible();
+  await expect(page.getByLabel("Quantidade", { exact: true })).toHaveValue("2");
+  await page.getByLabel("Quantidade", { exact: true }).fill("3");
+  await page.getByRole("button", { name: "Registrar venda", exact: true }).click();
+  await expect(page.getByText(/Este envio já foi usado para outra venda/)).toBeVisible();
+  await expect(page.getByLabel("Quantidade", { exact: true })).toHaveValue("3");
+  await page.getByLabel("Quantidade", { exact: true }).fill("2");
+  await page.getByRole("button", { name: "Registrar venda", exact: true }).dblclick();
+  await expect(page).toHaveURL(/\/vendas$/);
+  expect(chaves.length).toBeGreaterThanOrEqual(3);
+  expect(new Set(chaves).size).toBe(1);
+  const lista = await (await page.request.get(`${api}/api/vendas`, { headers: { "X-Nexo-Organizacao": String(orgA) } })).json();
+  expect(lista).toHaveLength(1); expect(lista[0].id).toBe(vendaId); expect(lista[0].totalVenda).toBe(100);
+  await page.goto(`/vendas/${vendaId}`);
+  await page.getByRole("button", { name: "Cancelar venda", exact: true }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("button", { name: "Cancelar venda", exact: true })).toBeFocused();
+  await page.getByRole("button", { name: "Cancelar venda", exact: true }).click();
+  await page.getByLabel("Motivo do cancelamento", { exact: true }).fill("Quantidade registrada incorretamente");
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.screenshot({ path: info.outputPath("cancelamento-confirmacao-mobile.png"), fullPage: false });
+  await page.getByRole("button", { name: "Confirmar cancelamento", exact: true }).dblclick();
+  await expect(page.getByLabel("Venda cancelada", { exact: true })).toContainText("Quantidade registrada incorretamente");
+  await page.reload();
+  await expect(page.getByLabel("Venda cancelada", { exact: true })).toBeVisible();
+  await page.screenshot({ path: info.outputPath("venda-cancelada-mobile.png"), fullPage: true });
+  const atual = await (await page.request.get(`${api}/api/vendas/${vendaId}`, { headers: { "X-Nexo-Organizacao": String(orgA) } })).json();
+  expect(atual.status).toBe("cancelada"); expect(atual.canceladoPor).toBeGreaterThan(0); expect(atual.canceladoEm).toBeTruthy(); expect(atual.itens).toHaveLength(1);
+  const resumo = await (await page.request.get(`${api}/api/financeiro/resumo`, { headers: { "X-Nexo-Organizacao": String(orgA) } })).json();
+  expect(resumo.movimentacoes.filter((m: { origem: string }) => m.origem === "venda")).toHaveLength(0);
+  const relatorio = await (await page.request.get(`${api}/api/relatorios/resumo`, { headers: { "X-Nexo-Organizacao": String(orgA) } })).json();
+  expect(relatorio.faturamento).toBe(0); expect(relatorio.produtosMaisVendidos).toHaveLength(0);
+  await page.goto("/vendas");
+  await expect(page.getByText("Cancelada", { exact: true })).toBeVisible();
+  await expect(page.locator(".summary-card").filter({ hasText: "Faturamento" })).toContainText(/R\$\s*0,00/);
+});

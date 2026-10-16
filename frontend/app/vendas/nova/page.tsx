@@ -19,6 +19,7 @@ export default function NovaVendaPage() {
   const formatarMoeda = useMoeda();
   const router = useRouter();
   const envioEmCurso = useRef(false);
+  const chaveIdempotencia = useRef<string | null>(null);
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [clienteId, setClienteId] = useState("");
@@ -76,7 +77,8 @@ export default function NovaVendaPage() {
     envioEmCurso.current = true;
     setSalvando(true);
     try {
-      await salvarVenda({ clienteId: clienteId || null, formaPagamento, observacao: observacao.trim(), itens: itensValidos });
+      chaveIdempotencia.current ??= crypto.randomUUID();
+      await salvarVenda({ clienteId: clienteId || null, formaPagamento, observacao: observacao.trim(), itens: itensValidos }, chaveIdempotencia.current);
       router.push("/vendas");
     } catch (error) {
       setErro(error instanceof Error ? error.message : "Não foi possível registrar a venda.");

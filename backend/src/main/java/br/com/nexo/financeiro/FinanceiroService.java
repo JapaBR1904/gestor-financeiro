@@ -63,7 +63,7 @@ public class FinanceiroService {
                   SELECT id, 'manual' AS origem, tipo, descricao, valor, data, categoria, conta FROM movimentacoes WHERE organizacao_id = ?
                   UNION ALL
                   SELECT id, 'venda', 'receita', 'Venda #' || id, total_venda,
-                         (criado_em AT TIME ZONE 'America/Sao_Paulo')::date, 'Vendas', forma_pagamento FROM vendas WHERE organizacao_id = ?
+                         (criado_em AT TIME ZONE 'America/Sao_Paulo')::date, 'Vendas', forma_pagamento FROM vendas WHERE organizacao_id = ? AND status = 'registrada'
                   UNION ALL
                   SELECT id, 'despesa', 'despesa', descricao, valor, data_despesa, categoria, 'Principal' FROM despesas WHERE organizacao_id = ?
                 ) movimentos WHERE data BETWEEN ? AND ? ORDER BY data DESC, origem, id DESC
