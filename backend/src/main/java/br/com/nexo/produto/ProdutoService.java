@@ -5,7 +5,6 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.List;
 
-import br.com.nexo.despesa.DespesaService;
 import br.com.nexo.organizacao.Organizacao;
 import br.com.nexo.organizacao.OrganizacaoService;
 import org.springframework.stereotype.Service;
@@ -20,20 +19,17 @@ public class ProdutoService {
     private final ProdutoRepository produtoRepository;
     private final IngredienteRepository ingredienteRepository;
     private final ProdutoIngredienteRepository produtoIngredienteRepository;
-    private final DespesaService despesaService;
 
     public ProdutoService(
             OrganizacaoService organizacaoService,
             ProdutoRepository produtoRepository,
             IngredienteRepository ingredienteRepository,
-            ProdutoIngredienteRepository produtoIngredienteRepository,
-            DespesaService despesaService
+            ProdutoIngredienteRepository produtoIngredienteRepository
     ) {
         this.organizacaoService = organizacaoService;
         this.produtoRepository = produtoRepository;
         this.ingredienteRepository = ingredienteRepository;
         this.produtoIngredienteRepository = produtoIngredienteRepository;
-        this.despesaService = despesaService;
     }
 
     @Transactional
@@ -50,7 +46,6 @@ public class ProdutoService {
         ));
 
         salvarIngredientes(organizacao, produto, dados.ingredientes());
-        registrarDespesasDosIngredientes(dados);
         return montarDetalhe(produto);
     }
 
@@ -105,27 +100,6 @@ public class ProdutoService {
                     ingrediente,
                     item.quantidadeUsada().setScale(4, RoundingMode.HALF_UP),
                     normalizarUnidade(item.unidadeUso())
-            ));
-        }
-    }
-
-    private void registrarDespesasDosIngredientes(NovoProduto dados) {
-        for (NovoIngrediente item : dados.ingredientes()) {
-            if (item.precoCompra() == null || item.precoCompra().compareTo(BigDecimal.ZERO) <= 0) {
-                continue;
-            }
-
-            String unidade = normalizarUnidade(item.unidadeCompra());
-            String quantidade = item.quantidadeCompra().stripTrailingZeros().toPlainString();
-
-            despesaService.criar(new DespesaService.NovaDespesa(
-                    dados.organizacaoId(),
-                    "Compra de " + item.nome().trim(),
-                    item.precoCompra(),
-                    "Ingredientes",
-                    null,
-                    "outro",
-                    "Quantidade comprada: " + quantidade + " " + unidade
             ));
         }
     }

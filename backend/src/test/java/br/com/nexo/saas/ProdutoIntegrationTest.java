@@ -46,6 +46,7 @@ class ProdutoIntegrationTest {
     @Autowired DocumentoService documentos;
     @Autowired MembroRepository membros;
     @Autowired MetaService metas;
+    @Autowired br.com.nexo.produto.ProdutoService produtos;
     @Autowired JdbcTemplate jdbc;
     @MockitoBean EmailCodigoService emails;
     @LocalServerPort int porta;
@@ -74,6 +75,16 @@ class ProdutoIntegrationTest {
         return new BancoAssinaturaTeste.Conta(selecionado,convidado.token(),convidado.email());
     }
 
+    @Test void fichaTecnicaCalculaCustoSemCriarCompraOuModificarDespesasHistoricas(){
+        var c=conta();long org=c.usuario().organizacaoId();
+        jdbc.update("INSERT INTO despesas (organizacao_id,descricao,valor,categoria,data_despesa,forma_pagamento) VALUES (?,'Compra explícita histórica',20,'Ingredientes',CURRENT_DATE,'pix')",org);
+        var ingrediente=new br.com.nexo.produto.ProdutoService.NovoIngrediente("Farinha",new BigDecimal("20.00"),BigDecimal.ONE,"kg",new BigDecimal("100"),"g");
+        var dados=new br.com.nexo.produto.ProdutoService.NovoProduto(org,"Bolo sintético",null,new BigDecimal("50.00"),java.util.List.of(ingrediente));
+        var p=produtos.criar(dados);assertEquals(new BigDecimal("2.00"),p.custoEstimado());
+        produtos.atualizar(p.id(),dados);
+        assertEquals(1,jdbc.queryForObject("SELECT count(*) FROM despesas WHERE organizacao_id=?",Integer.class,org));
+        assertEquals(new BigDecimal("20.00"),jdbc.queryForObject("SELECT sum(valor) FROM despesas WHERE organizacao_id=?",BigDecimal.class,org));
+    }
     @Test void lancamentosPersistemESomamComComercioSemDuplicarOuMisturarOrganizacoes(){
         var c=conta();var outra=conta();var dia=LocalDate.of(2026,10,10);Long org=c.usuario().organizacaoId();
         var movimento=financeiro.salvar(org,null,lancamento("receita","Serviço","100.20",dia));

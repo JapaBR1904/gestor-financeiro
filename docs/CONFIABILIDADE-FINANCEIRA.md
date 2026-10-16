@@ -25,9 +25,15 @@ No frontend, a identidade é carregada antes de configuração/assinatura, que l
 - TypeScript/lint e build de produção usados pelo Playwright aprovados. Capturas em `docs/design/confiabilidade/`.
 - Fechamento geral será consolidado após os próximos blocos.
 
+## A02 — Ficha técnica não registra compra
+
+Removido o acoplamento de `ProdutoService` com `DespesaService` e a chamada de criação implícita de despesas. Criar/editar ingredientes só persiste referência de custo e consumo. Uma compra continua sendo registrada explicitamente no módulo de despesas, com data/valor definidos pelo usuário; nenhum novo workflow de compras foi inventado. Despesas históricas não são apagadas ou reinterpretadas.
+
+A regressão cria um produto de R$ 50, referência de farinha de R$ 20/kg e consumo de 100 g: custo R$ 2, nenhuma despesa nova. Repetir a edição mantém o mesmo resultado e preserva a compra histórica sintética já existente.
+
 ## Demais blocos desta fase
 
-A02/A03/A18 (ficha, custo e contrato), A04/A05 (venda repetível/cancelável), A07 (contexto operacional) e A09 (privacidade documental) serão documentados com as respectivas validações nos próximos checkpoints.
+A03/A18 (custo e contrato), A04/A05 (venda repetível/cancelável), A07 (contexto operacional) e A09 (privacidade documental) serão documentados com as respectivas validações nos próximos checkpoints.
 
 ## Preservação e próximas fases
 
