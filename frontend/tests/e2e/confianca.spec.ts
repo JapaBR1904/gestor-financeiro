@@ -134,12 +134,12 @@ test("navegação: sete larguras, drawer com grupos recolhidos, foco e redução
     const menu = width < 1024 ? page.getByRole("dialog", { name: "Navegação do Nexo" }) : page.locator(".sidebar");
     const abrir = page.getByRole("button", { name: "Abrir menu" });
     if (width < 1024) await abrir.click();
-    const operacao = menu.getByRole("button", { name: "Análises e clientes", exact: true });
-    await expect(operacao).toHaveAttribute("aria-expanded", "false");
+    const cadastros = menu.getByRole("button", { name: "Cadastros", exact: true });
+    await expect(cadastros).toHaveAttribute("aria-expanded", "false");
     await expect(menu.getByRole("link", { name: "Clientes", exact: true })).not.toBeVisible();
-    await operacao.click();
+    await cadastros.click();
     await expect(menu.getByRole("link", { name: "Clientes", exact: true })).toBeVisible();
-    await operacao.click();
+    await cadastros.click();
     if (width < 1024) {
       for (let i=0;i<18;i++) { await page.keyboard.press("Tab"); expect(await menu.evaluate(e => e.contains(document.activeElement))).toBe(true); }
       await page.keyboard.press("Escape");
