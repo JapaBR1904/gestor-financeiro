@@ -29,6 +29,8 @@
 .detail-reveal button { min-height:44px; }
 .team-responsibilities { margin-top:20px; }
 .team-responsibilities p { line-height:1.8; color:var(--text-secondary); }
+/* Alertas de erro entram já opacos para manter contraste AA durante toda a exibição. */
+.form-error-banner { animation:none; }
 .confirmation-dialog { width:min(480px,calc(100% - 32px)); border:1px solid var(--border); border-radius:20px; padding:28px; color:var(--ink); background:var(--surface); }
 .confirmation-dialog::backdrop { background:#07142699; }
 .confirmation-dialog p { line-height:1.7; color:var(--text-secondary); }
