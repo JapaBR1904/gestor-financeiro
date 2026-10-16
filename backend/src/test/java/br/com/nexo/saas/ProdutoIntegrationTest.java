@@ -237,7 +237,11 @@ class ProdutoIntegrationTest {
         var resposta=requisicao("POST","/api/ia/perguntar","{\"pergunta\":\"Como planejar?\"}",c.token());assertEquals(503,resposta.statusCode());assertFalse(resposta.body().contains("Exception"));
     }
     private HttpResponse<String> requisicao(String metodo,String caminho,String corpo,String token)throws Exception{
-        var request=HttpRequest.newBuilder(URI.create("http://localhost:"+porta+caminho)).header("Content-Type","application/json");if(token!=null)request.header("Cookie","nexo_session="+token);
+        var request=HttpRequest.newBuilder(URI.create("http://localhost:"+porta+caminho)).header("Content-Type","application/json");if(token!=null){
+            request.header("Cookie", "nexo_session=" + token);
+            try { request.header("X-Nexo-Organizacao", auth.autenticarSessao(token).organizacaoId().toString()); }
+            catch (IllegalArgumentException e) { /* Mantém os cenários de sessão expirada no servidor. */ }
+        }
         request.method(metodo,corpo==null?HttpRequest.BodyPublishers.noBody():HttpRequest.BodyPublishers.ofString(corpo));return http.send(request.build(),HttpResponse.BodyHandlers.ofString());
     }
 }

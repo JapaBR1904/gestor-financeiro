@@ -1,4 +1,4 @@
-import { API_URL, apiFetch, lerResposta } from "./api";
+import { apiResposta, apiFetch, lerResposta } from "./api";
 export type Movimentacao = {
   id: number;
   origem: string;
@@ -52,17 +52,11 @@ export const salvarLancamento = (
 export const removerLancamento = (id: number) =>
   apiFetch<void>(`/api/financeiro/movimentacoes/${id}`, { method: "DELETE" });
 export async function exportarFinanceiro(inicio: string, fim: string) {
-  let response: Response;
-  try {
-    response = await fetch(
-      `${API_URL}/api/financeiro/exportar?${periodo(inicio, fim)}`,
-      { credentials: "include", cache: "no-store" },
-    );
-  } catch {
-    throw new Error("Não foi possível conectar ao servidor para exportar.");
-  }
-  if (!response.ok) await lerResposta(response);
-  const url = URL.createObjectURL(await response.blob());
+  const arquivo = await apiResposta(`/api/financeiro/exportar?${periodo(inicio, fim)}`, {}, async response => {
+    if (!response.ok) await lerResposta(response);
+    return response.blob();
+  });
+  const url = URL.createObjectURL(arquivo);
   const link = document.createElement("a");
   link.href = url;
   link.download = `nexo-movimentacoes-${inicio}-${fim}.csv`;

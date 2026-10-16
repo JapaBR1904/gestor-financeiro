@@ -996,7 +996,8 @@ test("planos explicam permissão, simulação desligada, produção e erro de ca
   page,
 }) => {
   await login(page, 9);
-  const resposta = await page.request.get(`${api}/api/assinatura`);
+  const usuarioAtual = await (await page.request.get(`${api}/api/auth/me`)).json();
+  const resposta = await page.request.get(`${api}/api/assinatura`, { headers: { "X-Nexo-Organizacao": String(usuarioAtual.organizacaoId) } });
   expect(resposta.ok()).toBe(true);
   const assinatura = await resposta.json();
   expect(assinatura.simulacaoHabilitada).toBe(true);

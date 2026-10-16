@@ -1,4 +1,5 @@
 import { apiFetch } from "./api";
+import { publicarTrocaOrganizacao } from "./contexto-organizacao";
 import type { UsuarioAutenticado } from "./auth";
 export type Membro = {
   id: number;
@@ -54,11 +55,13 @@ export const aceitarConvite = (token: string) =>
   });
 export const minhasOrganizacoes = () =>
   apiFetch<Organizacao[]>("/api/organizacoes/minhas");
-export const selecionarOrganizacao = (organizacaoId: number) =>
-  apiFetch<UsuarioAutenticado>("/api/organizacoes/selecionar", {
-    method: "POST",
-    body: JSON.stringify({ organizacaoId }),
+export async function selecionarOrganizacao(organizacaoId: number) {
+  const usuario = await apiFetch<UsuarioAutenticado>("/api/organizacoes/selecionar", {
+    method: "POST", body: JSON.stringify({ organizacaoId }),
   });
+  publicarTrocaOrganizacao();
+  return usuario;
+}
 export const nomePapel = (papel: string) =>
   papel === "proprietario"
     ? "Proprietário"

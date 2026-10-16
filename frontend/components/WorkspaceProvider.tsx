@@ -10,6 +10,7 @@ import { carregarConfiguracaoSaas } from "../lib/saas";
 import { carregarAssinatura } from "../lib/assinatura";
 import { PreferenciasProvider } from "./PreferenciasProvider";
 import { CopilotoProvider } from "./CopilotoProvider";
+import { contextoMudou, definirContexto, observarTrocaOrganizacao, organizacaoAtual, suspenderContexto } from "../lib/contexto-organizacao";
 
 export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const caminho = usePathname();
@@ -20,18 +21,23 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     erro: "",
   });
   const sequencia = useRef(0);
+  const [aviso, setAviso] = useState("");
   const atualizar = useCallback(async () => {
     const pedido = ++sequencia.current;
     try {
-      const [usuario, config, assinatura] = await Promise.all([
-        carregarUsuarioAtual(),
-        carregarConfiguracaoSaas(),
-        carregarAssinatura(),
-      ]);
+      const usuario = await carregarUsuarioAtual();
+      if (pedido !== sequencia.current) return;
+      if (organizacaoAtual() !== null && organizacaoAtual() !== usuario.organizacaoId) {
+        contextoMudou();
+        return;
+      }
+      definirContexto(usuario.organizacaoId);
+      const [config, assinatura] = await Promise.all([carregarConfiguracaoSaas(), carregarAssinatura()]);
       if (pedido === sequencia.current)
         setEstado({ usuario, config, assinatura, erro: "" });
     } catch (error) {
-      if (pedido === sequencia.current)
+      if (pedido === sequencia.current) {
+        suspenderContexto();
         setEstado({
           usuario: null, config: null, assinatura: null,
           erro:
@@ -39,11 +45,13 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
               ? error.message
               : "Não foi possível carregar seu espaço.",
         });
+      }
     }
   }, []);
   const publico = caminho === "/" || /^\/(login|cadastro|verificar-codigo|esqueci-senha|redefinir-senha|recuperar-senha|convite)(\/|$)/.test(caminho);
   useEffect(() => {
     if (publico) {
+      suspenderContexto();
       const pedido = ++sequencia.current;
       queueMicrotask(() => {
         if (pedido === sequencia.current)
@@ -62,8 +70,29 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     const ouvir = () => {
       void atualizar();
     };
+    const mudar = () => {
+      suspenderContexto();
+      sequencia.current++;
+      setEstado({ usuario: null, config: null, assinatura: null, erro: "" });
+      setAviso("O espaço mudou. Os formulários anteriores foram fechados. Revise o espaço e os dados antes de continuar.");
+      void atualizar();
+    };
+    const revalidar = () => {
+      if (document.visibilityState === "hidden") return;
+      void carregarUsuarioAtual().then(usuario => {
+        if (ativo && organizacaoAtual() !== null && usuario.organizacaoId !== organizacaoAtual()) contextoMudou();
+      }).catch(() => { /* A próxima operação conserva a validação do servidor. */ });
+    };
+    const parar = observarTrocaOrganizacao(contextoMudou);
     window.addEventListener("nexo:workspace", ouvir);
+    window.addEventListener("nexo:organizacao-alterada", mudar);
+    window.addEventListener("focus", revalidar);
+    document.addEventListener("visibilitychange", revalidar);
     return () => {
+      parar();
+      window.removeEventListener("nexo:organizacao-alterada", mudar);
+      window.removeEventListener("focus", revalidar);
+      document.removeEventListener("visibilitychange", revalidar);
       window.removeEventListener("nexo:workspace", ouvir);
       ativo = false;
       controle.current++;
@@ -117,6 +146,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         }
         data-role={estado.usuario?.papel ?? "carregando"}
       >
+        {!publico && aviso ? <p className="form-error-banner" role="status">{aviso} <button className="text-button" onClick={() => setAviso("")}>Entendi</button></p> : null}
         {!publico && compartilhadoSuspenso ? (
           <WorkspaceShell
             titulo="Acesso compartilhado suspenso"

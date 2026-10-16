@@ -1,7 +1,7 @@
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
-export class ApiError extends Error {
-  constructor(mensagem: string, public readonly status: number) { super(mensagem); }
-}
+import { ApiError } from "./api-error";
+import { CABECALHO_ORGANIZACAO, contextoDaRequisicao, contextoMudou, requerContexto } from "./contexto-organizacao";
+export { ApiError } from "./api-error";
 
 export async function lerResposta<T>(response: Response): Promise<T> {
   if (response.ok) {
@@ -13,7 +13,8 @@ export async function lerResposta<T>(response: Response): Promise<T> {
   let mensagem = response.status >= 500 ? "O servidor está indisponível no momento. Tente novamente em instantes." : "Não foi possível concluir. Confira os dados e tente novamente.";
   try {
     const corpo = await response.json();
-    if (response.status < 500) mensagem = corpo.mensagem ?? mensagem;
+    if (response.status < 500) mensagem = Object.values(corpo.campos ?? {})[0] as string || corpo.mensagem || mensagem;
+    if (response.status === 409 && corpo.erro === "contexto_desatualizado" && typeof window !== "undefined") contextoMudou();
   } catch {}
 
   if (response.status === 401 && typeof window !== "undefined" && window.location.pathname !== "/login") {
@@ -26,18 +27,28 @@ export async function lerResposta<T>(response: Response): Promise<T> {
   throw new ApiError(mensagem, response.status);
 }
 
-export async function apiFetch<T>(caminho: string, init: RequestInit = {}): Promise<T> {
+/** Vincula envio e resposta à mesma geração do espaço. Também cobre arquivo/CSV/multipart. */
+export async function apiResposta<T>(caminho: string, init: RequestInit, consumir: (response: Response) => Promise<T>): Promise<T> {
+  const contexto = requerContexto(caminho) ? contextoDaRequisicao() : null;
   const headers = new Headers(init.headers);
-  if (init.body && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
-
-  let response: Response;
+  if (init.body && !(init.body instanceof FormData) && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
+  if (contexto) headers.set(CABECALHO_ORGANIZACAO, String(contexto.id));
+  const sinais = [contexto?.signal, init.signal].filter((s): s is AbortSignal => Boolean(s));
   try {
-    response = await fetch(`${API_URL}${caminho}`, {
-      ...init,
-      headers,
-      credentials: "include",
-      cache: init.cache ?? "no-store",
-    });
-  } catch { throw new Error("Não foi possível conectar ao servidor. Confira sua conexão e tente novamente."); }
-  return lerResposta<T>(response);
+    let response: Response;
+    try {
+      response = await fetch(`${API_URL}${caminho}`, { ...init, headers, credentials: "include", cache: init.cache ?? "no-store", signal: sinais.length ? AbortSignal.any(sinais) : undefined });
+    } catch (e) {
+      contexto?.validar();
+      if (init.signal?.aborted) throw e;
+      throw new Error("Não foi possível conectar ao servidor. Confira sua conexão e tente novamente.");
+    }
+    contexto?.validar();
+    const dados = await consumir(response);
+    contexto?.validar();
+    return dados;
+  } finally { contexto?.encerrar(); }
+}
+export async function apiFetch<T>(caminho: string, init: RequestInit = {}): Promise<T> {
+  return apiResposta(caminho, init, lerResposta<T>);
 }

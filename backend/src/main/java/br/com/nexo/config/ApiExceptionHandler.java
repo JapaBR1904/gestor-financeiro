@@ -12,6 +12,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
+    @ExceptionHandler(ContextoDesatualizadoException.class)
+    public ResponseEntity<Map<String, Object>> tratarContexto(ContextoDesatualizadoException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+                "erro", "contexto_desatualizado", "mensagem", exception.getMessage()));
+    }
+
     @ExceptionHandler(AutenticacaoException.class)
     public ResponseEntity<Map<String, Object>> tratarAutenticacao(AutenticacaoException exception) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(

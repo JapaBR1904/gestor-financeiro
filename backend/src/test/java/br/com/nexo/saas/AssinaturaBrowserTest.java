@@ -63,6 +63,17 @@ class AssinaturaBrowserTest {
         assinatura.confirmar(donoLegado.usuario(),checkout.id(),ProvedorPagamento.Metodo.pix,ProvedorPagamento.Cenario.aprovado);
         var legado=new br.com.nexo.auth.Usuario(organizacoes.buscarPorId(donoLegado.usuario().organizacaoId()),"Pessoa legada","assinatura-"+java.util.UUID.randomUUID()+"@example.com",new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder(4).encode(BancoAssinaturaTeste.SENHA));
         legado.verificarEmail();usuarios.save(legado);jdbc.update("UPDATE usuarios SET papel='membro' WHERE id=?",legado.getId());emails.add(legado.getEmail());
+        var integridade = BancoAssinaturaTeste.criar(organizacoes, usuarios, auth);
+        var espacoB = organizacoes.criar("Integridade B sintético");
+        jdbc.update("UPDATE organizacoes SET nome='Integridade A sintético' WHERE id=?", integridade.usuario().organizacaoId());
+        jdbc.update("INSERT INTO membros_organizacao (organizacao_id,usuario_id,papel,ativo) VALUES (?,?,'proprietario',true)", espacoB.getId(), integridade.usuario().id());
+        for (long org : new long[]{integridade.usuario().organizacaoId(), espacoB.getId()}) {
+            var u = auth.selecionarOrganizacao(integridade.token(), org);
+            var pagamento = assinatura.criar(u, "business", java.util.UUID.randomUUID(), false);
+            assinatura.confirmar(u, pagamento.id(), ProvedorPagamento.Metodo.pix, ProvedorPagamento.Cenario.aprovado);
+            saas.salvarOnboarding(org, "empresa", java.util.List.of(), true);
+        }
+        auth.selecionarOrganizacao(integridade.token(), integridade.usuario().organizacaoId());
         var frontend = Path.of(System.getProperty("user.dir")).resolve("../frontend").normalize();
         assertTrue(Files.exists(frontend.resolve("package.json")), "Frontend deve estar ao lado do backend.");
         var log = Files.createTempFile("nexo-assinatura-browser-", ".log");
@@ -74,6 +85,9 @@ class AssinaturaBrowserTest {
         comando.environment().put("NEXT_PUBLIC_API_URL", "http://localhost:" + porta);
         comando.environment().put("NEXO_E2E_EMAIL_INBOX", caixa.toString());
         comando.environment().put("NEXO_E2E_EMAILS", String.join(",", emails));
+        comando.environment().put("NEXO_E2E_INTEGRIDADE_EMAIL", integridade.email());
+        comando.environment().put("NEXO_E2E_ORG_A", integridade.usuario().organizacaoId().toString());
+        comando.environment().put("NEXO_E2E_ORG_B", espacoB.getId().toString());
         var processo = comando.start();
         try {
             assertTrue(processo.waitFor(15, TimeUnit.MINUTES), "Navegador não terminou. Consulte " + log);
