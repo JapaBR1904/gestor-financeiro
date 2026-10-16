@@ -31,9 +31,30 @@ Removido o acoplamento de `ProdutoService` com `DespesaService` e a chamada de c
 
 A regressão cria um produto de R$ 50, referência de farinha de R$ 20/kg e consumo de 100 g: custo R$ 2, nenhuma despesa nova. Repetir a edição mantém o mesmo resultado e preserva a compra histórica sintética já existente.
 
-## Demais blocos desta fase
+## A03 — Custo incompleto, desconhecido e zero
 
-A03/A18 (custo e contrato), A04/A05 (venda repetível/cancelável), A07 (contexto operacional) e A09 (privacidade documental) serão documentados com as respectivas validações nos próximos checkpoints.
+Criação/edição reutilizam `validarFicha`: somente linha completamente vazia é ignorada. Nome/preço sem quantidades deixa os campos inválidos, com descrição de erro associada, preserva o texto digitado e impede a requisição. Preço zero explícito é aceito; unidade incompatível recebe validação. Os textos falam em referência de custo, não em compra.
+
+Sem ficha, custo/lucro/margem aparecem como **Custo não informado**, inclusive nos resumos, em vez de assumir margem igual ao preço. A API representa custo desconhecido por NULL e zero conhecido por 0. A venda preserva essa distinção no snapshot; atualizar a ficha depois não reescreve custo das vendas anteriores. Se o histórico agregado contém venda sem custo, custo total/lucro bruto são desconhecidos, enquanto faturamento e resultado antes dos custos continuam calculados. O contexto da IA identifica a incompletude e não interpreta NULL como zero.
+
+A migração nova `12_custo_desconhecido.sql` permite NULL nos campos de custo/lucro de vendas/itens e exige coerência entre esses campos. Não muda valores existentes. Foi aplicada somente em `nexo_test`; requer aplicação administrativa uma vez no banco de destino antes de usar o backend atualizado. Os scripts 01–11 não foram modificados.
+
+## A18 — Contrato monetário e estrutural
+
+`ValidacaoFinanceira` define NUMERIC(14,2): até 12 dígitos inteiros, 2 casas e máximo 999.999.999.999,99. Valores enviados com casas extras são rejeitados, sem arredondamento implícito. Quantidades de ficha seguem NUMERIC(14,4), positivas. Resultados derivados mantêm HALF_UP em duas casas e também passam pelo limite antes de persistir snapshots/totais. Despesas, produto, lançamento manual, metas e vendas seguem essas regras comuns.
+
+Listas de ingredientes/itens exigem elementos não nulos. A resposta 400 identifica `campos`, incluindo `ingredientes[0]`/`itens[0]`; campos estruturais/tipos inválidos mantêm 400, sem SQL/stack trace. A camada comum frontend apresenta a primeira mensagem de campo. O banco mantém suas constraints de faixa/coerência.
+
+### Validação de custo/contrato
+
+- Frontend: **45 testes aprovados**, incluindo 15 novos casos de ficha, zero/ausência, unidades, precisão e limite; TypeScript/lint aprovados.
+- Navegador real: fluxo completo de criação parcial → validação sem POST → ficha válida com custo R$ 2 e zero despesas → edição parcial → custo zero explícito → produto sem ficha com custo/lucro NULL; aprovado. A grade da ficha foi ajustada localmente para caberem os erros de campo; os controles e mensagens foram conferidos sem cortes nas sete larguras.
+- Java: precisão/faixa/null e totais derivados, snapshots desconhecidos preservados, custo zero e contexto de IA incompleto. **32 aprovados** nas suítes focadas de integridade financeira, produto, relatório e contexto IA.
+- A primeira execução nova de teste Java omitia a data obrigatória da despesa; a fixture foi completada para verificar o campo monetário de fato. No E2E, o seletor de alert foi restringido para distinguir a mensagem da aplicação do anunciador de rota do Next. Nenhuma asserção de domínio foi enfraquecida.
+
+## Blocos restantes
+
+A04/A05 (venda repetível/cancelável), A07 (contexto operacional) e A09 (privacidade documental) serão documentados com suas validações nos próximos checkpoints.
 
 ## Preservação e próximas fases
 

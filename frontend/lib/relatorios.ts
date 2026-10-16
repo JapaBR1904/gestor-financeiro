@@ -8,8 +8,8 @@ export type ClienteRanking = { clienteId: number; nome: string; quantidadeVendas
 export type RelatorioResumo = {
   quantidadeVendas: number;
   faturamento: number;
-  custoVendas: number;
-  lucroBruto: number;
+  custoVendas: number | null;
+  lucroBruto: number | null;
   quantidadeDespesas: number;
   totalDespesas: number;
   saldoFinanceiro: number;

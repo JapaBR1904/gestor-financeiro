@@ -68,7 +68,7 @@ public class VendaController {
             @NotBlank(message = "A forma de pagamento é obrigatória.") String formaPagamento,
             @Size(max = 2000, message = "A observação deve ter no máximo 2000 caracteres.") String observacao,
             @NotEmpty(message = "Adicione pelo menos um item à venda.")
-            @Size(max = 100, message = "Uma venda pode ter no máximo 100 itens.") List<@Valid CriarVendaItemRequest> itens
+            @Size(max = 100, message = "Uma venda pode ter no máximo 100 itens.") List<@NotNull(message = "O item não pode ser nulo.") @Valid CriarVendaItemRequest> itens
     ) {}
 
     public record CriarVendaItemRequest(

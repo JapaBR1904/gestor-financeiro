@@ -906,3 +906,10 @@
 .product-two-columns > .panel { align-self: start; }
 .finance-summary .balance-card > strong { font-size: var(--text-number); }
 @media (max-width: 760px) { .finance-summary.long-values .summary-card > strong { font-size: 1.5rem; } }
+
+/* A03: mensagens de campo precisam caber na ficha sem cortar os controles. */
+.cost-sheet-form .ingredient-row { align-items: start; }
+@media (min-width: 761px) {
+  .cost-sheet-form .ingredient-row { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .cost-sheet-form .ingredient-name { grid-column: auto; }
+}

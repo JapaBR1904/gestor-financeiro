@@ -42,16 +42,16 @@ public class VendaItem {
     @Column(name = "preco_unitario", nullable = false, precision = 14, scale = 2)
     private BigDecimal precoUnitario;
 
-    @Column(name = "custo_unitario", nullable = false, precision = 14, scale = 2)
+    @Column(name = "custo_unitario", precision = 14, scale = 2)
     private BigDecimal custoUnitario;
 
     @Column(nullable = false, precision = 14, scale = 2)
     private BigDecimal subtotal;
 
-    @Column(name = "custo_subtotal", nullable = false, precision = 14, scale = 2)
+    @Column(name = "custo_subtotal", precision = 14, scale = 2)
     private BigDecimal custoSubtotal;
 
-    @Column(name = "lucro_subtotal", nullable = false, precision = 14, scale = 2)
+    @Column(name = "lucro_subtotal", precision = 14, scale = 2)
     private BigDecimal lucroSubtotal;
 
     protected VendaItem() {}

@@ -40,10 +40,10 @@ public class Venda {
     @Column(name = "total_venda", nullable = false, precision = 14, scale = 2)
     private BigDecimal totalVenda;
 
-    @Column(name = "custo_total", nullable = false, precision = 14, scale = 2)
+    @Column(name = "custo_total", precision = 14, scale = 2)
     private BigDecimal custoTotal;
 
-    @Column(name = "lucro_total", nullable = false, precision = 14, scale = 2)
+    @Column(name = "lucro_total", precision = 14, scale = 2)
     private BigDecimal lucroTotal;
 
     @Column(name = "criado_em", nullable = false)

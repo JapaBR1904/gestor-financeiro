@@ -102,7 +102,7 @@ export default function ProdutosPage() {
               </div>
 
               {produtos.map((produto) => {
-                const lucro = produto.lucroEstimado ?? produto.precoVenda - produto.custoEstimado;
+                const lucro = produto.custoEstimado === null ? null : produto.lucroEstimado ?? produto.precoVenda - produto.custoEstimado;
 
                 return (
                   <div className="product-list-row" key={produto.id}>

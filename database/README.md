@@ -4,7 +4,7 @@ Os scripts desta pasta pertencem à aplicação Spring/Next. Eles foram preserva
 
 ## Banco novo
 
-Crie o usuário `nexo_app` com senha definida de forma segura no seu PostgreSQL. Como administrador, execute `01_criar_banco.sql` conectado ao banco `postgres`. Depois, conectado ao banco `nexo`, execute os scripts `02` a `11` em ordem, usando `psql -v ON_ERROR_STOP=1 -f caminho/do/script.sql` ou o Query Tool do pgAdmin.
+Crie o usuário `nexo_app` com senha definida de forma segura no seu PostgreSQL. Como administrador, execute `01_criar_banco.sql` conectado ao banco `postgres`. Depois, conectado ao banco `nexo`, execute os scripts `02` a `12` em ordem, usando `psql -v ON_ERROR_STOP=1 -f caminho/do/script.sql` ou o Query Tool do pgAdmin.
 
 Depois dos scripts, conceda os privilégios de desenvolvimento ao usuário da aplicação:
 
@@ -47,3 +47,7 @@ A assinatura simulada exige também `10_assinaturas_simuladas.sql`, aplicada dep
 Os testes de integração precisam de um **banco PostgreSQL exclusivo de teste**, preparado com os mesmos scripts e permissões. Eles criam contas sintéticas e alteram seus dados para testar expiração, inatividade e bloqueios. Não aponte os testes para produção.
 
 Configure `NEXO_TEST_DB_URL`, `NEXO_TEST_DB_USERNAME` e `NEXO_TEST_DB_PASSWORD` no processo do Maven. Sem `NEXO_TEST_DB_URL`, esses testes são explicitamente ignorados; isso não valida a integração.
+
+## Custo desconhecido — Fase 1 de integridade
+
+Aplique uma vez `12_custo_desconhecido.sql` depois da `11`, como proprietário das tabelas. Ela permite NULL nos snapshots de custo/lucro das vendas novas quando não há ficha de custo, com constraints de coerência. Zero explícito continua zero. Não modifica os valores das vendas históricas nem as despesas. O código atualizado deve iniciar somente após a migração. Prepare também o banco exclusivo de testes; não reaplique scripts antigos.

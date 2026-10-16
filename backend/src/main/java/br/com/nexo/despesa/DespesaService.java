@@ -114,8 +114,7 @@ public class DespesaService {
     }
 
     private BigDecimal validarValor(BigDecimal valor) {
-        if (valor == null || valor.compareTo(BigDecimal.ZERO) <= 0) throw new IllegalArgumentException("O valor deve ser maior que zero.");
-        return valor.setScale(2, RoundingMode.HALF_UP);
+        return br.com.nexo.validacao.ValidacaoFinanceira.moeda(valor, "valor", false);
     }
 
     private String normalizarFormaPagamento(String valor) {

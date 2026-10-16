@@ -65,9 +65,11 @@ public class ContextoIaService {
                 var resumo = relatorios.gerar(org);
                 dados.put("vendasRegistradas", resumo.faturamento());
                 dados.put("custoProdutosVendidos", resumo.custoVendas());
+                dados.put("custosCompletos", resumo.custoVendas() != null);
+                if (resumo.custoVendas() == null) dados.put("limiteCustos", "Há vendas sem custo informado; custo e lucro desconhecidos não são zero e não devem ser estimados como preço integral.");
                 dados.put("lucroBruto", resumo.lucroBruto());
                 dados.put("despesasComerciais", resumo.totalDespesas());
-                dados.put("resultadoAposCustosEDespesas", resumo.lucroBruto().subtract(resumo.totalDespesas()));
+                dados.put("resultadoAposCustosEDespesas", resumo.lucroBruto() == null ? null : resumo.lucroBruto().subtract(resumo.totalDespesas()));
                 periodo = "Todo o histórico comercial; sem movimentações manuais";
             } else if (assunto.equals("fluxo") || assunto.equals("comparativo")) {
                 var analise = financeiro.analise(org, contexto.inicio(), contexto.fim());

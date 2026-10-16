@@ -34,7 +34,7 @@ export function PreferenciasProvider({ children }: { children: React.ReactNode }
 export const usePreferencias = () => useContext(ContextoPreferencias);
 export function useMoeda() {
   const { ocultarValores } = usePreferencias();
-  return (valor: number) => ocultarValores ? "R$ ••••••" : formatarMoeda(valor);
+  return (valor: number | null) => valor === null ? "Custo não informado" : ocultarValores ? "R$ ••••••" : formatarMoeda(valor);
 }
 export function ControlesVisuais() {
   const { detalhes, ocultarValores, alterar } = usePreferencias();

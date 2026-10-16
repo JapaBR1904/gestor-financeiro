@@ -19,8 +19,8 @@ export type Produto = {
   precoVenda: number;
   descricao: string;
   ingredientes: IngredienteProduto[];
-  custoEstimado: number;
-  lucroEstimado?: number;
+  custoEstimado: number | null;
+  lucroEstimado?: number | null;
   ativo?: boolean;
   criadoEm?: string;
 };
@@ -100,6 +100,7 @@ export async function atualizarProduto(produtoId: string | number, produto: Prod
   });
 }
 
-export function formatarMoeda(valor: number) {
+export function formatarMoeda(valor: number | null) {
+  if (valor === null) return "Custo não informado";
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(valor);
 }

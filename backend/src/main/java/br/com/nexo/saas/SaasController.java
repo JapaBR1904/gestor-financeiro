@@ -66,7 +66,7 @@ public class SaasController {
 
     public record OnboardingRequest(
             @NotBlank(message = "Escolha como pretende usar o Nexo.") String perfilUso,
-            @Size(max = 12, message = "Escolha no máximo 12 objetivos.") List<@Size(max = 120, message = "Objetivo muito longo.") String> objetivos,
+            @Size(max = 12, message = "Escolha no máximo 12 objetivos.") List<@jakarta.validation.constraints.NotNull(message = "O objetivo não pode ser nulo.") @Size(max = 120, message = "Objetivo muito longo.") String> objetivos,
             boolean onboardingConcluido
     ) {}
 

@@ -29,7 +29,7 @@ export default function VendasPage() {
 
   const resumo = useMemo(() => {
     const faturamento = vendas.reduce((total, venda) => total + venda.totalVenda, 0);
-    const custo = vendas.reduce((total, venda) => total + venda.custoTotal, 0);
+    const custo = vendas.some(venda => venda.custoTotal === null) ? null : vendas.reduce((total, venda) => total + (venda.custoTotal ?? 0), 0);
     const itensVendidos = vendas.reduce((total, venda) => total + venda.itens.reduce((subtotal, item) => subtotal + item.quantidade, 0), 0);
     return { faturamento, custo, itensVendidos };
   }, [vendas]);

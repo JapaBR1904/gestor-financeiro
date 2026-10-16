@@ -104,7 +104,7 @@ public class ProdutoController {
             BigDecimal precoVenda,
             @NotNull(message = "A lista de ingredientes é obrigatória.")
             @Size(max = 100, message = "Um produto pode ter no máximo 100 ingredientes.")
-            List<@Valid CriarIngredienteRequest> ingredientes
+            List<@NotNull(message = "O ingrediente não pode ser nulo.") @Valid CriarIngredienteRequest> ingredientes
     ) {}
 
     public record CriarIngredienteRequest(

@@ -6,22 +6,16 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Sidebar } from "../../../../components/Sidebar";
 import { EdicaoProtegida } from "../../../../components/EdicaoProtegida";
-import { atualizarProduto, calcularCustoIngrediente, calcularCustoProduto, carregarProduto, IngredienteProduto, Produto, Unidade } from "../../../../lib/produtos";
+import { atualizarProduto, calcularCustoIngrediente, calcularCustoProduto, carregarProduto, Produto, Unidade } from "../../../../lib/produtos";
+
+import { validarFicha, numeroDoCampo, numeroValido, paraIngrediente, type IngredienteEdicao } from "../../../../lib/ingredientes-form";
 
 type FormErrors = {
   nome?: string;
   preco?: string;
 };
 
-type IngredienteEdicao = {
-  id: string;
-  nome: string;
-  precoCompra: string;
-  quantidadeCompra: string;
-  unidadeCompra: Unidade;
-  quantidadeUsada: string;
-  unidadeUso: Unidade;
-};
+
 
 function ingredienteVazio(id = `ingrediente-${Date.now()}`): IngredienteEdicao {
   return {
@@ -35,26 +29,13 @@ function ingredienteVazio(id = `ingrediente-${Date.now()}`): IngredienteEdicao {
   };
 }
 
-function numeroDoCampo(valor: string) {
-  const numero = Number(valor.replace(",", "."));
-  return Number.isFinite(numero) ? numero : 0;
-}
+
 
 function textoNumero(valor: number) {
   return String(valor).replace(".", ",");
 }
 
-function paraIngrediente(ingrediente: IngredienteEdicao): IngredienteProduto {
-  return {
-    id: ingrediente.id,
-    nome: ingrediente.nome.trim(),
-    precoCompra: numeroDoCampo(ingrediente.precoCompra),
-    quantidadeCompra: numeroDoCampo(ingrediente.quantidadeCompra),
-    unidadeCompra: ingrediente.unidadeCompra,
-    quantidadeUsada: numeroDoCampo(ingrediente.quantidadeUsada),
-    unidadeUso: ingrediente.unidadeUso,
-  };
-}
+
 
 export default function EditarProdutoPage() {
   const formatarMoeda = useMoeda();
@@ -71,6 +52,7 @@ export default function EditarProdutoPage() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
+  const [validando, setValidando] = useState(false);
   const [erroSalvar, setErroSalvar] = useState("");
 
   useEffect(() => {
@@ -111,25 +93,12 @@ export default function EditarProdutoPage() {
     };
   }, [produtoId]);
 
-  const ingredientesCalculados = useMemo(() => ingredientes.map(paraIngrediente), [ingredientes]);
-
-  const ingredientesValidos = useMemo(
-    () =>
-      ingredientesCalculados.filter(
-        (ingrediente) =>
-          ingrediente.nome &&
-          ingrediente.precoCompra >= 0 &&
-          ingrediente.quantidadeCompra > 0 &&
-          ingrediente.quantidadeUsada > 0 &&
-          calcularCustoIngrediente(ingrediente) >= 0,
-      ),
-    [ingredientesCalculados],
-  );
-
-  const custoEstimado = useMemo(() => calcularCustoProduto(ingredientesValidos), [ingredientesValidos]);
+  const ficha = useMemo(() => validarFicha(ingredientes), [ingredientes]);
+  const ingredientesValidos = ficha.itens;
+  const custoEstimado = ficha.valida && ingredientesValidos.length ? calcularCustoProduto(ingredientesValidos) : null;
   const precoVenda = numeroDoCampo(preco);
-  const lucroUnitario = precoVenda - custoEstimado;
-  const margem = precoVenda > 0 ? (lucroUnitario / precoVenda) * 100 : 0;
+  const lucroUnitario = custoEstimado === null ? null : precoVenda - custoEstimado;
+  const margem = lucroUnitario !== null && precoVenda > 0 ? (lucroUnitario / precoVenda) * 100 : null;
 
   function atualizarIngrediente(id: string, campo: keyof IngredienteEdicao, valor: string) {
     setIngredientes((atuais) =>
@@ -155,10 +124,15 @@ export default function EditarProdutoPage() {
 
     const novosErros: FormErrors = {};
     if (!nome.trim()) novosErros.nome = "Informe o nome do produto.";
-    if (precoVenda <= 0) novosErros.preco = "Informe um preço de venda maior que zero.";
+    if (!numeroValido(preco, 2, 12)) novosErros.preco = "Informe um preço maior que zero, até 12 dígitos inteiros e 2 casas decimais.";
 
+    setValidando(true);
     setErrors(novosErros);
     setErroSalvar("");
+    if (!ficha.valida) {
+      setErroSalvar("Complete os campos indicados na ficha de ingredientes. Nenhuma linha preenchida será descartada.");
+      return;
+    }
     if (Object.keys(novosErros).length > 0 || !produtoOriginal) return;
 
     envioEmCurso.current = true;
@@ -216,7 +190,7 @@ export default function EditarProdutoPage() {
           </Link>
         </header>
 
-        <EdicaoProtegida><form className="product-form-stack" onSubmit={handleSubmit} noValidate>
+        <EdicaoProtegida><form className="product-form-stack cost-sheet-form" onSubmit={handleSubmit} noValidate>
           <section className="panel product-form">
             <div className="form-grid">
               <label className="field field-wide">
@@ -260,7 +234,7 @@ export default function EditarProdutoPage() {
               <div>
                 <p className="eyebrow">Ficha de custo</p>
                 <h2>Ingredientes do produto</h2>
-                <p className="ingredient-help">Edite preço de compra, quantidade comprada e quantidade usada para recalcular o custo.</p>
+                <p className="ingredient-help">Edite as referências e o consumo para recalcular. A ficha não registra compras ou despesas.</p>
               </div>
               <button className="secondary-button compact-button" onClick={adicionarIngrediente} type="button">
                 + Ingrediente
@@ -269,37 +243,41 @@ export default function EditarProdutoPage() {
 
             <div className="ingredient-list">
               {ingredientes.map((ingrediente) => {
-                const custo = calcularCustoIngrediente(paraIngrediente(ingrediente));
+                const falhas = validando ? ficha.erros[ingrediente.id] ?? {} : {};
+                const custo = ficha.itens.some(i => i.id === ingrediente.id) ? calcularCustoIngrediente(paraIngrediente(ingrediente)) : null;
 
                 return (
                   <div className="ingredient-row" key={ingrediente.id}>
                     <label className="field ingredient-name">
                       <span>Ingrediente</span>
-                      <input aria-label="Ingrediente"
+                      <input aria-invalid={Boolean(falhas.nome)} aria-describedby={falhas.nome ? `ficha-${ingrediente.id}-nome` : undefined} aria-label="Ingrediente"
                         onChange={(event) => atualizarIngrediente(ingrediente.id, "nome", event.target.value)}
                         type="text"
                         value={ingrediente.nome}
                       />
+                      {falhas.nome ? <small className="field-error" id={`ficha-${ingrediente.id}-nome`}>{falhas.nome}</small> : null}
                     </label>
 
                     <label className="field">
-                      <span>Preço pago</span>
-                      <input aria-label="Preço pago"
+                      <span>Preço de referência</span>
+                      <input aria-invalid={Boolean(falhas.precoCompra)} aria-describedby={falhas.precoCompra ? `ficha-${ingrediente.id}-precoCompra` : undefined} aria-label="Preço de referência"
                         inputMode="decimal"
                         onChange={(event) => atualizarIngrediente(ingrediente.id, "precoCompra", event.target.value)}
                         type="text"
                         value={ingrediente.precoCompra}
                       />
+                      {falhas.precoCompra ? <small className="field-error" id={`ficha-${ingrediente.id}-precoCompra`}>{falhas.precoCompra}</small> : null}
                     </label>
 
                     <label className="field">
-                      <span>Qtd. comprada</span>
-                      <input aria-label="Qtd. comprada"
+                      <span>Qtd. referência</span>
+                      <input aria-invalid={Boolean(falhas.quantidadeCompra)} aria-describedby={falhas.quantidadeCompra ? `ficha-${ingrediente.id}-quantidadeCompra` : undefined} aria-label="Qtd. referência"
                         inputMode="decimal"
                         onChange={(event) => atualizarIngrediente(ingrediente.id, "quantidadeCompra", event.target.value)}
                         type="text"
                         value={ingrediente.quantidadeCompra}
                       />
+                      {falhas.quantidadeCompra ? <small className="field-error" id={`ficha-${ingrediente.id}-quantidadeCompra`}>{falhas.quantidadeCompra}</small> : null}
                     </label>
 
                     <label className="field field-unit">
@@ -318,18 +296,21 @@ export default function EditarProdutoPage() {
 
                     <label className="field">
                       <span>Qtd. usada</span>
-                      <input aria-label="Qtd. usada"
+                      <input aria-invalid={Boolean(falhas.quantidadeUsada)} aria-describedby={falhas.quantidadeUsada ? `ficha-${ingrediente.id}-quantidadeUsada` : undefined} aria-label="Qtd. usada"
                         inputMode="decimal"
                         onChange={(event) => atualizarIngrediente(ingrediente.id, "quantidadeUsada", event.target.value)}
                         type="text"
                         value={ingrediente.quantidadeUsada}
                       />
+                      {falhas.quantidadeUsada ? <small className="field-error" id={`ficha-${ingrediente.id}-quantidadeUsada`}>{falhas.quantidadeUsada}</small> : null}
                     </label>
 
                     <label className="field field-unit">
                       <span>Unidade</span>
                       <select aria-label="Unidade"
                         onChange={(event) => atualizarIngrediente(ingrediente.id, "unidadeUso", event.target.value as Unidade)}
+                        aria-invalid={Boolean(falhas.unidadeUso)}
+                        aria-describedby={falhas.unidadeUso ? `ficha-${ingrediente.id}-unidadeUso` : undefined}
                         value={ingrediente.unidadeUso}
                       >
                         <option value="kg">kg</option>
@@ -338,6 +319,7 @@ export default function EditarProdutoPage() {
                         <option value="ml">ml</option>
                         <option value="un">un.</option>
                       </select>
+                      {falhas.unidadeUso ? <small className="field-error" id={`ficha-${ingrediente.id}-unidadeUso`}>{falhas.unidadeUso}</small> : null}
                     </label>
 
                     <div className="ingredient-cost">
@@ -374,11 +356,11 @@ export default function EditarProdutoPage() {
             </div>
             <div>
               <span>Margem estimada</span>
-              <strong>{margem.toFixed(1)}%</strong>
+              <strong>{margem === null ? "Custo não informado" : `${margem.toFixed(1)}%`}</strong>
             </div>
           </section>
 
-          {erroSalvar ? <p className="field-error">{erroSalvar}</p> : null}
+          {erroSalvar ? <p className="field-error" role="alert">{erroSalvar}</p> : null}
 
           <div className="form-actions standalone-actions">
             <Link className="secondary-button" href={`/produtos/${produtoId}`}>

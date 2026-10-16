@@ -47,7 +47,7 @@ public class RelatorioService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .setScale(2, RoundingMode.HALF_UP);
 
-        BigDecimal custoVendas = vendas.stream()
+        BigDecimal custoVendas = vendas.stream().anyMatch(v -> v.getCustoTotal() == null) ? null : vendas.stream()
                 .map(Venda::getCustoTotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .setScale(2, RoundingMode.HALF_UP);
@@ -57,7 +57,7 @@ public class RelatorioService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .setScale(2, RoundingMode.HALF_UP);
 
-        BigDecimal lucroBruto = faturamento.subtract(custoVendas).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal lucroBruto = custoVendas == null ? null : faturamento.subtract(custoVendas).setScale(2, RoundingMode.HALF_UP);
         BigDecimal saldoFinanceiro = faturamento.subtract(totalDespesas).setScale(2, RoundingMode.HALF_UP);
 
         Map<IdentidadeProduto, ProdutoAcumulado> produtos = new LinkedHashMap<>();

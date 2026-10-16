@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.List;
+import br.com.nexo.validacao.ValidacaoFinanceira;
+import br.com.nexo.validacao.DadosInvalidosException;
 
 import br.com.nexo.organizacao.Organizacao;
 import br.com.nexo.organizacao.OrganizacaoService;
@@ -153,14 +155,16 @@ public class ProdutoService {
                 })
                 .toList();
 
-        BigDecimal custoEstimado = ingredientes.stream()
+        BigDecimal custoEstimado = ingredientes.isEmpty() ? null : ingredientes.stream()
                 .map(IngredienteDetalhe::custoNoProduto)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .setScale(2, RoundingMode.HALF_UP);
 
-        BigDecimal lucroEstimado = produto.getPrecoVenda()
+        BigDecimal lucroEstimado = custoEstimado == null ? null : produto.getPrecoVenda()
                 .subtract(custoEstimado)
                 .setScale(2, RoundingMode.HALF_UP);
+        custoEstimado = ValidacaoFinanceira.calculado(custoEstimado, "custoEstimado");
+        lucroEstimado = ValidacaoFinanceira.calculado(lucroEstimado, "lucroEstimado");
 
         return new ProdutoDetalhe(
                 produto.getId(),
@@ -202,11 +206,18 @@ public class ProdutoService {
         if (dados.nome() == null || dados.nome().trim().isBlank()) {
             throw new IllegalArgumentException("O nome do produto é obrigatório.");
         }
-        if (dados.precoVenda() == null || dados.precoVenda().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("O preço de venda deve ser maior que zero.");
+        ValidacaoFinanceira.moeda(dados.precoVenda(), "precoVenda", false);
+        if (dados.ingredientes() == null || dados.ingredientes().size() > 100) {
+            throw new DadosInvalidosException("ingredientes", "Informe uma lista de até 100 ingredientes.");
         }
-        if (dados.ingredientes() == null) {
-            throw new IllegalArgumentException("A lista de ingredientes não pode ser nula.");
+        for (int i = 0; i < dados.ingredientes().size(); i++) {
+            var item = dados.ingredientes().get(i);
+            String campo = "ingredientes[" + i + "]";
+            if (item == null) throw new DadosInvalidosException(campo, "O ingrediente não pode ser nulo.");
+            ValidacaoFinanceira.moeda(item.precoCompra(), campo + ".precoCompra", true);
+            ValidacaoFinanceira.quantidade(item.quantidadeCompra(), campo + ".quantidadeCompra");
+            ValidacaoFinanceira.quantidade(item.quantidadeUsada(), campo + ".quantidadeUsada");
+            validarIngrediente(item);
         }
     }
 

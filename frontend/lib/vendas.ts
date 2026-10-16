@@ -8,10 +8,10 @@ export type VendaItem = {
   produtoNome: string;
   quantidade: number;
   precoUnitario: number;
-  custoUnitario: number;
+  custoUnitario: number | null;
   subtotal: number;
-  custoSubtotal: number;
-  lucroSubtotal: number;
+  custoSubtotal: number | null;
+  lucroSubtotal: number | null;
 };
 
 export type Venda = {
@@ -21,8 +21,8 @@ export type Venda = {
   formaPagamento: FormaPagamento;
   observacao?: string | null;
   totalVenda: number;
-  custoTotal: number;
-  lucroTotal: number;
+  custoTotal: number | null;
+  lucroTotal: number | null;
   criadoEm: string;
   itens: VendaItem[];
 };
@@ -30,8 +30,8 @@ export type Venda = {
 export type ResumoVendas = {
   quantidadeVendas: number;
   faturamento: number;
-  custo: number;
-  lucro: number;
+  custo: number | null;
+  lucro: number | null;
 };
 
 export async function carregarVendas(): Promise<Venda[]> {

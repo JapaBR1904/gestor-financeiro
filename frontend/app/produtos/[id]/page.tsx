@@ -51,8 +51,8 @@ export default function ProdutoDetalhePage() {
     }
   }
 
-  const lucro = produto ? produto.lucroEstimado ?? produto.precoVenda - produto.custoEstimado : 0;
-  const margem = produto && produto.precoVenda > 0 ? (lucro / produto.precoVenda) * 100 : 0;
+  const lucro = produto ? produto.custoEstimado === null ? null : produto.lucroEstimado ?? produto.precoVenda - produto.custoEstimado : 0;
+  const margem = produto && produto.precoVenda > 0 && lucro !== null ? (lucro / produto.precoVenda) * 100 : null;
 
   return (
     <main className="app-shell">
@@ -119,7 +119,7 @@ export default function ProdutoDetalhePage() {
               </article>
               <article className="summary-card">
                 <span>Margem estimada</span>
-                <strong>{margem.toFixed(1)}%</strong>
+                <strong>{margem === null ? "Custo não informado" : `${margem.toFixed(1)}%`}</strong>
                 <small>{produto.ativo ? "Produto ativo no catálogo" : "Produto inativo no catálogo"}</small>
               </article>
             </section>

@@ -138,8 +138,7 @@ public class MetaService {
     }
 
     private void validarPrecisao(BigDecimal valor) {
-        if (valor != null && (valor.scale() > 2 || valor.abs().compareTo(new BigDecimal("999999999999.99")) > 0))
-            throw new IllegalArgumentException("Use um valor com até duas casas decimais e no máximo 999.999.999.999,99.");
+        br.com.nexo.validacao.ValidacaoFinanceira.precisao(valor, 12, 2, "valor");
     }
 
     public record MetaResumo(Long id, String titulo, String unidade, BigDecimal valorMeta, BigDecimal valorAtual, LocalDate prazo, String status) {}

@@ -11,6 +11,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
+    @ExceptionHandler(br.com.nexo.validacao.DadosInvalidosException.class)
+    public ResponseEntity<Map<String, Object>> tratarCampo(br.com.nexo.validacao.DadosInvalidosException e) {
+        return ResponseEntity.badRequest().body(Map.of("erro", "validacao", "mensagem", "Confira os campos enviados.", "campos", Map.of(e.campo(), e.getMessage())));
+    }
+
 
     @ExceptionHandler(ContextoDesatualizadoException.class)
     public ResponseEntity<Map<String, Object>> tratarContexto(ContextoDesatualizadoException exception) {

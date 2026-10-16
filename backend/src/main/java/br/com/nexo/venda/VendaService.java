@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.OffsetDateTime;
 import java.util.List;
+import br.com.nexo.validacao.ValidacaoFinanceira;
+import br.com.nexo.validacao.DadosInvalidosException;
 
 import br.com.nexo.cliente.Cliente;
 import br.com.nexo.cliente.ClienteService;
@@ -45,8 +47,11 @@ public class VendaService {
 
         List<ItemCalculado> itens = dados.itens().stream().map(item -> calcularItem(dados.organizacaoId(), item)).toList();
         BigDecimal total = itens.stream().map(ItemCalculado::subtotal).reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal custo = itens.stream().map(ItemCalculado::custoSubtotal).reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal lucro = total.subtract(custo).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal custo = itens.stream().anyMatch(i -> i.custoSubtotal() == null) ? null : itens.stream().map(ItemCalculado::custoSubtotal).reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal lucro = custo == null ? null : total.subtract(custo).setScale(2, RoundingMode.HALF_UP);
+        ValidacaoFinanceira.calculado(total, "totalVenda");
+        ValidacaoFinanceira.calculado(custo, "custoTotal");
+        ValidacaoFinanceira.calculado(lucro, "lucroTotal");
 
         Venda venda = vendaRepository.save(new Venda(organizacao, cliente, formaPagamento, normalizarTexto(dados.observacao()), total, custo, lucro));
 
@@ -75,12 +80,13 @@ public class VendaService {
     public VendaResumo resumo(Long organizacaoId) {
         List<VendaDetalhe> vendas = listar(organizacaoId);
         BigDecimal faturamento = vendas.stream().map(VendaDetalhe::totalVenda).reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal custo = vendas.stream().map(VendaDetalhe::custoTotal).reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal lucro = vendas.stream().map(VendaDetalhe::lucroTotal).reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal custo = vendas.stream().anyMatch(v -> v.custoTotal() == null) ? null : vendas.stream().map(VendaDetalhe::custoTotal).reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal lucro = vendas.stream().anyMatch(v -> v.lucroTotal() == null) ? null : vendas.stream().map(VendaDetalhe::lucroTotal).reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, RoundingMode.HALF_UP);
         return new VendaResumo(vendas.size(), faturamento, custo, lucro);
     }
 
     private ItemCalculado calcularItem(Long organizacaoId, NovoItem item) {
+        if (item == null) throw new DadosInvalidosException("itens", "O item da venda não pode ser nulo.");
         if (item.produtoId() == null) throw new IllegalArgumentException("Selecione um produto.");
         if (item.quantidade() == null || item.quantidade() <= 0) throw new IllegalArgumentException("A quantidade deve ser maior que zero.");
         Produto produto = produtoRepository.findByIdAndOrganizacaoId(item.produtoId(), organizacaoId)
@@ -89,10 +95,11 @@ public class VendaService {
         ProdutoService.ProdutoDetalhe detalhe = produtoService.buscar(organizacaoId, produto.getId());
         BigDecimal quantidade = BigDecimal.valueOf(item.quantidade());
         BigDecimal preco = produto.getPrecoVenda().setScale(2, RoundingMode.HALF_UP);
-        BigDecimal custo = detalhe.custoEstimado().setScale(2, RoundingMode.HALF_UP);
+        BigDecimal custo = detalhe.custoEstimado();
         BigDecimal subtotal = preco.multiply(quantidade).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal custoSubtotal = custo.multiply(quantidade).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal lucroSubtotal = subtotal.subtract(custoSubtotal).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal custoSubtotal = custo == null ? null : ValidacaoFinanceira.calculado(custo.multiply(quantidade), "itens.custoSubtotal");
+        BigDecimal lucroSubtotal = custoSubtotal == null ? null : ValidacaoFinanceira.calculado(subtotal.subtract(custoSubtotal), "itens.lucroSubtotal");
+        ValidacaoFinanceira.calculado(subtotal, "itens.subtotal");
         return new ItemCalculado(produto, item.quantidade(), preco, custo, subtotal, custoSubtotal, lucroSubtotal);
     }
 

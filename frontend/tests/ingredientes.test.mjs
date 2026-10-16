@@ -1,0 +1,16 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import test from "node:test";
+import ts from "typescript";
+const { outputText } = ts.transpileModule(readFileSync(new URL("../lib/ingredientes-form.ts", import.meta.url), "utf8"), { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } });
+const { validarFicha, numeroValido } = await import(`data:text/javascript;base64,${Buffer.from(outputText).toString("base64")}`);
+const vazia = { id: "1", nome: "", precoCompra: "", quantidadeCompra: "", unidadeCompra: "kg", quantidadeUsada: "", unidadeUso: "g" };
+const completa = { ...vazia, nome: "Farinha", precoCompra: "20,00", quantidadeCompra: "1", quantidadeUsada: "100" };
+test("ficha ignora somente a linha vazia", () => { const r = validarFicha([vazia]); assert.equal(r.valida, true); assert.equal(r.itens.length, 0); });
+test("ingrediente parcial aponta as duas quantidades e preserva intenção de preenchimento", () => { const r = validarFicha([{ ...vazia, nome: "Farinha", precoCompra: "5" }]); assert.equal(r.valida, false); assert.ok(r.erros["1"].quantidadeCompra); assert.ok(r.erros["1"].quantidadeUsada); });
+test("preço explicitamente zero é conhecido e válido", () => { const r = validarFicha([{ ...completa, precoCompra: "0" }]); assert.equal(r.valida, true); assert.equal(r.itens[0].precoCompra, 0); });
+test("preço ausente não vira custo zero", () => { const r = validarFicha([{ ...completa, precoCompra: "" }]); assert.equal(r.valida, false); assert.ok(r.erros["1"].precoCompra); });
+test("linhas válidas não mascaram a pendência de outra linha", () => { const r = validarFicha([completa, { ...vazia, id: "2", nome: "Ovos" }]); assert.equal(r.valida, false); assert.equal(r.itens.length, 1); assert.ok(r.erros["2"].precoCompra); });
+test("unidades incompatíveis produzem validação na criação e edição compartilhadas", () => assert.ok(validarFicha([{ ...completa, unidadeUso: "ml" }]).erros["1"].unidadeUso));
+for (const valor of ["1000000000000", "1.234", "-1", "NaN", "Infinity", "1e2", "", "1.2.3"]) test(`contrato monetário rejeita ${JSON.stringify(valor)}`, () => assert.equal(numeroValido(valor, 2, 12), false));
+test("contrato aceita limite NUMERIC(14,2) e decimal pt-BR", () => { assert.equal(numeroValido("999999999999,99", 2, 12), true); assert.equal(numeroValido("1,23", 2, 12), true); });

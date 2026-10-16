@@ -85,8 +85,7 @@ public class FinanceiroService {
         String descricao = texto(dados.descricao(), 180, "Informe a descrição do lançamento.");
         String categoria = texto(dados.categoria(), 80, "Informe uma categoria.");
         String conta = texto(dados.conta(), 80, "Informe uma conta.");
-        if (dados.valor() == null || dados.valor().signum() <= 0 || dados.valor().scale() > 2 || dados.valor().compareTo(new BigDecimal("999999999999.99")) > 0)
-            throw new IllegalArgumentException("Informe um valor positivo com até duas casas decimais.");
+        br.com.nexo.validacao.ValidacaoFinanceira.moeda(dados.valor(), "valor", false);
         if (dados.data() == null) throw new IllegalArgumentException("Informe a data do lançamento.");
         Long chave = id;
         if (id == null) {
