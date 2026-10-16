@@ -1,0 +1,64 @@
+{
+  "aprovados": 7,
+  "ignorados": 0,
+  "verificacaoEmail": false,
+  "cenarioExclusivo": "cadastro direto OFF",
+  "regressoesDaFase": 6,
+  "coordenadorJUnit": {
+    "name": "br.com.nexo.saas.AssinaturaBrowserTest",
+    "tests": "1",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "55.002"
+  },
+  "observacoes": [
+    {
+      "cenario": "entrada-cadastro-direto-OF-1437b-t-público-e-login-existente",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    },
+    {
+      "cenario": "integridade-integridade-co-4a020-io-antigo-nas-duas-direções",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    },
+    {
+      "cenario": "integridade-integridade-co-4e51b-o-IA-não-atravessam-a-troca",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    },
+    {
+      "cenario": "integridade-integridade-cu-8a5ab-a-e-zero-difere-de-ausência",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    },
+    {
+      "cenario": "integridade-integridade-op-2f847-etalhes-e-edições-no-mobile",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    },
+    {
+      "cenario": "integridade-integridade-pr-3fd04-ar-arquivo-ou-revogar-envio",
+      "errosJavascript": [],
+      "errosConsole": 0,
+      "rede": []
+    },
+    {
+      "cenario": "integridade-integridade-ve-8e66d--e-cancelamento-persistente",
+      "errosJavascript": [],
+      "errosConsole": 2,
+      "rede": [
+        {
+          "caminho": "/api/vendas",
+          "status": 409
+        }
+      ]
+    }
+  ]
+}

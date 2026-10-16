@@ -1,0 +1,17 @@
+{
+  "aprovados": 1,
+  "axe": "Diálogo com erro de motivo, sem violações.",
+  "observacoes": [
+    {
+      "cenario": "integridade-integridade-ve-8e66d--e-cancelamento-persistente",
+      "errosJavascript": [],
+      "errosConsole": 2,
+      "rede": [
+        {
+          "caminho": "/api/vendas",
+          "status": 409
+        }
+      ]
+    }
+  ]
+}

@@ -326,16 +326,18 @@ export function DocumentosConteudo() {
                   });
                 }}
               >
-<TextoProtegidoIa tipo="pergunta" revelar="Revelar valores para editar">                <label className="field">
-                  <span>O que você quer entender?</span>
-                  <textarea
-                    aria-label="O que você quer entender?"
-                    required
-                    maxLength={3000}
-                    value={pergunta}
-                    onChange={(e) => setPergunta(e.target.value)}
-                  />
-                </label></TextoProtegidoIa>
+                <TextoProtegidoIa tipo="pergunta" revelar="Revelar valores para editar">
+                  <label className="field">
+                    <span>O que você quer entender?</span>
+                    <textarea
+                      aria-label="O que você quer entender?"
+                      required
+                      maxLength={3000}
+                      value={pergunta}
+                      onChange={(e) => setPergunta(e.target.value)}
+                    />
+                  </label>
+                </TextoProtegidoIa>
                 <label className="checkout-consent">
                   <input
                     type="checkbox"

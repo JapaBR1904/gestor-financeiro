@@ -1,4 +1,4 @@
-import { API_URL, apiResposta, apiFetch, lerResposta } from "./api";
+import { API_URL, apiResposta, apiFetch, lerResposta, baixarArquivo } from "./api";
 export type Documento = {
   id: number;
   nome: string;
@@ -23,14 +23,5 @@ export const linkDocumento = (id: number) =>
   `${API_URL}/api/documentos/${id}/arquivo`;
 
 export async function baixarDocumento(id: number, nome: string) {
-  const arquivo = await apiResposta(`/api/documentos/${id}/arquivo`, {}, async resposta => {
-    if (!resposta.ok) await lerResposta(resposta);
-    return resposta.blob();
-  });
-  const url = URL.createObjectURL(arquivo);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = nome;
-  link.click();
-  URL.revokeObjectURL(url);
+  return baixarArquivo(`/api/documentos/${id}/arquivo`, nome);
 }

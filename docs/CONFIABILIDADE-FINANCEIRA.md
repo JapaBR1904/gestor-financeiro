@@ -14,7 +14,7 @@ O usuário autorizado fica vinculado à requisição, impedindo que uma segunda 
 
 A proteção cobre criação/edição/exclusão financeira, vendas, despesas, produtos, clientes, metas, relatórios, CSV, IA e documentos (incluindo upload/download), assinatura e equipe. Autenticação e comandos intencionais de selecionar/criar/listar espaços e aceitar/consultar convite mantêm seus controles próprios e não dependem de uma tela operacional já carregada.
 
-No frontend, a identidade é carregada antes de configuração/assinatura, que levam o mesmo espaço esperado. A camada comum captura espaço/geração no envio, cancela operações em andamento e descarta respostas antigas, inclusive leitura do corpo e arquivos. Troca entre abas usa BroadcastChannel/storage, com revalidação ao voltar à aba; listeners são removidos no cleanup. Um conflito do servidor também invalida a tela. Formulários e consentimentos do espaço anterior são desmontados, com aviso explícito, antes de mostrar o destino. Não há reenvio automático de gravações ou de consentimento da IA.
+No frontend, a identidade é carregada antes de configuração/assinatura, que levam o mesmo espaço esperado. A camada comum captura espaço/geração no envio, cancela operações em andamento e descarta respostas antigas, inclusive leitura do corpo e arquivos. CSV e download de documento ainda validam a geração imediatamente antes de disparar o download, sem outro await entre a validação e o efeito no navegador. Troca entre abas usa BroadcastChannel/storage, com revalidação ao voltar à aba; listeners são removidos no cleanup. Um conflito do servidor também invalida a tela. Formulários e consentimentos do espaço anterior são desmontados, com aviso explícito, antes de mostrar o destino. Não há reenvio automático de gravações ou de consentimento da IA.
 
 ### Validação deste bloco
 
@@ -62,7 +62,7 @@ Se uma criação for repetida após cancelamento, o snapshot de criação contin
 
 ## A05 — Cancelamento rastreável
 
-`POST /api/vendas/{id}/cancelamento` exige motivo de 3–500 caracteres e gestão autorizada. Proprietário pode cancelar; administrador somente no contexto Business válido; membro e usuário de outro espaço são recusados pelo servidor. O serviço revalida o papel, além do interceptor.
+`POST /api/vendas/{id}/cancelamento` exige motivo de 3–500 caracteres e gestão autorizada. A contagem mínima considera pontos de código Unicode: dois emojis são rejeitados com 400, antes de chegar à constraint SQL. Proprietário pode cancelar; administrador somente no contexto Business válido; membro e usuário de outro espaço são recusados pelo servidor. O serviço revalida o papel, além do interceptor.
 
 A venda original e seus itens/valores permanecem. São gravados status `cancelada`, motivo, ator e timestamp UTC com precisão de microssegundos do PostgreSQL. Um lock na venda serializa confirmações; repetir o cancelamento preserva o primeiro autor/motivo/data. Não há DELETE nem lançamento manual negativo de compensação.
 
@@ -93,10 +93,58 @@ A regressão envia um arquivo sintético real ao backend, autoriza análise, esc
 
 ## Fechamento
 
-Os oito achados autorizados estão implementados. Validação integrada completa e evidências finais serão consolidadas no último checkpoint.
+Os oito achados autorizados estão implementados. Não houve mudança nas regras de autenticação, recuperação, Resend, planos ou checkout. Não há dependência nova de aplicação e o CSS recebeu somente o ajuste local da grade da ficha técnica e da mensagem de erro no diálogo de cancelamento.
+
+### Validação integrada
+
+- `mvn -f backend/pom.xml verify`: **267 aprovados, zero falhas/erros e um coordenador de navegador ignorado intencionalmente nessa execução**; JAR gerado com sucesso. Todos os testes de integração tinham `NEXO_TEST_DB_URL` apontando para `nexo_test`; todos os testes de integração de domínio foram executados. Os nomes e contagens por suíte estão em [backend-verify-final.json](design/confiabilidade/backend-verify-final.json).
+- Na primeira passagem completa, as asserções passaram, mas sete casos não conseguiram iniciar contextos Spring porque os pools somados alcançaram o limite de 100 conexões do PostgreSQL. O Surefire agora limita **somente o processo de testes** a quatro conexões por pool, sem mínimo ocioso. A execução completa foi repetida com sucesso. O pool da aplicação não foi alterado. A falha inicial está registrada em [backend-verify-primeira-passagem.json](design/confiabilidade/backend-verify-primeira-passagem.json).
+- Playwright completo com verificação de e-mail ON: **56 aprovados e um caso exclusivo de OFF ignorado**, incluindo as seis jornadas desta fase e as regressões existentes de autenticação, assinatura, papel/plano, IA e interface. O coordenador JUnit passou nessa execução. [Observações seguras](design/confiabilidade/playwright-on-completo.json): apenas nomes de cenário, contagens de console, nomes de exceção JavaScript e caminhos/status HTTP, sem corpos, cookies ou tokens.
+- Playwright final com verificação OFF: **7 aprovados**, incluindo os seis cenários desta fase reexecutados após os refinamentos e o cadastro direto exclusivo desse modo; coordenador JUnit aprovado. Há **57 casos distintos de navegador aprovados entre ON/OFF** (as seis reexecuções não são contadas como novos casos). [Evidência OFF](design/confiabilidade/playwright-off-final.json).
+- Frontend: `npm test`, **45 aprovados**; `npx --no-install tsc --noEmit`, `npm run lint` e `npm run build` aprovados. O fechamento do diálogo acrescenta Axe no estado de erro e confirma que corrigir o motivo limpa a mensagem anterior: **jornada de venda/cancelamento reexecutada e aprovada**, sem violações Axe. [Evidência](design/confiabilidade/cancelamento-acessibilidade-final.json). `git diff --check` aprovado.
+
+A regressão final também cobre upload multipart com contexto antigo (409 e zero arquivos gravados), retorno tardio de CSV sem download no espaço novo, motivo Unicode inválido e cancelamento de venda sem custo removendo a incompletude do relatório.
+
+### Evidências visuais
+
+As capturas usam apenas contas/dados sintéticos. Foram abertas e revistas, além das verificações de DOM/overflow e Axe em Chromium. Não se afirma validação em aparelhos físicos ou outros motores de navegador.
+
+| Cenário | Captura |
+| --- | --- |
+| Troca entre abas | [Contexto atualizado](design/confiabilidade/contexto-duas-abas.png) |
+| IA depois da troca | [Consentimento renovado](design/confiabilidade/contexto-ia-renovado.png) |
+| Ingrediente parcial | [Desktop](design/confiabilidade/ingrediente-parcial.png) / [mobile](design/confiabilidade/ingrediente-parcial-mobile.png) |
+| Ausência de custo | [Mobile](design/confiabilidade/custo-desconhecido-mobile.png) |
+| Confirmação de cancelamento | [Mobile](design/confiabilidade/cancelamento-confirmacao-mobile.png) |
+| Histórico cancelado | [Mobile](design/confiabilidade/venda-cancelada-mobile.png) |
+| Contexto na nova venda | [1440 px](design/confiabilidade/nova-venda-contexto-1440.png) / [390 px](design/confiabilidade/nova-venda-contexto-390.png) |
+| Contexto no novo produto | [Mobile](design/confiabilidade/novo-produto-contexto-mobile.png) |
+| Privacidade documental | [Mobile](design/confiabilidade/documento-privacidade-mobile.png) |
+
+Ficha/erros verificados em 1440, 1280, 1024, 768, 430, 390 e 360 px. Contexto operacional verificado em 15 rotas × quatro larguras (60 combinações). Nenhuma exceção JavaScript nos cenários instrumentados; erros HTTP/transporte provocados pelas regressões negativas estão registrados como tal.
+
+### Arquivos principais
+
+- Contexto: `SessaoContexto`, `ContextoOrganizacaoInterceptor`, `WebConfig`, `frontend/lib/contexto-organizacao.ts`, `api.ts`, `WorkspaceProvider` e helpers de arquivos/equipe.
+- Domínio: `ProdutoService`, `ValidacaoFinanceira`, `VendaService`, `VendaIdempotenciaRepository`, entidades/repositórios de venda, `FinanceiroService`, `RelatorioService` e contexto financeiro da IA.
+- Interface: páginas operacionais de produto/venda/despesa/cliente, `WorkspaceShell`, `CancelarVendaDialog`, `ingredientes-form.ts`, `TextoProtegidoIa`, `ConversaIa` e `DocumentosConteudo`.
+- Testes: três novas classes de integração de contexto/contrato/venda; regressão em `ProdutoIntegrationTest`; coordenador de fixtures; `tests/ingredientes.test.mjs` e `tests/e2e/integridade.spec.ts`.
+
+### Checkpoints
+
+Todos os checkpoints são exclusivos de `nexo-next-spring`, com validação antes do push:
+
+1. `3d9974557c192a8f24a64cad2beedad14b165bbf` — Protege contexto de organização por operação.
+2. `ebeff972fd7741865fb1610b05571127f6c606d1` — Separa ficha técnica de compra financeira.
+3. `f97cae162920785d1700e7f45656c82efc124db4` — Valida custo incompleto e contrato monetário.
+4. `2572ac576fcd578020b2d36a1c3a89c9cd8039fc` — Torna venda idempotente e cancelável.
+5. `6c9104483c418e3f1c31971da367e728f7e53893` — Unifica contexto operacional e privacidade documental.
+6. Fechamento: **Consolida regressões de integridade do Nexo**. O SHA deste próprio commit e a conferência do remoto são fornecidos na entrega; também podem ser consultados com `git log -1 --format='%H %s'`.
+
+A referência remota `main`, conferida novamente nesta etapa, permanece `8247ee36393d4a275f68ee2f14ae738176a31466`. Os pushes dos cinco primeiros checkpoints foram confirmados antes deste relatório. O fechamento usa o commit de consolidação, seguido de push e comparação de HEAD com o remoto; o resultado e SHA exatos são registrados na entrega.
 
 ## Preservação e próximas fases
 
-Nenhum deploy, merge na main, stash, alteração de credencial ou acesso ao banco principal `nexo`. Testes usam exclusivamente `nexo_test`. Migrações novas, quando necessárias, serão incrementais; scripts existentes e dados históricos permanecem preservados.
+Nenhum deploy, merge na main, stash, alteração de credencial ou acesso ao banco principal `nexo`. Testes usam exclusivamente `nexo_test`. As duas migrações novas são incrementais; scripts existentes e dados históricos permanecem preservados.
 
-Ficam fora desta fase: reorganização da sidebar/onboarding, cobrança real, e-mail, integração bancária, OCR/estoque, memória/quota de IA, auditoria financeira Business completa, paginação geral, observabilidade global e gestão automatizada de migrações. O cancelamento de venda terá sua trilha específica; isso não é apresentado como solução integral de A13.
+Ficam fora desta fase: reorganização da sidebar/onboarding, cobrança real, e-mail, integração bancária, OCR/estoque, memória/quota de IA, auditoria financeira Business completa, paginação geral, observabilidade global e gestão automatizada de migrações. O cancelamento de venda tem sua trilha específica; isso não é apresentado como solução integral de A13.

@@ -84,6 +84,8 @@ class VendaIntegridadeIntegrationTest {
         financeiro.salvar(org,null,new FinanceiroService.Lancamento("receita","Manual preservado",new BigDecimal("7"),dia,"Outros","Principal"));
         assertEquals(new BigDecimal("57.00"),financeiro.resumo(org,dia,dia).receitas());
         assertEquals(1,relatorios.gerar(org).quantidadeVendas());
+        var motivoCurto=post(c,"/api/vendas/"+id+"/cancelamento","{\"motivo\":\"😀😀\"}",null);
+        assertEquals(400,motivoCurto.statusCode());assertTrue(motivoCurto.body().contains("motivo"));assertEquals("registrada",vendas.buscar(org,id).status());
         var cancelada=vendas.cancelar(c.usuario(),id,"Quantidade registrada incorretamente");
         assertEquals("cancelada",cancelada.status());assertEquals(c.usuario().id(),cancelada.canceladoPor());assertNotNull(cancelada.canceladoEm());
         assertEquals(original.itens(),cancelada.itens());assertEquals(original.totalVenda(),cancelada.totalVenda());

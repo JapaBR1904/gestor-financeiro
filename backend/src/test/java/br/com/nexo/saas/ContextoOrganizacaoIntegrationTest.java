@@ -60,6 +60,13 @@ class ContextoOrganizacaoIntegrationTest {
                 var resposta=requisicao(rota[0],rota[1],rota[0].equals("GET")||rota[0].equals("DELETE")?null:"{\"incluirResumo\":true}",c.token(),antigo);
                 assertEquals(409,resposta.statusCode(),rota[0]+" "+rota[1]);assertTrue(resposta.body().contains("contexto_desatualizado"));
             }
+            String multipart="--nexo-boundary\r\nContent-Disposition: form-data; name=\"arquivo\"; filename=\"teste.txt\"\r\nContent-Type: text/plain\r\n\r\nArquivo sintético\r\n--nexo-boundary--\r\n";
+            var upload=HttpRequest.newBuilder(URI.create("http://localhost:"+porta+"/api/documentos"))
+                    .header("Cookie","nexo_session="+c.token()).header("X-Nexo-Organizacao",Long.toString(antigo))
+                    .header("Content-Type","multipart/form-data; boundary=nexo-boundary")
+                    .POST(HttpRequest.BodyPublishers.ofString(multipart)).build();
+            assertEquals(409,http.send(upload,HttpResponse.BodyHandlers.ofString()).statusCode());
+            assertEquals(0,jdbc.queryForObject("SELECT count(*) FROM documentos_organizacao WHERE organizacao_id IN (?,?)",Integer.class,a,b));
             assertEquals(200,requisicao("POST","/api/financeiro/movimentacoes",DADOS,c.token(),destino).statusCode());
         }
         assertEquals(1,jdbc.queryForObject("SELECT count(*) FROM movimentacoes WHERE organizacao_id=?",Integer.class,a));

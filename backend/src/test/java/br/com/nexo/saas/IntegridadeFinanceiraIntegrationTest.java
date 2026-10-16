@@ -53,6 +53,8 @@ class IntegridadeFinanceiraIntegrationTest {
         assertNull(vendas.buscar(org,v.id()).custoTotal());
         var zero=vendas.criar(new VendaService.NovaVenda(org,null,"pix",null,List.of(new VendaService.NovoItem(p.id(),1))));
         assertEquals(new BigDecimal("0.00"),zero.custoTotal());assertEquals(new BigDecimal("15.00"),zero.lucroTotal());
+        vendas.cancelar(c.usuario(), v.id(), "Registro sem custo corrigido");
+        assertEquals(new BigDecimal("15.00"), relatorios.gerar(org).lucroBruto());
     }
     @Test void ingredienteNuloEParcialSao400ComCampoSemSalvarProduto()throws Exception{
         var c=conta();

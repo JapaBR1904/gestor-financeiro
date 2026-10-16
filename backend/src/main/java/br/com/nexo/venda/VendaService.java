@@ -83,7 +83,7 @@ public class VendaService {
         politica.exigirGestao(atual);
         if (!atual.papel().equals("proprietario")) planos.exigir(atual.organizacaoId(), br.com.nexo.saas.RecursoPlano.EQUIPE);
         String texto = normalizarTexto(motivo);
-        if (texto == null || texto.length() < 3 || texto.length() > 500) throw new DadosInvalidosException("motivo", "Informe o motivo do cancelamento, de 3 a 500 caracteres.");
+        if (texto == null || texto.codePointCount(0, texto.length()) < 3 || texto.length() > 500) throw new DadosInvalidosException("motivo", "Informe o motivo do cancelamento, de 3 a 500 caracteres.");
         var venda = vendaRepository.bloquear(id, atual.organizacaoId()).orElseThrow(() -> new IllegalArgumentException("Venda não encontrada neste espaço."));
         venda.cancelar(atual.id(), texto);
         return montarDetalhe(vendaRepository.saveAndFlush(venda));

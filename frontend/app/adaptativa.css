@@ -19,6 +19,7 @@
 .confirmation-dialog { width:min(480px,calc(100% - 32px)); border:1px solid var(--border); border-radius:20px; padding:28px; color:var(--ink); background:var(--surface); }
 .confirmation-dialog::backdrop { background:#07142699; }
 .confirmation-dialog p { line-height:1.7; color:var(--text-secondary); }
+.confirmation-dialog p.form-error-banner { color:var(--danger); background:var(--danger-soft); }
 @media(max-width:600px) {
   .profile-guidance { padding:18px; flex-direction:column; align-items:flex-start; gap:12px; }
   .visual-preferences { gap:8px; margin-bottom:18px; }

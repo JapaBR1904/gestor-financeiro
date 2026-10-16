@@ -73,6 +73,29 @@ test("integridade contexto: resposta antiga, CSV e consentimento IA não atraves
   expect(ia.status()).toBe(409);
   await page.screenshot({ path: info.outputPath("contexto-ia-renovado.png"), fullPage: true });
   await trocar(outra, "A");
+  await expect(page.locator(".workspace-context")).toContainText("Integridade A");
+  await page.goto("/pessoal");
+  let liberarCsv!: () => void;
+  const pausaCsv = new Promise<void>(resolve => { liberarCsv = resolve; });
+  let receberCsv!: () => void;
+  const chegouCsv = new Promise<void>(resolve => { receberCsv = resolve; });
+  let downloads = 0;
+  page.on("download", () => downloads++);
+  await page.route("**/api/financeiro/exportar?**", async route => {
+    expect(route.request().headers()["x-nexo-organizacao"]).toBe(String(orgA));
+    const resposta = await route.fetch();
+    receberCsv(); await pausaCsv;
+    try { await route.fulfill({ response: resposta }); } catch { /* Contexto trocado cancela o download pendente. */ }
+  });
+  await page.getByRole("button", { name: "Exportar CSV", exact: true }).click();
+  await chegouCsv;
+  await trocar(outra, "B");
+  await expect(page.locator(".workspace-context")).toContainText("Integridade B");
+  liberarCsv();
+  await expect(page.getByRole("button", { name: "Exportar CSV", exact: true })).toBeEnabled();
+  await page.waitForTimeout(150);
+  expect(downloads).toBe(0);
+  await trocar(outra, "A");
   await outra.close();
 });
 
@@ -180,7 +203,13 @@ test("integridade venda: resposta perdida, payload conflitante, retry e cancelam
   await page.keyboard.press("Escape");
   await expect(page.getByRole("button", { name: "Cancelar venda", exact: true })).toBeFocused();
   await page.getByRole("button", { name: "Cancelar venda", exact: true }).click();
+  await page.getByLabel("Motivo do cancelamento", { exact: true }).fill("😀😀");
+  await page.getByRole("button", { name: "Confirmar cancelamento", exact: true }).click();
+  await expect(page.getByRole("dialog").getByRole("alert")).toContainText("pelo menos 3 caracteres");
+  const { default: AxeCancelamento } = await import("@axe-core/playwright");
+  expect((await new AxeCancelamento({ page }).analyze()).violations).toEqual([]);
   await page.getByLabel("Motivo do cancelamento", { exact: true }).fill("Quantidade registrada incorretamente");
+  await expect(page.getByRole("dialog").getByRole("alert")).toHaveCount(0);
   await page.setViewportSize({ width: 390, height: 900 });
   await page.screenshot({ path: info.outputPath("cancelamento-confirmacao-mobile.png"), fullPage: false });
   await page.getByRole("button", { name: "Confirmar cancelamento", exact: true }).dblclick();

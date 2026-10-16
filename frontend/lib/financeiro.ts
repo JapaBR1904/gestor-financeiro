@@ -1,4 +1,4 @@
-import { apiResposta, apiFetch, lerResposta } from "./api";
+import { baixarArquivo, apiFetch } from "./api";
 export type Movimentacao = {
   id: number;
   origem: string;
@@ -52,16 +52,7 @@ export const salvarLancamento = (
 export const removerLancamento = (id: number) =>
   apiFetch<void>(`/api/financeiro/movimentacoes/${id}`, { method: "DELETE" });
 export async function exportarFinanceiro(inicio: string, fim: string) {
-  const arquivo = await apiResposta(`/api/financeiro/exportar?${periodo(inicio, fim)}`, {}, async response => {
-    if (!response.ok) await lerResposta(response);
-    return response.blob();
-  });
-  const url = URL.createObjectURL(arquivo);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `nexo-movimentacoes-${inicio}-${fim}.csv`;
-  link.click();
-  URL.revokeObjectURL(url);
+  return baixarArquivo(`/api/financeiro/exportar?${periodo(inicio, fim)}`, `nexo-movimentacoes-${inicio}-${fim}.csv`);
 }
 export function datasDoMes() {
   const partes = new Intl.DateTimeFormat("en", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());

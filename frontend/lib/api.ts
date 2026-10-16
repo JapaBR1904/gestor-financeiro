@@ -28,7 +28,7 @@ export async function lerResposta<T>(response: Response): Promise<T> {
 }
 
 /** Vincula envio e resposta à mesma geração do espaço. Também cobre arquivo/CSV/multipart. */
-export async function apiResposta<T>(caminho: string, init: RequestInit, consumir: (response: Response) => Promise<T>): Promise<T> {
+export async function apiResposta<T>(caminho: string, init: RequestInit, consumir: (response: Response, validar: () => void) => Promise<T>): Promise<T> {
   const contexto = requerContexto(caminho) ? contextoDaRequisicao() : null;
   const headers = new Headers(init.headers);
   if (init.body && !(init.body instanceof FormData) && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
@@ -44,11 +44,25 @@ export async function apiResposta<T>(caminho: string, init: RequestInit, consumi
       throw new Error("Não foi possível conectar ao servidor. Confira sua conexão e tente novamente.");
     }
     contexto?.validar();
-    const dados = await consumir(response);
+    const dados = await consumir(response, () => contexto?.validar());
     contexto?.validar();
     return dados;
   } finally { contexto?.encerrar(); }
 }
 export async function apiFetch<T>(caminho: string, init: RequestInit = {}): Promise<T> {
   return apiResposta(caminho, init, lerResposta<T>);
+}
+
+/** O último teste de contexto precede o efeito de download, sem outro await entre eles. */
+export async function baixarArquivo(caminho: string, nome: string) {
+  return apiResposta(caminho, {}, async (response, validar) => {
+    if (!response.ok) await lerResposta(response);
+    const arquivo = await response.blob();
+    validar();
+    const url = URL.createObjectURL(arquivo);
+    try {
+      const link = document.createElement("a");
+      link.href = url; link.download = nome; link.click();
+    } finally { URL.revokeObjectURL(url); }
+  });
 }
