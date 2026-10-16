@@ -83,18 +83,18 @@ test("marca: sidebar, grupos acessíveis e estados ativos em sete larguras", asy
     const menu = mobile
       ? page.getByRole("dialog", { name: "Navegação do Nexo" })
       : page.locator(".sidebar");
-    const operacao = menu.getByRole("button", {
-      name: "Análises e clientes",
+    const cadastros = menu.getByRole("button", {
+      name: "Cadastros",
       exact: true,
     });
-    await expect(operacao).toHaveAttribute("aria-expanded", "false");
-    const id = await operacao.getAttribute("aria-controls");
+    await expect(cadastros).toHaveAttribute("aria-expanded", "false");
+    const id = await cadastros.getAttribute("aria-controls");
     expect(await page.locator(`[id="${id}"]`).count()).toBe(1);
-    await operacao.click();
+    await cadastros.click();
     await expect(
       menu.getByRole("link", { name: "Clientes", exact: true }),
     ).toBeVisible();
-    await operacao.click();
+    await cadastros.click();
     await expect(
       menu.getByRole("link", { name: "Clientes", exact: true }),
     ).toBeHidden();
@@ -103,10 +103,10 @@ test("marca: sidebar, grupos acessíveis e estados ativos em sete larguras", asy
         .locator(`[id="${id}"]`)
         .evaluate((e) => e.hasAttribute("inert")),
     ).toBe(true);
-    await operacao.focus();
+    await cadastros.focus();
     await page.keyboard.press("Tab");
     await expect(
-      menu.getByRole("button", { name: "Gestão", exact: true }),
+      menu.getByRole("button", { name: "Análises", exact: true }),
     ).toBeFocused();
     await expect(
       menu.getByRole("link", { name: "Resumo", exact: true }),
