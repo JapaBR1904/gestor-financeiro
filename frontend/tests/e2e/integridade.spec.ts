@@ -35,6 +35,8 @@ test("integridade contexto: duas abas A/B fecham formulário antigo nas duas dir
     await expect(page.getByRole("button", { name: "Salvar lançamento", exact: true })).toHaveCount(0);
     await expect(page.getByRole("status").filter({ hasText: "O espaço mudou" })).toBeVisible();
   }
+  const { default: AxeBuilder } = await import("@axe-core/playwright");
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
   await page.screenshot({ path: info.outputPath("contexto-duas-abas.png"), fullPage: true });
   const resumo = await page.request.get(`${api}/api/financeiro/resumo`, { headers: { "X-Nexo-Organizacao": String(orgA) } });
   expect((await resumo.json()).movimentacoes).toHaveLength(0);
@@ -195,4 +197,75 @@ test("integridade venda: resposta perdida, payload conflitante, retry e cancelam
   await page.goto("/vendas");
   await expect(page.getByText("Cancelada", { exact: true })).toBeVisible();
   await expect(page.locator(".summary-card").filter({ hasText: "Faturamento" })).toContainText(/R\$\s*0,00/);
+});
+
+test("integridade operação: espaço e privacidade em cadastros, detalhes e edições no mobile", async ({ page }, info) => {
+  test.setTimeout(180_000);
+  await entrar(page);
+  const headers = { "X-Nexo-Organizacao": String(orgA) };
+  const produto = await (await page.request.post(`${api}/api/produtos`, { headers, data: { nome: "Produto de contexto", precoVenda: 15, ingredientes: [] } })).json();
+  const cliente = await (await page.request.post(`${api}/api/clientes`, { headers, data: { nome: "Cliente sintético de contexto" } })).json();
+  const despesa = await (await page.request.post(`${api}/api/despesas`, { headers, data: { descricao: "Despesa explícita de contexto", valor: 4, categoria: "Outros", dataDespesa: "2026-10-10", formaPagamento: "pix" } })).json();
+  const venda = await (await page.request.post(`${api}/api/vendas`, { headers: { ...headers, "Idempotency-Key": crypto.randomUUID() }, data: { formaPagamento: "pix", itens: [{ produtoId: produto.id, quantidade: 1 }] } })).json();
+  expect(produto.id).toBeGreaterThan(0); expect(cliente.id).toBeGreaterThan(0); expect(despesa.id).toBeGreaterThan(0); expect(venda.id).toBeGreaterThan(0);
+  const rotas = ["/vendas", "/vendas/nova", `/vendas/${venda.id}`, "/produtos", "/produtos/novo", `/produtos/${produto.id}`, `/produtos/${produto.id}/editar`, "/clientes", "/clientes/novo", `/clientes/${cliente.id}`, `/clientes/${cliente.id}/editar`, "/despesas", "/despesas/nova", `/despesas/${despesa.id}`, `/despesas/${despesa.id}/editar`];
+  const { default: AxeBuilder } = await import("@axe-core/playwright");
+  for (const width of [1440, 430, 390, 360]) {
+    await page.setViewportSize({ width, height: 1000 });
+    for (const rota of rotas) {
+      await page.goto(rota);
+      await expect(page.locator(".workspace-context")).toContainText("Integridade A");
+      await expect(page.getByRole("button", { name: "Ocultar valores", exact: true })).toBeVisible();
+      await expect(page.locator("main h1")).not.toBeEmpty();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      if ((width === 1440 || width === 390) && rota === "/vendas/nova") {
+        await expect(page.getByLabel("Produto", { exact: true })).toBeVisible();
+        expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+        await page.screenshot({ path: info.outputPath(`nova-venda-contexto-${width}.png`), fullPage: true, animations: "disabled" });
+      }
+      if (width === 390 && rota === "/produtos/novo") await page.screenshot({ path: info.outputPath("novo-produto-contexto-mobile.png"), fullPage: true, animations: "disabled" });
+    }
+  }
+});
+
+test("integridade privacidade: pergunta e resposta documental protegidas sem alterar arquivo ou revogar envio", async ({ page }, info) => {
+  await entrar(page);
+  await page.route("**/api/ia/status", route => route.fulfill({ json: { configurada: true } }));
+  let liberar!: () => void;
+  const pausa = new Promise<void>(resolve => { liberar = resolve; });
+  let receber!: () => void;
+  const chegou = new Promise<void>(resolve => { receber = resolve; });
+  let pedido: { pergunta: string; autorizado: boolean; documentoId: number } | undefined;
+  await page.route("**/api/ia/documento", async route => {
+    expect(route.request().headers()["x-nexo-organizacao"]).toBe(String(orgA));
+    pedido = route.request().postDataJSON(); receber(); await pausa;
+    return route.fulfill({ json: { resposta: "Receitas de R$ 8.500,00 e despesas de R$ 125,00. Resposta sintética para validar a exibição.", modelo: "sintetico" } });
+  });
+  const conteudo = Buffer.from("Receita R$ 8.500,00\nDespesa R$ 125,00\n");
+  await page.goto("/documentos");
+  await page.getByLabel("Arquivo", { exact: true }).setInputFiles({ name: "integridade.txt", mimeType: "text/plain", buffer: conteudo });
+  await page.getByRole("button", { name: "Salvar documento", exact: true }).click();
+  await page.getByRole("button", { name: "Analisar com IA", exact: true }).click();
+  await page.getByLabel("O que você quer entender?", { exact: true }).fill("Explique a despesa de R$ 125,00");
+  await page.getByRole("checkbox", { name: /Tenho autorização para enviar/ }).check();
+  await page.getByRole("button", { name: "Analisar documento", exact: true }).click();
+  await chegou;
+  await page.getByRole("button", { name: "Ocultar valores", exact: true }).click();
+  liberar();
+  const analise = page.getByRole("region", { name: "Análise de documento", exact: true });
+  await expect(analise.getByText("Resposta protegida.", { exact: false })).toBeVisible();
+  await expect(analise).toContainText("Pergunta protegida pelo modo de privacidade");
+  await expect(analise).not.toContainText(/8\.500|125,00/);
+  await expect(page.getByLabel("O que você quer entender?", { exact: true })).toHaveCount(0);
+  await expect(analise).toContainText("Não altera o arquivo original nem revoga conteúdo já enviado");
+  expect(pedido?.pergunta).toBe("Explique a despesa de R$ 125,00"); expect(pedido?.autorizado).toBe(true);
+  const original = await page.request.get(`${api}/api/documentos/${pedido!.documentoId}/arquivo`, { headers: { "X-Nexo-Organizacao": String(orgA) } });
+  expect((await original.body()).equals(conteudo)).toBe(true);
+  await page.setViewportSize({ width: 390, height: 900 });
+  await analise.screenshot({ path: info.outputPath("documento-privacidade-mobile.png"), animations: "disabled" });
+  await analise.getByRole("button", { name: "Revelar valores para editar", exact: true }).click();
+  await expect(page.getByLabel("O que você quer entender?", { exact: true })).toHaveValue("Explique a despesa de R$ 125,00");
+  await expect(analise).toContainText("Receitas de R$ 8.500,00");
+  await page.getByRole("button", { name: "Ocultar valores", exact: true }).click();
+  await expect(analise).not.toContainText(/8\.500|125,00/);
 });

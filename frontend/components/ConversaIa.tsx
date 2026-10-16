@@ -7,7 +7,7 @@ import { perguntarAoNexoIa, statusIa, type AssuntoIa, type RespostaIa } from "..
 import { contextoDaPagina } from "../lib/contexto-copiloto";
 import { BloqueioPlano } from "./EstadoProduto";
 import { Marca } from "./Marca";
-import { usePreferencias } from "./PreferenciasProvider";
+import { TextoProtegidoIa } from "./TextoProtegidoIa";
 
 type Mensagem = { pergunta: string; dados: RespostaIa; base: string };
 const nomeAssunto: Record<AssuntoIa, string> = { resumo: "Resumo do período", despesas: "Despesas por categoria", fluxo: "Fluxo de caixa", metas: "Metas", comparativo: "Comparação de períodos", relatorios: "Relatórios", documentos: "Documentos" };
@@ -32,7 +32,6 @@ function assuntoDaPergunta(texto: string, padrao: AssuntoIa): AssuntoIa {
 }
 export function ConversaIa({ pagina = "/ia", periodo, carregandoContexto = false, compacto = false }: { pagina?: string; periodo?: { inicio: string; fim: string }; carregandoContexto?: boolean; compacto?: boolean }) {
   const { config } = useWorkspace();
-  const { ocultarValores, alterar } = usePreferencias();
   const pro = config && planoPermite(config.plano, "pro");
   const tela = contextoDaPagina(pagina) ?? contextoDaPagina("/ia")!;
   const [assunto, setAssunto] = useState<AssuntoIa>(tela.assunto);
@@ -83,8 +82,8 @@ export function ConversaIa({ pagina = "/ia", periodo, carregandoContexto = false
     {configurada === null && !erro ? <p role="status">Verificando disponibilidade…</p> : null}
     {configurada === false ? <section className="ia-unavailable"><h2>Assistente temporariamente indisponível.</h2><p>Seu plano inclui a IA. Tente novamente em instantes; suas análises continuam disponíveis.</p><button className="secondary-button" onClick={() => { setConfigurada(null); setErro(""); setTentativa(t => t+1); }}>Verificar novamente</button></section> : null}
     {mensagens.length ? <div className="ia-thread" aria-label="Conversa com o Nexo">{mensagens.map((mensagem, indice) => <div className="ia-exchange" key={indice}>
-      <article className="ia-message question"><h3>Você</h3><p>{ocultarValores ? "Pergunta protegida pelo modo de privacidade." : mensagem.pergunta}</p></article>
-      <article className="ia-message answer"><h3>Nexo</h3><small>Base: {mensagem.base}</small>{ocultarValores ? <p>Resposta protegida. <button className="text-button" onClick={() => alterar({ ocultarValores: false })}>Revelar valores para ler</button></p> : <div className="ia-response-text">{mensagem.dados.resposta}</div>}</article>
+      <article className="ia-message question"><h3>Você</h3><TextoProtegidoIa tipo="pergunta"><p>{mensagem.pergunta}</p></TextoProtegidoIa></article>
+      <article className="ia-message answer"><h3>Nexo</h3><small>Base: {mensagem.base}</small><TextoProtegidoIa tipo="resposta" revelar="Revelar valores para ler"><div className="ia-response-text">{mensagem.dados.resposta}</div></TextoProtegidoIa></article>
     </div>)}</div> : <div className="ia-welcome"><Marca /><h2>{compacto ? "O que vamos entender?" : "Seus números, com mais clareza"}</h2><p>Escolha uma sugestão e autorize somente os dados que quer analisar. O Nexo explica e sugere próximos passos; nenhuma alteração é feita nos seus registros.</p></div>}
     <div className="ia-context-suggestions" aria-label="Sugestões contextuais">{sugestoes(assunto, config.perfilUso).map(texto => <button className="secondary-button" key={texto} type="button" disabled={ocupado} onClick={() => escolher(texto, assuntoDaPergunta(texto, assunto))}>{texto}</button>)}</div>
     <form className="ia-question-form" onSubmit={perguntar} aria-busy={ocupado}>

@@ -4,7 +4,7 @@ import { useMoeda } from "../../../components/PreferenciasProvider";
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Sidebar } from "../../../components/Sidebar";
+import { WorkspaceShell } from "../../../components/WorkspaceShell";
 import { carregarClientes, Cliente } from "../../../lib/clientes";
 import { carregarProdutos, Produto } from "../../../lib/produtos";
 import { FormaPagamento, salvarVenda } from "../../../lib/vendas";
@@ -89,17 +89,15 @@ export default function NovaVendaPage() {
   }
 
   return (
-    <main className="app-shell">
-      <Sidebar ativo="vendas" />
-      <section className="content" id="conteudo" tabIndex={-1}>
-        <header className="topbar">
+    <WorkspaceShell cabecalho={<header className="topbar">
           <div>
             <p className="eyebrow">Comercial</p>
             <h1>Nova venda</h1>
             <p className="subtitle">Selecione os produtos vendidos e registre a forma de pagamento.</p>
           </div>
           <Link className="secondary-button" href="/vendas">Voltar para vendas</Link>
-        </header>
+        </header>}>
+
 
         <form className="product-form-stack" onSubmit={handleSubmit}>
           <section className="panel product-form">
@@ -171,7 +169,6 @@ export default function NovaVendaPage() {
             <button className="primary-button" type="submit" disabled={salvando || carregando || produtos.length === 0}>{salvando ? "Registrando..." : "Registrar venda"}</button>
           </div>
         </form>
-      </section>
-    </main>
+      </WorkspaceShell>
   );
 }

@@ -77,9 +77,23 @@ A UI oferece “Cancelar venda”, confirmação com motivo, estado ocupado, err
 - E2E com PostgreSQL: servidor confirma e a resposta é abortada; alteração de payload recebe conflito; restauração + clique duplo recupera a única venda com a mesma chave; confirmação de cancelamento, Escape/foco, refresh, histórico e exclusão dos totais. **Aprovado**. Erro de transporte/409 nesse caso são intencionais.
 - TypeScript/lint e build de produção usados pelo navegador aprovados. Capturas de confirmação/cancelamento mobile em `docs/design/confiabilidade/`.
 
-## Blocos restantes
+## A07 — Contexto operacional comum
 
-A07 (contexto operacional) e A09 (privacidade documental) serão documentados com suas validações no próximo checkpoint.
+Quinze páginas de produtos, vendas, despesas e clientes passaram a usar `WorkspaceShell`, inclusive estados de carregamento/erro (18 estruturas anteriores). Foram preservados os cabeçalhos, ações, campos e estados dos formulários; o shell aceita o cabeçalho já existente para evitar reconstruir cada tela. A barra compartilhada mostra nome do espaço, plano/conta e copiloto quando aplicável; a preferência de privacidade fica acessível também no mobile. Sidebar, rotas e regras de papel/plano foram mantidas. Não foi reorganizada a navegação nem implementado A16.
+
+A regressão percorre listas, criação, detalhes e edições desses quatro módulos em 1440, 430, 390 e 360 px (60 combinações), verificando espaço visível, controle de privacidade, heading e ausência de overflow. A nova venda recebeu Axe em desktop/mobile. **Aprovado**.
+
+## A09 — Privacidade documental
+
+`TextoProtegidoIa` reutiliza a mesma condição de privacidade no histórico do chat e na análise documental. Quando Ocultar valores está ativo, pergunta e resposta completas deixam de ser renderizadas, em vez de tentar identificar somente trechos com moeda. O campo de pergunta fica protegido até a pessoa revelar para editar; o nome no título da análise também é protegido. Os textos continuam no estado, sem apagar a pergunta ou o resultado.
+
+O aviso explica que a proteção é somente visual: não altera o arquivo, não revoga conteúdo já enviado e não anonimiza downloads. A análise e seus consentimentos continuam dependendo da organização correta (A01); nenhuma integração externa nova foi criada.
+
+A regressão envia um arquivo sintético real ao backend, autoriza análise, esconde os valores enquanto a resposta está pendente e recebe uma resposta IA sintética contendo moeda. Pergunta/resultado não aparecem no DOM; revelar recupera o conteúdo; esconder novamente protege. Os bytes do download original permanecem idênticos. Somente status/resposta de IA foram simulados, sem chamada externa ao Gemini. O teste anterior do chat Pro também passou. **Três testes de navegador aprovados** neste bloco, além de TypeScript/lint/build.
+
+## Fechamento
+
+Os oito achados autorizados estão implementados. Validação integrada completa e evidências finais serão consolidadas no último checkpoint.
 
 ## Preservação e próximas fases
 

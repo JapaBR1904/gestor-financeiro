@@ -3,7 +3,7 @@ import { useMoeda } from "../../components/PreferenciasProvider";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Sidebar } from "../../components/Sidebar";
+import { WorkspaceShell } from "../../components/WorkspaceShell";
 import { alterarStatusProduto, carregarProdutos, Produto } from "../../lib/produtos";
 
 export default function ProdutosPage() {
@@ -48,11 +48,7 @@ export default function ProdutosPage() {
   }
 
   return (
-    <main className="app-shell">
-      <Sidebar ativo="produtos" />
-
-      <section className="content" id="conteudo" tabIndex={-1}>
-        <header className="topbar">
+    <WorkspaceShell cabecalho={<header className="topbar">
           <div>
             <p className="eyebrow">Catálogo</p>
             <h1>Produtos</h1>
@@ -61,7 +57,8 @@ export default function ProdutosPage() {
           <Link className="primary-button" href="/produtos/novo">
             + Novo produto
           </Link>
-        </header>
+        </header>}>
+
 
         <article className="panel activity-panel">
           <div className="panel-header">
@@ -137,7 +134,6 @@ export default function ProdutosPage() {
             </div>
           )}
         </article>
-      </section>
-    </main>
+      </WorkspaceShell>
   );
 }

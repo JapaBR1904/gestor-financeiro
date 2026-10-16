@@ -4,7 +4,7 @@ import { Icone } from "../../components/Icone";
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Sidebar } from "../../components/Sidebar";
+import { WorkspaceShell } from "../../components/WorkspaceShell";
 
 import { carregarVendas, nomeFormaPagamento, Venda } from "../../lib/vendas";
 
@@ -36,13 +36,11 @@ export default function VendasPage() {
   }, [vendas]);
 
   return (
-    <main className="app-shell">
-      <Sidebar ativo="vendas" />
-      <section className="content" id="conteudo" tabIndex={-1}>
-        <header className="topbar">
+    <WorkspaceShell cabecalho={<header className="topbar">
           <div><p className="eyebrow">Comercial</p><h1>Vendas</h1><p className="subtitle">Registre vendas e acompanhe os principais dados comerciais do negócio.</p></div>
           <Link className="primary-button" href="/vendas/nova">+ Nova venda</Link>
-        </header>
+        </header>}>
+
 
         <p className="permission-note">Todo o histórico de vendas deste espaço. A forma de pagamento registrada não comprova recebimento.</p>
         {erro ? <p className="form-error-banner" role="alert">{erro} <button className="text-button" onClick={() => setRevisao(r => r+1)}>Tentar novamente</button></p> : null}
@@ -81,7 +79,6 @@ export default function VendasPage() {
             </div>
           )}
         </article>
-      </section>
-    </main>
+      </WorkspaceShell>
   );
 }

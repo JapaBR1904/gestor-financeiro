@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Sidebar } from "../../../../components/Sidebar";
+import { WorkspaceShell } from "../../../../components/WorkspaceShell";
 import { atualizarCliente, carregarCliente, formatarTelefone } from "../../../../lib/clientes";
 
 export default function EditarClientePage() {
@@ -50,10 +50,8 @@ export default function EditarClientePage() {
   }
 
   return (
-    <main className="app-shell">
-      <Sidebar ativo="clientes" />
-      <section className="content" id="conteudo" tabIndex={-1}>
-        <header className="topbar"><div><p className="eyebrow">Cliente</p><h1>Editar cliente</h1><p className="subtitle">Atualize os dados cadastrais.</p></div><Link className="secondary-button" href={`/clientes/${params.id}`}>Voltar</Link></header>
+    <WorkspaceShell cabecalho={<header className="topbar"><div><p className="eyebrow">Cliente</p><h1>Editar cliente</h1><p className="subtitle">Atualize os dados cadastrais.</p></div><Link className="secondary-button" href={`/clientes/${params.id}`}>Voltar</Link></header>}>
+
         {carregando ? <article className="panel"><div className="empty-state"><strong>Carregando cliente...</strong></div></article> : (
           <form className="product-form-stack" onSubmit={handleSubmit}>
             <section className="panel product-form"><div className="form-grid">
@@ -65,7 +63,6 @@ export default function EditarClientePage() {
             <div className="form-actions standalone-actions"><Link className="secondary-button" href={`/clientes/${params.id}`}>Cancelar</Link><button className="primary-button" type="submit" disabled={salvando}>{salvando ? "Salvando..." : "Salvar alterações"}</button></div>
           </form>
         )}
-      </section>
-    </main>
+      </WorkspaceShell>
   );
 }

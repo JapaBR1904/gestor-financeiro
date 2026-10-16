@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Sidebar } from "../../components/Sidebar";
+import { WorkspaceShell } from "../../components/WorkspaceShell";
 import { carregarClientes, Cliente, formatarTelefone } from "../../lib/clientes";
 
 export default function ClientesPage() {
@@ -20,17 +20,15 @@ export default function ClientesPage() {
   const ativos = useMemo(() => clientes.filter((cliente) => cliente.ativo).length, [clientes]);
 
   return (
-    <main className="app-shell">
-      <Sidebar ativo="clientes" />
-      <section className="content" id="conteudo" tabIndex={-1}>
-        <header className="topbar">
+    <WorkspaceShell cabecalho={<header className="topbar">
           <div>
             <p className="eyebrow">Relacionamento</p>
             <h1>Clientes</h1>
             <p className="subtitle">Cadastre clientes e use essas informações nas vendas.</p>
           </div>
           <Link className="primary-button" href="/clientes/novo">+ Novo cliente</Link>
-        </header>
+        </header>}>
+
 
         {erro ? <p className="form-error-banner">{erro}</p> : null}
 
@@ -59,7 +57,6 @@ export default function ClientesPage() {
             </div>
           )}
         </article>
-      </section>
-    </main>
+      </WorkspaceShell>
   );
 }

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Sidebar } from "../../../components/Sidebar";
+import { WorkspaceShell } from "../../../components/WorkspaceShell";
 import { alterarStatusCliente, carregarCliente, Cliente, formatarTelefone } from "../../../lib/clientes";
 
 export default function ClienteDetalhePage() {
@@ -35,21 +35,19 @@ export default function ClienteDetalhePage() {
   }
 
   if (carregando) {
-    return <main className="app-shell"><Sidebar ativo="clientes" /><section className="content" id="conteudo" tabIndex={-1}><article className="panel"><div className="empty-state"><strong>Carregando cliente...</strong></div></article></section></main>;
+    return <WorkspaceShell titulo="Cliente"><article className="panel"><div className="empty-state"><strong>Carregando cliente...</strong></div></article></WorkspaceShell>;
   }
 
   if (!cliente) {
-    return <main className="app-shell"><Sidebar ativo="clientes" /><section className="content" id="conteudo" tabIndex={-1}><article className="panel"><div className="empty-state"><strong>Não foi possível carregar o cliente</strong><p>{erro}</p></div></article></section></main>;
+    return <WorkspaceShell titulo="Cliente"><article className="panel"><div className="empty-state"><strong>Não foi possível carregar o cliente</strong><p>{erro}</p></div></article></WorkspaceShell>;
   }
 
   return (
-    <main className="app-shell">
-      <Sidebar ativo="clientes" />
-      <section className="content" id="conteudo" tabIndex={-1}>
-        <header className="topbar">
+    <WorkspaceShell cabecalho={<header className="topbar">
           <div><p className="eyebrow">Cliente</p><h1>{cliente.nome}</h1><p className="subtitle">Dados cadastrais e situação do cliente.</p></div>
           <div className="topbar-actions"><Link className="secondary-button" href="/clientes">Voltar</Link><Link className="secondary-button" href={`/clientes/${cliente.id}/editar`}>Editar</Link><button className="primary-button product-status-button" type="button" disabled={alterando} onClick={alternarStatus}>{alterando ? "Salvando..." : cliente.ativo ? "Desativar" : "Ativar"}</button></div>
-        </header>
+        </header>}>
+
 
         {erro ? <p className="form-error-banner">{erro}</p> : null}
 
@@ -59,7 +57,6 @@ export default function ClienteDetalhePage() {
         </section>
 
         {cliente.observacao ? <article className="panel"><div className="panel-header"><div><p className="eyebrow">Observação</p><h2>Anotações</h2></div></div><p>{cliente.observacao}</p></article> : null}
-      </section>
-    </main>
+      </WorkspaceShell>
   );
 }

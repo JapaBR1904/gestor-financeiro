@@ -130,3 +130,11 @@ E-mails de recuperação são enviados após o commit, por uma fila limitada em 
 O diagnóstico seguro do despacho está em [docs/RECUPERACAO_ENVIO.md](docs/RECUPERACAO_ENVIO.md). Para observar as etapas no backend local, preserve suas variáveis atuais e acrescente o argumento `--logging.level.br.com.nexo.auth.EmailCodigoService=DEBUG`. Acrescente também `--logging.level.br.com.nexo.email=DEBUG` para observar o transporte. Isso registra etapas, contagens e classes de falha, sem endereço, código, senha ou credencial. Não habilite o debug do protocolo JavaMail para esse diagnóstico.
 
 O diagnóstico recomendado do Resend está em [docs/RESEND.md](docs/RESEND.md). O SMTP e seu diagnóstico permanecem como legado temporário. Para isolar envio SMTP de banco, autenticação e executor, use o comando separado dev/test descrito em [docs/SMTP_DIAGNOSTICO.md](docs/SMTP_DIAGNOSTICO.md). Ele lê o mesmo sender/configuração Spring e exige `NEXO_SMTP_DIAGNOSTIC_TO`; não é endpoint nem envio automático ao iniciar a aplicação normal. O relatório inclui o comando exato para Windows PowerShell e a comparação de envelope com From.
+
+## Fase 1 — confiabilidade financeira
+
+Após atualizar esta branch, aplique uma vez as novas migrações `database/12_custo_desconhecido.sql` e `database/13_vendas_idempotencia_cancelamento.sql`, nessa ordem, usando a conexão administrativa habitual do banco de desenvolvimento. Não reaplique scripts antigos nem recrie o banco. O backend mantém `ddl-auto=validate`; migrações não são aplicadas automaticamente. Nenhuma alteração foi aplicada ao banco principal por esta tarefa.
+
+Prepare a mesma estrutura em um PostgreSQL exclusivo de teste (como `nexo_test`) antes de `mvn -f backend/pom.xml verify`, com as variáveis `NEXO_TEST_DB_*` já documentadas. Não use a conexão do banco principal nos testes.
+
+Clientes das APIs operacionais devem enviar `X-Nexo-Organizacao` com o espaço esperado pela tela; contexto desatualizado recebe 409 e exige revisão do usuário. `POST /api/vendas` também exige UUID em `Idempotency-Key`, preservado nos retries da mesma tentativa. Cancelamento usa `POST /api/vendas/{id}/cancelamento` com `motivo`, sem exclusão do histórico. O frontend já usa esses contratos. Veja [docs/CONFIABILIDADE-FINANCEIRA.md](docs/CONFIABILIDADE-FINANCEIRA.md).

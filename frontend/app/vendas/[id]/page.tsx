@@ -4,7 +4,7 @@ import { useMoeda } from "../../../components/PreferenciasProvider";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Sidebar } from "../../../components/Sidebar";
+import { WorkspaceShell } from "../../../components/WorkspaceShell";
 
 import { useWorkspace } from "../../../lib/workspace";
 import { CancelarVendaDialog } from "../../../components/CancelarVendaDialog";
@@ -30,17 +30,15 @@ export default function VendaDetalhePage() {
   }, [params.id]);
 
   return (
-    <main className="app-shell">
-      <Sidebar ativo="vendas" />
-      <section className="content" id="conteudo" tabIndex={-1}>
-        <header className="topbar">
+    <WorkspaceShell cabecalho={<header className="topbar">
           <div>
             <p className="eyebrow">Histórico de vendas</p>
             <h1 ref={titulo} tabIndex={-1}>{venda ? `Venda #${venda.id}` : "Venda"}</h1>
             <p className="subtitle">Confira os produtos e as informações registradas nessa venda.</p>
           </div>
           <Link className="secondary-button" href="/vendas">Voltar para vendas</Link>
-        </header>
+        </header>}>
+
 
         {carregando ? <article className="panel"><div className="empty-state"><strong>Carregando venda...</strong></div></article> : erro || !venda ? (
           <article className="panel"><div className="empty-state"><strong>Não foi possível carregar a venda</strong><p>{erro}</p></div></article>
@@ -73,7 +71,6 @@ export default function VendaDetalhePage() {
             {venda.observacao ? <article className="panel"><div className="panel-header"><div><p className="eyebrow">Observação</p><h2>Anotação da venda</h2></div></div><p>{venda.observacao}</p></article> : null}
           </div>
         )}
-      </section>
-    </main>
+      </WorkspaceShell>
   );
 }

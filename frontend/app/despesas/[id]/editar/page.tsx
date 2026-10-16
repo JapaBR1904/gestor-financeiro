@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Sidebar } from "../../../../components/Sidebar";
+import { WorkspaceShell } from "../../../../components/WorkspaceShell";
 import { EdicaoProtegida } from "../../../../components/EdicaoProtegida";
 import { atualizarDespesa, carregarDespesa, FormaPagamentoDespesa } from "../../../../lib/despesas";
 
@@ -67,13 +67,11 @@ export default function EditarDespesaPage() {
   }
 
   return (
-    <main className="app-shell">
-      <Sidebar ativo="despesas" />
-      <section className="content" id="conteudo" tabIndex={-1}>
-        <header className="topbar">
+    <WorkspaceShell cabecalho={<header className="topbar">
           <div><p className="eyebrow">Financeiro</p><h1>Editar despesa</h1><p className="subtitle">Corrija os dados do lançamento sem criar uma nova despesa.</p></div>
           <Link className="secondary-button" href={`/despesas/${params.id}`}>Cancelar</Link>
-        </header>
+        </header>}>
+
 
         {carregando ? <article className="panel"><div className="empty-state"><strong>Carregando despesa...</strong></div></article> : (
           <EdicaoProtegida><form className="product-form-stack" onSubmit={handleSubmit}>
@@ -91,7 +89,6 @@ export default function EditarDespesaPage() {
             <div className="form-actions standalone-actions"><Link className="secondary-button" href={`/despesas/${params.id}`}>Cancelar</Link><button className="primary-button" disabled={salvando} type="submit">{salvando ? "Salvando..." : "Salvar alterações"}</button></div>
           </form></EdicaoProtegida>
         )}
-      </section>
-    </main>
+      </WorkspaceShell>
   );
 }

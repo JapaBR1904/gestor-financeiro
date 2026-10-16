@@ -4,7 +4,7 @@ import { Icone } from "../../components/Icone";
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Sidebar } from "../../components/Sidebar";
+import { WorkspaceShell } from "../../components/WorkspaceShell";
 
 import { carregarDespesas, Despesa, nomeFormaPagamentoDespesa } from "../../lib/despesas";
 
@@ -30,17 +30,15 @@ export default function DespesasPage() {
   const total = useMemo(() => despesas.reduce((soma, despesa) => soma + despesa.valor, 0), [despesas]);
 
   return (
-    <main className="app-shell">
-      <Sidebar ativo="despesas" />
-      <section className="content" id="conteudo" tabIndex={-1}>
-        <header className="topbar">
+    <WorkspaceShell cabecalho={<header className="topbar">
           <div>
             <p className="eyebrow">Financeiro</p>
             <h1>Despesas</h1>
             <p className="subtitle">Registre e acompanhe as saídas de dinheiro do negócio.</p>
           </div>
           <Link className="primary-button" href="/despesas/nova">+ Nova despesa</Link>
-        </header>
+        </header>}>
+
 
         <p className="permission-note">Todo o histórico de despesas comerciais deste espaço.</p>
         {erro ? <p className="form-error-banner" role="alert">{erro} <button className="text-button" onClick={() => setRevisao(r => r+1)}>Tentar novamente</button></p> : null}
@@ -70,7 +68,6 @@ export default function DespesasPage() {
             </div>
           )}
         </article>
-      </section>
-    </main>
+      </WorkspaceShell>
   );
 }

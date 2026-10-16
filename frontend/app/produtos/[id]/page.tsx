@@ -4,7 +4,7 @@ import { useMoeda } from "../../../components/PreferenciasProvider";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Sidebar } from "../../../components/Sidebar";
+import { WorkspaceShell } from "../../../components/WorkspaceShell";
 import { alterarStatusProduto, carregarProduto, Produto } from "../../../lib/produtos";
 
 export default function ProdutoDetalhePage() {
@@ -55,11 +55,7 @@ export default function ProdutoDetalhePage() {
   const margem = produto && produto.precoVenda > 0 && lucro !== null ? (lucro / produto.precoVenda) * 100 : null;
 
   return (
-    <main className="app-shell">
-      <Sidebar ativo="produtos" />
-
-      <section className="content" id="conteudo" tabIndex={-1}>
-        <header className="topbar">
+    <WorkspaceShell cabecalho={<header className="topbar">
           <div>
             <p className="eyebrow">Ficha de custo</p>
             <h1>{produto?.nome ?? "Produto"}</h1>
@@ -80,7 +76,8 @@ export default function ProdutoDetalhePage() {
               </>
             ) : null}
           </div>
-        </header>
+        </header>}>
+
 
         {carregando ? (
           <article className="panel activity-panel">
@@ -188,7 +185,6 @@ export default function ProdutoDetalhePage() {
             </article>
           </div>
         ) : null}
-      </section>
-    </main>
+      </WorkspaceShell>
   );
 }

@@ -4,7 +4,7 @@ import { useMoeda } from "../../../components/PreferenciasProvider";
 import Link from "next/link";
 import { FormEvent, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Sidebar } from "../../../components/Sidebar";
+import { WorkspaceShell } from "../../../components/WorkspaceShell";
 import { EdicaoProtegida } from "../../../components/EdicaoProtegida";
 import { calcularCustoIngrediente, calcularCustoProduto, salvarProduto, Unidade } from "../../../lib/produtos";
 
@@ -121,11 +121,7 @@ export default function NovoProdutoPage() {
   }
 
   return (
-    <main className="app-shell">
-      <Sidebar ativo="produtos" />
-
-      <section className="content" id="conteudo" tabIndex={-1}>
-        <header className="topbar">
+    <WorkspaceShell cabecalho={<header className="topbar">
           <div>
             <p className="eyebrow">Catálogo</p>
             <h1>Novo produto</h1>
@@ -134,7 +130,8 @@ export default function NovoProdutoPage() {
           <Link className="secondary-button" href="/produtos">
             Voltar para produtos
           </Link>
-        </header>
+        </header>}>
+
 
         <EdicaoProtegida><form className="product-form-stack cost-sheet-form" onSubmit={handleSubmit} noValidate>
           <section className="panel product-form">
@@ -326,7 +323,6 @@ export default function NovoProdutoPage() {
             </button>
           </div>
         </form></EdicaoProtegida>
-      </section>
-    </main>
+      </WorkspaceShell>
   );
 }

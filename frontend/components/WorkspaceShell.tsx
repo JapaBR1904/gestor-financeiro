@@ -5,17 +5,17 @@ import { useWorkspace } from "../lib/workspace";
 import { Icone } from "./Icone";
 import { ControlesVisuais } from "./PreferenciasProvider";
 import { BotaoCopiloto } from "./BotaoCopiloto";
+type Props = {
+  descricao?: string; acoes?: React.ReactNode; children: React.ReactNode;
+} & ({ titulo: string; cabecalho?: never } | { cabecalho: React.ReactElement; titulo?: never });
+
 export function WorkspaceShell({
   titulo,
+  cabecalho,
   descricao,
   acoes,
   children,
-}: {
-  titulo: string;
-  descricao?: string;
-  acoes?: React.ReactNode;
-  children: React.ReactNode;
-}) {
+}: Props) {
   const { usuario, config, erro } = useWorkspace();
   return (
     <main className="app-shell">
@@ -52,13 +52,13 @@ export function WorkspaceShell({
             </Link>
           </div>
         </div>
-        <header className="topbar">
+        {cabecalho ?? <header className="topbar">
           <div>
             <h1>{titulo}</h1>
             {descricao ? <p className="subtitle">{descricao}</p> : null}
           </div>
           {acoes}
-        </header>
+        </header>}
         <ControlesVisuais />
         {erro ? (
           <p className="form-error-banner" role="alert">

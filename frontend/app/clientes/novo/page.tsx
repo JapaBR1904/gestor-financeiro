@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Sidebar } from "../../../components/Sidebar";
+import { WorkspaceShell } from "../../../components/WorkspaceShell";
 import { formatarTelefone, salvarCliente } from "../../../lib/clientes";
 import { capitalizarPalavras } from "../../../lib/formatacao";
 
@@ -38,13 +38,11 @@ export default function NovoClientePage() {
   }
 
   return (
-    <main className="app-shell">
-      <Sidebar ativo="clientes" />
-      <section className="content" id="conteudo" tabIndex={-1}>
-        <header className="topbar">
+    <WorkspaceShell cabecalho={<header className="topbar">
           <div><p className="eyebrow">Relacionamento</p><h1>Novo cliente</h1><p className="subtitle">Cadastre os dados básicos do cliente com informações claras e padronizadas.</p></div>
           <Link className="secondary-button" href="/clientes">Voltar para clientes</Link>
-        </header>
+        </header>}>
+
 
         <form className="product-form-stack" onSubmit={handleSubmit}>
           <section className="panel product-form">
@@ -58,7 +56,6 @@ export default function NovoClientePage() {
           {erro ? <p className="form-error-banner" role="alert">{erro}</p> : null}
           <div className="form-actions standalone-actions"><Link className="secondary-button" href="/clientes">Cancelar</Link><button className="primary-button" type="submit" disabled={salvando}>{salvando ? "Salvando..." : "Cadastrar cliente"}</button></div>
         </form>
-      </section>
-    </main>
+      </WorkspaceShell>
   );
 }

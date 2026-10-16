@@ -146,7 +146,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         }
         data-role={estado.usuario?.papel ?? "carregando"}
       >
-        {!publico && aviso ? <p className="form-error-banner" role="status">{aviso} <button className="text-button" onClick={() => setAviso("")}>Entendi</button></p> : null}
+        {!publico && aviso ? <p className="permission-note" role="status">{aviso} <button className="text-button" onClick={() => setAviso("")}>Entendi</button></p> : null}
         {!publico && compartilhadoSuspenso ? (
           <WorkspaceShell
             titulo="Acesso compartilhado suspenso"

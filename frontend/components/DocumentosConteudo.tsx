@@ -11,6 +11,8 @@ import {
   listarDocumentos,
   removerDocumento,
 } from "../lib/documentos";
+import { usePreferencias } from "./PreferenciasProvider";
+import { TextoProtegidoIa } from "./TextoProtegidoIa";
 import { analisarDocumento, statusIa } from "../lib/ia";
 
 function tamanhoArquivo(bytes: number) {
@@ -21,6 +23,7 @@ function tamanhoArquivo(bytes: number) {
 }
 export function DocumentosConteudo() {
   const { config, usuario } = useWorkspace();
+  const { ocultarValores } = usePreferencias();
   const business = config?.plano === "business";
   const [documentos, setDocumentos] = useState<Documento[] | null>(null);
   const [erro, setErro] = useState("");
@@ -307,8 +310,9 @@ export function DocumentosConteudo() {
             )}
           </section>
           {analise ? (
-            <section className="product-form-panel" style={{ marginTop: 20 }}>
-              <h2>Leitura de {analise.nome}</h2>
+            <section className="product-form-panel" aria-label="Análise de documento" style={{ marginTop: 20 }}>
+              <h2>{ocultarValores ? "Leitura de documento" : `Leitura de ${analise.nome}`}</h2>
+              <p className="permission-note">Ocultar valores protege somente a exibição. Não altera o arquivo original nem revoga conteúdo já enviado à IA; o download mantém os dados originais.</p>
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -322,7 +326,7 @@ export function DocumentosConteudo() {
                   });
                 }}
               >
-                <label className="field">
+<TextoProtegidoIa tipo="pergunta" revelar="Revelar valores para editar">                <label className="field">
                   <span>O que você quer entender?</span>
                   <textarea
                     aria-label="O que você quer entender?"
@@ -331,7 +335,7 @@ export function DocumentosConteudo() {
                     value={pergunta}
                     onChange={(e) => setPergunta(e.target.value)}
                   />
-                </label>
+                </label></TextoProtegidoIa>
                 <label className="checkout-consent">
                   <input
                     type="checkbox"
@@ -351,7 +355,7 @@ export function DocumentosConteudo() {
                   </button>
                   <button
                     className="primary-button"
-                    disabled={ocupado || !autorizado}
+                    disabled={ocupado || !autorizado || !pergunta.trim()}
                   >
                     {ocupado ? "Analisando…" : "Analisar documento"}
                   </button>
@@ -363,7 +367,7 @@ export function DocumentosConteudo() {
                   style={{ whiteSpace: "pre-wrap", marginTop: 20 }}
                   role="status"
                 >
-                  {resposta}
+                  <TextoProtegidoIa tipo="resposta" revelar="Revelar valores para ler">{resposta}</TextoProtegidoIa>
                 </div>
               ) : null}
             </section>

@@ -4,7 +4,7 @@ import { useMoeda } from "../../../../components/PreferenciasProvider";
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Sidebar } from "../../../../components/Sidebar";
+import { WorkspaceShell } from "../../../../components/WorkspaceShell";
 import { EdicaoProtegida } from "../../../../components/EdicaoProtegida";
 import { atualizarProduto, calcularCustoIngrediente, calcularCustoProduto, carregarProduto, Produto, Unidade } from "../../../../lib/produtos";
 
@@ -160,26 +160,19 @@ export default function EditarProdutoPage() {
 
   if (carregando) {
     return (
-      <main className="app-shell">
-        <Sidebar ativo="produtos" />
-        <section className="content" id="conteudo" tabIndex={-1}>
+      <WorkspaceShell titulo="Produto">
           <article className="panel activity-panel">
             <div className="empty-state">
               <span className="empty-icon">P</span>
               <strong>Carregando produto para edição...</strong>
             </div>
           </article>
-        </section>
-      </main>
+        </WorkspaceShell>
     );
   }
 
   return (
-    <main className="app-shell">
-      <Sidebar ativo="produtos" />
-
-      <section className="content" id="conteudo" tabIndex={-1}>
-        <header className="topbar">
+    <WorkspaceShell cabecalho={<header className="topbar">
           <div>
             <p className="eyebrow">Catálogo</p>
             <h1>Editar produto</h1>
@@ -188,7 +181,8 @@ export default function EditarProdutoPage() {
           <Link className="secondary-button" href={`/produtos/${produtoId}`}>
             Voltar para ficha
           </Link>
-        </header>
+        </header>}>
+
 
         <EdicaoProtegida><form className="product-form-stack cost-sheet-form" onSubmit={handleSubmit} noValidate>
           <section className="panel product-form">
@@ -371,7 +365,6 @@ export default function EditarProdutoPage() {
             </button>
           </div>
         </form></EdicaoProtegida>
-      </section>
-    </main>
+      </WorkspaceShell>
   );
 }
