@@ -61,7 +61,7 @@ export function PrimeiroAcesso() {
   if (!usuario || !config || config.onboardingConcluido || usuario.papel === "membro" || dispensado) return null;
 
   async function escolher(perfil: PerfilUso) {
-    if (salvando) return;
+    if (!config || salvando) return;
     setSalvando(perfil);
     setErro("");
     try {
