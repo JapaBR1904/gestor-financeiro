@@ -36,16 +36,16 @@ export function useMoeda() {
   const { ocultarValores } = usePreferencias();
   return (valor: number | null) => valor === null ? "Custo não informado" : ocultarValores ? "R$ ••••••" : formatarMoeda(valor);
 }
-export function ControlesVisuais() {
+export function ControlesVisuais({ mostrarDetalhes = true }: { mostrarDetalhes?: boolean }) {
   const { detalhes, ocultarValores, alterar } = usePreferencias();
   return <div className="visual-preferences">
-    <div className="detail-preference">
+    {mostrarDetalhes ? <div className="detail-preference">
       <span className="visual-preferences-label">Detalhes do resumo</span>
       <div className="detail-switch" role="group" aria-label="Detalhes do resumo">
         <button type="button" aria-pressed={detalhes === "essencial"} onClick={() => alterar({ detalhes: "essencial" })}>Essencial</button>
         <button type="button" aria-pressed={detalhes === "completo"} onClick={() => alterar({ detalhes: "completo" })}>Completo</button>
       </div>
-    </div>
+    </div> : null}
     <button type="button" className="text-button privacy-toggle" aria-pressed={ocultarValores} onClick={() => alterar({ ocultarValores: !ocultarValores })}>{ocultarValores ? "Revelar valores" : "Ocultar valores"}</button>
   </div>;
 }

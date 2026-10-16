@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Sidebar } from "./Sidebar";
 import { useWorkspace } from "../lib/workspace";
 import { Icone } from "./Icone";
@@ -17,6 +18,7 @@ export function WorkspaceShell({
   acoes,
   children,
 }: Props) {
+  const caminho = usePathname();
   const { usuario, config, erro } = useWorkspace();
   return (
     <main className="app-shell">
@@ -61,7 +63,7 @@ export function WorkspaceShell({
           {acoes}
         </header>}
         <PrimeiroAcesso />
-        <ControlesVisuais />
+        <ControlesVisuais mostrarDetalhes={caminho === "/dashboard"} />
         {erro ? (
           <p className="form-error-banner" role="alert">
             {erro}{" "}
