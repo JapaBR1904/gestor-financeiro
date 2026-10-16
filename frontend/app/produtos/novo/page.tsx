@@ -15,8 +15,6 @@ type FormErrors = {
   preco?: string;
 };
 
-
-
 const ingredienteInicial: IngredienteEdicao = {
   id: "ingrediente-1",
   nome: "",
@@ -26,10 +24,6 @@ const ingredienteInicial: IngredienteEdicao = {
   quantidadeUsada: "",
   unidadeUso: "g",
 };
-
-
-
-
 
 export default function NovoProdutoPage() {
   const formatarMoeda = useMoeda();
@@ -111,7 +105,8 @@ export default function NovoProdutoPage() {
         custoEstimado,
       });
 
-      router.push("/produtos");
+      const origem = new URLSearchParams(window.location.search).get("origem");
+      router.push(origem === "onboarding" || origem === "venda" ? "/vendas/nova" : "/produtos");
     } catch (error) {
       setErroSalvar(error instanceof Error ? error.message : "Não foi possível salvar o produto.");
     } finally {

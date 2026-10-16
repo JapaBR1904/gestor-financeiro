@@ -5,6 +5,7 @@ import { useWorkspace } from "../lib/workspace";
 import { Icone } from "./Icone";
 import { ControlesVisuais } from "./PreferenciasProvider";
 import { BotaoCopiloto } from "./BotaoCopiloto";
+import { PrimeiroAcesso } from "./PrimeiroAcesso";
 type Props = {
   descricao?: string; acoes?: React.ReactNode; children: React.ReactNode;
 } & ({ titulo: string; cabecalho?: never } | { cabecalho: React.ReactElement; titulo?: never });
@@ -59,6 +60,7 @@ export function WorkspaceShell({
           </div>
           {acoes}
         </header>}
+        <PrimeiroAcesso />
         <ControlesVisuais />
         {erro ? (
           <p className="form-error-banner" role="alert">

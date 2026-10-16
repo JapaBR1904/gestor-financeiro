@@ -130,7 +130,7 @@ export default function NovaVendaPage() {
               <button className="secondary-button compact-button" type="button" onClick={adicionarItem}>+ Produto</button>
             </div>
 
-            {carregando ? <div className="empty-state"><strong>Carregando dados...</strong></div> : produtos.length === 0 ? <div className="empty-state"><strong>Nenhum produto ativo disponível</strong><p>Ative ou cadastre um produto antes de registrar uma venda.</p></div> : (
+            {carregando ? <div className="empty-state"><strong>Carregando dados...</strong></div> : produtos.length === 0 ? <div className="empty-state"><strong>Nenhum produto ativo disponível</strong><p>Cadastre seu primeiro produto antes de registrar a venda. Depois você volta direto para esta tela.</p><Link className="primary-button" href="/produtos/novo?origem=venda">Cadastrar primeiro produto</Link></div> : (
               <div className="ingredient-list">
                 {itens.map((item) => {
                   const produto = produtos.find((p) => String(p.id) === item.produtoId);
