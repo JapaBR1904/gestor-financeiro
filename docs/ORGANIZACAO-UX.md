@@ -40,9 +40,9 @@ Os bloqueios de Pro/Business continuam visuais e as rotas existentes foram prese
 
 ## A16 — Escopo de Essencial / Completo
 
-O seletor continua usando as preferências existentes, mas agora recebe o rótulo visível e acessível “Detalhes do resumo”. Isso evita sugerir que Essencial/Completo altera o produto inteiro. “Ocultar valores” permanece independente e ao lado do controle de detalhes.
+O seletor continua usando as preferências existentes, mas agora recebe o rótulo visível e acessível “Detalhes do resumo”. No workspace normal ele aparece somente no dashboard, onde essa preferência produz efeito visual direto; o onboarding ainda pode oferecê-lo ao preparar o resumo inicial.
 
-Nenhuma regra de plano, permissão ou persistência foi alterada.
+“Ocultar valores” permanece independente e continua disponível nas telas financeiras em que a preferência de privacidade já era oferecida. Nenhuma regra de plano, permissão ou persistência foi alterada.
 
 ## A17 — Hierarquia mobile
 
@@ -59,8 +59,8 @@ Foram atualizadas as expectativas da navegação existente e adicionado `fronten
 - primeiro acesso Pessoal, Negócio e Empresa;
 - usuário existente sem onboarding indevido;
 - venda vazia -> primeiro produto -> retorno para venda;
-- navegação Pessoal e Negócio/Empresa;
-- rótulo “Detalhes do resumo” e privacidade separada;
+- navegação Pessoal, Negócio e Empresa;
+- “Detalhes do resumo” restrito ao resumo e privacidade mantida separada;
 - 430, 390 e 360 px sem overflow e com números priorizados.
 
 A validação local recomendada, a partir de `frontend`, é:

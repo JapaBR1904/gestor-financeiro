@@ -83,6 +83,18 @@ test("organização UX: navegação negócio separa dia a dia, cadastros, análi
   await expect(menu.getByRole("link", { name: "Histórico comercial", exact: true })).toBeVisible();
 });
 
+test("organização UX: navegação empresa mantém operação, gestão e documentos", async ({ page }) => {
+  await page.route("**/api/saas", route => route.fulfill({ json: { ...(fixtures["/api/saas"] as object), perfilUso: "empresa", plano: "business" } }));
+  await page.goto("/dashboard");
+  const menu = page.locator(".sidebar .menu");
+  await expect(menu.getByRole("link", { name: "Movimentações", exact: true })).toBeVisible();
+  const gestao = menu.getByRole("button", { name: "Gestão", exact: true });
+  await gestao.click();
+  await expect(menu.getByRole("link", { name: "Espaço", exact: true })).toBeVisible();
+  await expect(menu.getByRole("link", { name: "Equipe", exact: true })).toBeVisible();
+  await expect(menu.getByRole("link", { name: "Documentos", exact: true })).toBeVisible();
+});
+
 test("organização UX: navegação pessoal prioriza dinheiro e planejamento", async ({ page }) => {
   await page.route("**/api/saas", route => route.fulfill({ json: { ...(fixtures["/api/saas"] as object), perfilUso: "pessoal" } }));
   await page.goto("/dashboard");
@@ -96,10 +108,13 @@ test("organização UX: navegação pessoal prioriza dinheiro e planejamento", a
   await expect(menu.getByRole("link", { name: "Análise do período", exact: true })).toBeVisible();
 });
 
-test("organização UX: seletor explica escopo do resumo e privacidade segue separada", async ({ page }) => {
+test("organização UX: detalhes pertencem ao resumo e privacidade continua global", async ({ page }) => {
   await page.goto("/dashboard");
   await expect(page.getByText("Detalhes do resumo", { exact: true })).toBeVisible();
   await expect(page.getByRole("group", { name: "Detalhes do resumo", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Ocultar valores", exact: true })).toBeVisible();
+  await page.goto("/pessoal");
+  await expect(page.getByRole("group", { name: "Detalhes do resumo", exact: true })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Ocultar valores", exact: true })).toBeVisible();
 });
 
