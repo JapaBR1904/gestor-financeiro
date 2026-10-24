@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { cadastrar, login } from "../lib/auth";
+import { cadastrar, login, disponibilidadeAutenticacao } from "../lib/auth";
 import { emailValido } from "../lib/formatacao";
 import { validarSenha } from "../lib/politica-senha";
 import AuthCard from "./AuthCard";
@@ -19,6 +19,9 @@ export default function AuthCredentialsForm({
   const router = useRouter();
   const trava = useRef(false);
   const [preparando, setPreparando] = useState(false);
+  const [pendente, setPendente] = useState(false);
+  const [manual, setManual] = useState<boolean | null>(null);
+  useEffect(() => { let ativo = true; disponibilidadeAutenticacao().then(config => { if (ativo) setManual(config.cadastroManualDisponivel === true); }).catch(() => { /* Capacidade desconhecida não promete envio de email. */ }); return () => { ativo = false; }; }, []);
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -46,7 +49,9 @@ export default function AuthCredentialsForm({
         const resultado = await cadastrar({ nome, email, senha, confirmacaoSenha: confirmacao });
         setSenha("");
         setConfirmacao("");
-        if (resultado.verificacaoEmailNecessaria !== false) {
+        if (resultado.aprovacaoManualNecessaria) {
+          setPendente(true);
+        } else if (resultado.verificacaoEmailNecessaria !== false) {
           router.replace(`/verificar-codigo?${new URLSearchParams({ email: email.trim() })}${fragmentoConvite()}`);
         } else {
           setPreparando(true);
@@ -73,6 +78,11 @@ export default function AuthCredentialsForm({
     }
   }
 
+  if (pendente) return <AuthCard titulo="Cadastro recebido" descricao="Seu acesso aguarda aprovação do responsável pelo Nexo.">
+    <p className="permission-note" role="status">Você já pode fechar esta página. Depois da liberação, entre com seu e-mail e senha. Nenhum código ou e-mail será enviado.</p>
+    <p className="subtitle">A aprovação libera o acesso, mas não confirma a posse do e-mail informado.</p>
+    <p className="auth-switch"><Link href="/login">Voltar para o login</Link></p>
+  </AuthCard>;
   return (
     <AuthCard
       titulo={cadastro ? "Criar conta" : "Bem-vindo de volta"}
@@ -161,7 +171,7 @@ export default function AuthCredentialsForm({
               : "Entrar"}
         </button>
       </form>
-      {!cadastro ? (
+      {!cadastro && manual === false ? (
         <p className="auth-switch">
           Falta confirmar seu e-mail?{" "}
           <Link href="/verificar-codigo">Verificar e-mail</Link>

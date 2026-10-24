@@ -31,7 +31,7 @@ class RecuperacaoAssistidaServiceTest {
         var pedido=solicitar(); var registro=codigos.findById(41L).orElseThrow();
         assertEquals("aguardando",service.consultar(pedido.prova()).estado()); assertFalse(registro.provaValida());
         var sessoes=mock(SessaoUsuarioRepository.class);
-        var auth=new AuthService(usuarios,codigos,sessoes,mock(br.com.nexo.organizacao.OrganizacaoService.class),mock(EmailCodigoService.class),mock(br.com.nexo.organizacao.MembroRepository.class),mock(ConfiguracaoCadastro.class));
+        var auth=new AuthService(usuarios,codigos,sessoes,mock(br.com.nexo.organizacao.OrganizacaoService.class),mock(EmailCodigoService.class),mock(br.com.nexo.organizacao.MembroRepository.class),mock(ConfiguracaoCadastro.class),mock(CadastroManualService.class));
         assertThrows(IllegalArgumentException.class,()->auth.redefinirSenha(pedido.prova(),"Senha-Segura-Teste123!","Senha-Segura-Teste123!"));
         verify(sessoes,never()).revogarDoUsuario(anyLong(),any());
         assertThrows(IllegalArgumentException.class,()->service.decidir(41L,true,false)); assertFalse(registro.provaValida());

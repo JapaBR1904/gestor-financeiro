@@ -44,7 +44,7 @@ async function requisicao<T>(caminho: string, dados?: unknown): Promise<T> {
 }
 
 export function cadastrar(dados: { nome: string; email: string; senha: string; confirmacaoSenha: string }) {
-  return requisicao<{ verificacaoEmailNecessaria: boolean; usuario?: UsuarioAutenticado }>("/cadastro", { ...dados, email: dados.email.trim(), nome: dados.nome.trim() });
+  return requisicao<{ verificacaoEmailNecessaria: boolean; aprovacaoManualNecessaria?: boolean; usuario?: UsuarioAutenticado }>("/cadastro", { ...dados, email: dados.email.trim(), nome: dados.nome.trim() });
 }
 
 export function login(email: string, senha: string): Promise<UsuarioAutenticado> {
@@ -82,7 +82,7 @@ export async function logout() {
 }
 
 export function disponibilidadeAutenticacao() {
-  return requisicao<{ recuperacaoPorEmailDisponivel: boolean }>("/disponibilidade");
+  return requisicao<{ recuperacaoPorEmailDisponivel: boolean; cadastroManualDisponivel?: boolean }>("/disponibilidade");
 }
 
 export type EstadoAssistido = { protocolo: number | null; estado: "ausente" | "aguardando" | "liberada" | "expirada" };

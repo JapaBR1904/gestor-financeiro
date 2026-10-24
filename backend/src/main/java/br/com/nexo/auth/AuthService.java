@@ -32,6 +32,7 @@ public class AuthService {
     private final EmailCodigoService emailCodigoService;
     private final br.com.nexo.organizacao.MembroRepository membros;
     private final ConfiguracaoCadastro configuracaoCadastro;
+    private final CadastroManualService cadastroManual;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
     public AuthService(
@@ -41,7 +42,7 @@ public class AuthService {
             OrganizacaoService organizacaoService,
             EmailCodigoService emailCodigoService,
             br.com.nexo.organizacao.MembroRepository membros,
-            ConfiguracaoCadastro configuracaoCadastro
+            ConfiguracaoCadastro configuracaoCadastro, CadastroManualService cadastroManual
     ) {
         this.usuarioRepository = usuarioRepository;
         this.codigoRepository = codigoRepository;
@@ -50,6 +51,7 @@ public class AuthService {
         this.emailCodigoService = emailCodigoService;
         this.membros = membros;
         this.configuracaoCadastro = configuracaoCadastro;
+        this.cadastroManual = cadastroManual;
     }
 
     @Transactional
@@ -62,6 +64,10 @@ public class AuthService {
         }
         Organizacao organizacao = organizacaoService.criar("Meu espaço");
         Usuario usuario = usuarioRepository.save(new Usuario(organizacao, nomeFormatado, email, encoder.encode(senha)));
+        if (cadastroManual.habilitado()) {
+            cadastroManual.solicitar(usuario.getId());
+            return new ResultadoCadastro(false, null, true);
+        }
         if (configuracaoCadastro.verificacaoEmailHabilitada()) {
             enviarCodigo(email, "verificacao_email", false);
             return new ResultadoCadastro(true, null);
@@ -140,7 +146,7 @@ public class AuthService {
             if (!bloqueado) usuario.registrarFalhaLogin();
             throw new IllegalArgumentException(ERRO_LOGIN);
         }
-        if (!usuario.emailVerificado()) throw new IllegalArgumentException("Confirme seu e-mail antes de entrar.");
+        if (!contaLiberada(usuario)) throw new IllegalArgumentException(cadastroManual.habilitado() ? "Seu cadastro ainda não foi aprovado. Aguarde a liberação pelo responsável." : "Confirme seu e-mail antes de entrar.");
         usuario.limparTentativasLogin();
         return criarSessao(usuario);
     }
@@ -199,6 +205,7 @@ public class AuthService {
     }
 
     private ResultadoAutenticacao criarSessao(Usuario usuario) {
+        if (!usuario.isAtivo() || !contaLiberada(usuario)) throw new IllegalArgumentException("Seu cadastro ainda não foi aprovado.");
         usuarioRepository.flush();
         membros.garantirOriginal(usuario.getId());
         var vinculo = membros.vinculo(usuario.getId(), usuario.getOrganizacao().getId());
@@ -220,7 +227,7 @@ public class AuthService {
         SessaoUsuario sessao = sessaoRepository.findByTokenHash(sha256(token))
                 .orElseThrow(() -> new IllegalArgumentException("Sessão inválida."));
         if (!sessao.valida()) throw new IllegalArgumentException("Sessão expirada. Entre novamente.");
-        if (!sessao.getUsuario().isAtivo() || !sessao.getUsuario().emailVerificado()) {
+        if (!sessao.getUsuario().isAtivo() || !contaLiberada(sessao.getUsuario())) {
             throw new IllegalArgumentException("Sessão inválida. Entre novamente.");
         }
         // Atualizar só o acesso, sem sobrescrever uma revogação concorrente.
@@ -298,7 +305,11 @@ public class AuthService {
         }
     }
 
-    public record ResultadoCadastro(boolean verificacaoEmailNecessaria, ResultadoAutenticacao autenticacao) {}
+    private boolean contaLiberada(Usuario usuario) { return cadastroManual.habilitado() ? cadastroManual.acessoPermitido(usuario.getId(),usuario.emailVerificado()) : usuario.emailVerificado(); }
+    public boolean cadastroManualHabilitado() { return cadastroManual.habilitado(); }
+    public record ResultadoCadastro(boolean verificacaoEmailNecessaria, ResultadoAutenticacao autenticacao, boolean aprovacaoManualNecessaria) {
+        public ResultadoCadastro(boolean verificacaoEmailNecessaria, ResultadoAutenticacao autenticacao) { this(verificacaoEmailNecessaria, autenticacao, false); }
+    }
     public record ResultadoAutenticacao(String token, UsuarioAutenticado usuario) {}
     public record UsuarioAutenticado(Long id, String nome, String email, String papel, Long organizacaoId, String organizacaoNome) {}
 }

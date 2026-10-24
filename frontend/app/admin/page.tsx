@@ -69,6 +69,7 @@ export default function AdminPage() {
           <div className="admin-local-actions"><button className="primary-button" disabled={ocupado || !confirmados[pedido.protocolo]} onClick={() => void decidir(pedido.protocolo, true)}>Liberar troca</button><button className="secondary-button" disabled={ocupado} onClick={() => void decidir(pedido.protocolo, false)}>Recusar solicitação</button></div>
         </article>)}</div>}
       </div>}
+    <p className="auth-switch"><Link href="/admin/cadastros">Aprovar cadastros</Link></p>
     <p className="auth-switch"><Link href="/login">Voltar ao login do Nexo</Link></p>
   </AuthCard>;
 }

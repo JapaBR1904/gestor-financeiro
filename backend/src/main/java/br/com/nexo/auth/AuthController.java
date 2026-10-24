@@ -43,12 +43,15 @@ public class AuthController {
     @GetMapping("/disponibilidade")
     public Map<String, Boolean> disponibilidade() {
         // Somente capacidade pública: não informa conta, destinatário ou configuração do transporte.
-        return Map.of("recuperacaoPorEmailDisponivel", !(emailProvider instanceof br.com.nexo.email.EmailDesabilitadoProvider));
+        return Map.of("recuperacaoPorEmailDisponivel", !(emailProvider instanceof br.com.nexo.email.EmailDesabilitadoProvider), "cadastroManualDisponivel", authService.cadastroManualHabilitado());
     }
 
     @PostMapping("/cadastro")
     public ResponseEntity<Map<String, Object>> cadastrar(@Valid @RequestBody CadastroRequest request) {
         var resultado = authService.cadastrar(request.nome(), request.email(), request.senha(), request.confirmacaoSenha());
+        if (resultado.aprovacaoManualNecessaria()) {
+            return ResponseEntity.accepted().body(Map.of("verificacaoEmailNecessaria",false,"aprovacaoManualNecessaria",true,"mensagem","Cadastro recebido. Aguarde a aprovação do responsável."));
+        }
         if (resultado.verificacaoEmailNecessaria()) {
             var resposta = new java.util.HashMap<>(codigoEnviado());
             resposta.put("verificacaoEmailNecessaria", true);
