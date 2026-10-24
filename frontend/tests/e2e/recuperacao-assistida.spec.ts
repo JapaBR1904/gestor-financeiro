@@ -71,5 +71,25 @@ test("suporte: painel e recuperação não oferecem acesso temporário fora do a
   await expect(page.getByRole("status")).toContainText("não está habilitado");
   await expect(page.getByLabel("Senha administrativa")).toHaveCount(0);
   await page.goto("/esqueci-senha");
-  await expect(page.getByRole("button", { name: "Enviar código de recuperação", exact: true })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Recuperação indisponível", exact: true })).toBeDisabled();
+});
+
+test("suporte: falha de rede informa erro e permite consultar novamente sem autorizar recuperação", async ({ page }) => {
+  let falha = true, posts = 0;
+  await page.route("**/api/**", route => {
+    if (route.request().method() === "POST") posts++;
+    if (falha) return route.abort();
+    return route.fulfill({ json: { disponivel: false, recuperacaoPorEmailDisponivel: false } });
+  });
+  await page.goto("/esqueci-senha");
+  await expect(page.locator(".form-error-banner [role=alert]")).toContainText("Não foi possível verificar");
+  await page.getByLabel("E-mail", { exact: true }).fill("pessoa@example.com");
+  await page.locator("form").dispatchEvent("submit");
+  expect(posts).toBe(0);
+  falha = false;
+  await page.getByRole("button", { name: "Tentar novamente", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Recuperação indisponível", exact: true })).toBeDisabled();
+  await expect(page.locator(".form-error-banner [role=alert]")).toHaveCount(0);
+  await expect(page.getByText(/enviaremos um código/)).toHaveCount(0);
+  expect(posts).toBe(0);
 });

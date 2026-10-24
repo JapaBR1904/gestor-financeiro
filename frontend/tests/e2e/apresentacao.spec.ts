@@ -7,6 +7,9 @@ test("apresentação: perfis por teclado, vídeo local e mobile sem acessar cont
   await page.route("**/api/**", (route) => { api++; return route.abort(); });
   await page.addInitScript(() => sessionStorage.setItem("nexo:brand-intro-seen", "1"));
   await page.goto("/");
+  await expect(page.getByText("Resultado do período", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("Saldo do mês", { exact: true })).toHaveCount(0);
+  expect(await page.locator(".landing-aurora, .demo-insight").evaluateAll(elements => elements.every(element => getComputedStyle(element).animationIterationCount !== "infinite"))).toBe(true);
   const seletor = page.getByRole("group", { name: "Escolha um perfil de demonstração" });
   await expect(seletor.getByRole("button", { name: "Para você", exact: true })).toHaveAttribute("aria-pressed", "true");
   const negocio = seletor.getByRole("button", { name: "Seu negócio", exact: true });

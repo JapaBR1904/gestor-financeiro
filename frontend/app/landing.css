@@ -907,10 +907,10 @@
     scroll-behavior: smooth;
   }
   .landing-aurora {
-    animation: landing-ambient 18s ease-in-out infinite alternate;
+    animation: landing-ambient 18s ease-in-out 1 alternate;
   }
   .demo-insight {
-    animation: landing-float 7s ease-in-out infinite alternate;
+    animation: landing-float 7s ease-in-out 1 alternate;
   }
   .landing-hero-copy,
   .landing-demo {

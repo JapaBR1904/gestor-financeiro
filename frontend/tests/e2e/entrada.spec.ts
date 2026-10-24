@@ -196,6 +196,8 @@ test("recuperação: transporte desabilitado informa indisponibilidade sem solic
         status: 200,
         json: { recuperacaoPorEmailDisponivel: false },
       });
+    if (route.request().url().endsWith("/api/auth/recuperacao/assistida/disponibilidade"))
+      return route.fulfill({ json: { disponivel: false } });
     if (route.request().method() === "POST") postagens++;
     return route.abort();
   });
@@ -206,7 +208,7 @@ test("recuperação: transporte desabilitado informa indisponibilidade sem solic
   await page.getByLabel("E-mail", { exact: true }).fill("pessoa@example.com");
   await expect(
     page.getByRole("button", {
-      name: "Enviar código de recuperação",
+      name: "Recuperação indisponível",
       exact: true,
     }),
   ).toBeDisabled();

@@ -16,18 +16,24 @@ export default function EsqueciSenhaPage() {
   const [assistida, setAssistida] = useState<boolean | null>(null);
   const [protocolo, setProtocolo] = useState<number | null>(null);
   const [mensagem, setMensagem] = useState("");
+  const [falhaConsulta, setFalhaConsulta] = useState(false);
+  const [tentativa, setTentativa] = useState(0);
+  function tentarNovamente() {
+    setFalhaConsulta(false); setDisponivel(null); setAssistida(null); setErro("");
+    setTentativa(valor => valor + 1);
+  }
   useEffect(() => {
     let ativo = true;
-    disponibilidadeAutenticacao().then(config => { if (ativo) setDisponivel(config.recuperacaoPorEmailDisponivel); }).catch(() => { if (ativo) setDisponivel(null); });
+    disponibilidadeAutenticacao().then(config => { if (ativo) setDisponivel(config.recuperacaoPorEmailDisponivel); }).catch(() => { if (ativo) setFalhaConsulta(true); });
     disponibilidadeAssistida().then(async config => {
       if (!ativo) return; setAssistida(config.disponivel);
       if (config.disponivel) {
         try { const estado = await consultarAssistida(); if (!ativo) return; if (estado.estado === "liberada") router.replace("/redefinir-senha"); else if (estado.estado === "aguardando") setProtocolo(estado.protocolo); }
-        catch { /* Ainda é possível fazer uma nova solicitação pelo formulário. */ }
+        catch { if (ativo) setFalhaConsulta(true); }
       }
-    }).catch(() => { if (ativo) setAssistida(false); });
+    }).catch(() => { if (ativo) setFalhaConsulta(true); });
     return () => { ativo = false; };
-  }, [router]);
+  }, [router, tentativa]);
   async function enviar(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (enviando || assistida === null || (!assistida && disponivel !== true)) return;
@@ -51,8 +57,12 @@ export default function EsqueciSenhaPage() {
     finally { setEnviando(false); }
   }
   return <AuthCard titulo={protocolo ? "Solicitação de recuperação" : "Esqueceu sua senha?"}
-    descricao={assistida ? "Peça ao responsável a confirmação da sua identidade para liberar a troca neste navegador, sem código ou e-mail." : "Se existir uma conta com este e-mail, enviaremos um código de recuperação."}>
+    descricao={assistida ? "Peça ao responsável a confirmação da sua identidade para liberar a troca neste navegador, sem código ou e-mail." : falhaConsulta ? "Confira a conexão e tente consultar as opções novamente." : disponivel === true ? "Se existir uma conta com este e-mail, enviaremos um código de recuperação." : assistida === false && disponivel === false ? "A recuperação está indisponível neste ambiente. Tente novamente mais tarde." : "Consultando as opções de recuperação disponíveis…"}>
     {disponivel === false && assistida === false ? <p role="status" className="form-error-banner">A recuperação por e-mail está indisponível neste ambiente. A recuperação assistida também precisa de um ambiente autorizado.</p> : null}
+    {falhaConsulta ? <div className="form-error-banner">
+      <p role="alert">Não foi possível verificar as opções de recuperação. Confira sua conexão e tente novamente.</p>
+      <button type="button" className="secondary-button" disabled={enviando} onClick={tentarNovamente}>Tentar novamente</button>
+    </div> : null}
     {erro ? <p className="form-error-banner" role="alert">{erro}</p> : null}
     {mensagem ? <p className="permission-note" role="status">{mensagem}</p> : null}
     {protocolo ? <section className="assisted-request" aria-label="Acompanhamento da recuperação">
@@ -62,7 +72,7 @@ export default function EsqueciSenhaPage() {
       <button className="primary-button auth-primary" disabled={enviando} onClick={() => void verificarLiberacao()}>{enviando ? "Verificando…" : "Verificar liberação"}</button>
     </section> : <form className="auth-form" onSubmit={enviar} noValidate aria-busy={enviando}>
       <label className="field"><span>E-mail</span><input aria-label="E-mail" type="email" autoComplete="email" required maxLength={180} value={email} onChange={e => { setEmail(e.target.value); setErro(""); }} /></label>
-      <button className="primary-button auth-primary" type="submit" disabled={enviando || assistida === null || (!assistida && disponivel !== true)}>{enviando ? "Solicitando..." : assistida ? "Solicitar recuperação assistida" : "Enviar código de recuperação"}</button>
+      <button className="primary-button auth-primary" type="submit" disabled={enviando || assistida === null || (!assistida && disponivel !== true)}>{enviando ? "Solicitando..." : assistida ? "Solicitar recuperação assistida" : assistida === false && disponivel === true ? "Enviar código de recuperação" : assistida === false && disponivel === false ? "Recuperação indisponível" : "Aguardando disponibilidade"}</button>
     </form>}
     <p className="auth-switch"><Link href="/login">← Voltar para o login</Link></p>
   </AuthCard>;

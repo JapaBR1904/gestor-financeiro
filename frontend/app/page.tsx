@@ -79,11 +79,11 @@ function Demonstracao() {
         </div>
         <div className="demo-balance">
           <div>
-            <span>Saldo do mês</span>
+            <span>Resultado do período</span>
             <strong>
               R$ 8.420<span>,00</span>
             </strong>
-            <small>Entradas menos saídas</small>
+            <small>Entradas menos saídas · não é saldo disponível</small>
           </div>
           <span className="demo-balance-icon">
             <Icone nome="fluxo" />
