@@ -1,0 +1,95 @@
+/* Profundidade e luz no workspace; dados e controles mantêm contraste sólido. */
+.app-shell {
+  background:
+    radial-gradient(ellipse at 95% 0, #22d3ee1f, transparent 42%),
+    radial-gradient(ellipse at 25% 10%, #2563eb15, transparent 50%),
+    linear-gradient(#2563eb04 1px, transparent 1px),
+    linear-gradient(90deg, #2563eb04 1px, transparent 1px),
+    var(--background);
+  background-size: auto, auto, 48px 48px, 48px 48px, auto;
+}
+.app-shell .sidebar {
+  background: radial-gradient(ellipse at 0 0, #124679, transparent 65%), var(--nav-bg);
+  border-right: 1px solid #42c6ed40;
+}
+.app-shell .sidebar::after { animation-iteration-count: 1; }
+.app-shell .workspace-bar {
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.app-shell .topbar h1 { letter-spacing: -.045em; }
+.app-shell :is(.panel, .summary-card, .product-totals) {
+  border-radius: 18px;
+  border-color: #b9cce4;
+  box-shadow: 0 4px 18px #12346308, inset 0 1px 0 #ffffff;
+}
+.app-shell .panel-header {
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.app-shell .finance-summary .summary-card {
+  border-top: 3px solid #60a5fa;
+  background: linear-gradient(135deg, #ffffff, #f5f9ff);
+}
+.app-shell .finance-summary .income-card { border-top-color: #15803d; }
+.app-shell .finance-summary .expense-card { border-top-color: #c2410c; }
+.app-shell .finance-summary .balance-card {
+  border-color: #236292;
+  border-top-color: #67e8f9;
+  background: radial-gradient(ellipse at 100% 0, #22d3ee30, transparent 65%), linear-gradient(130deg, #091d39, #143d67);
+  box-shadow: 0 8px 24px #0b315e24, inset 0 1px 0 #94e9ff33;
+}
+.app-shell :is(.primary-button, .secondary-button, .quick-action, .period-shortcuts button) {
+  transition: background .18s, border-color .18s, box-shadow .18s;
+}
+.app-shell .primary-button {
+  background: linear-gradient(120deg, #1d4ed8, #155eaa);
+  box-shadow: 0 3px 9px #1d4ed824, inset 0 1px 0 #ffffff33;
+}
+.app-shell :is(.sales-history-head, .product-list-head, .ingredient-detail-head, thead) {
+  background: linear-gradient(100deg, #edf3fc, #effbfe);
+  color: var(--ink);
+}
+.app-shell :is(.sales-history-row, .product-list-row, .ingredient-detail-row, tbody tr) {
+  transition: background .18s, box-shadow .18s;
+}
+.app-shell :is(button, a, input, select, textarea):focus-visible {
+  outline: 3px solid #1d4ed8;
+  outline-offset: 3px;
+}
+.app-shell :is(.sales-history-row, .product-list-row, .ingredient-detail-row, tbody tr):focus-within {
+  background: #eff6ff;
+  box-shadow: inset 3px 0 #2563eb;
+}
+@media (hover: hover) and (pointer: fine) {
+  .app-shell .primary-button:hover:not(:disabled) {
+    background: linear-gradient(120deg, #1e40af, #164e83);
+    box-shadow: 0 5px 16px #2563eb40, 0 0 0 3px #22d3ee20;
+  }
+  .app-shell :is(.secondary-button, .quick-action, .period-shortcuts button):hover:not(:disabled) {
+    border-color: #2563eb;
+    box-shadow: 0 4px 14px #2563eb18;
+  }
+  .app-shell :is(.sales-history-row, .product-list-row, .ingredient-detail-row, tbody tr):hover {
+    background: #eff6ff;
+    box-shadow: inset 3px 0 #2563eb;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-shell *, .app-shell *::before, .app-shell *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+@media (forced-colors: active) {
+  .app-shell, .app-shell .sidebar, .app-shell .finance-summary .summary-card {
+    background: Canvas;
+    color: CanvasText;
+  }
+  .app-shell :is(.panel, .summary-card, .primary-button) { border: 1px solid CanvasText; }
+}
+@media (max-width: 600px) {
+  .app-shell { background-size: auto, auto, 32px 32px, 32px 32px, auto; }
+  .app-shell :is(.panel, .summary-card) { border-radius: 14px; }
+}

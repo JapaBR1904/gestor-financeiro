@@ -19,6 +19,7 @@ import "./ambient.css";
 import "./adaptativa.css";
 import "./dashboard.css";
 import "./copiloto.css";
+import "./workspace-futuro.css";
 import { WorkspaceProvider } from "../components/WorkspaceProvider";
 
 const manrope = localFont({
