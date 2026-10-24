@@ -6,6 +6,8 @@ import { LandingMenu } from "../components/LandingMenu";
 import "./landing.css";
 import { LandingMotion } from "../components/LandingMotion";
 import { BrandReveal } from "../components/BrandReveal";
+import { ApresentacaoNexo } from "../components/ApresentacaoNexo";
+import "./apresentacao.css";
 
 export const metadata: Metadata = {
   title: "Nexo — Suas finanças, finalmente claras",
@@ -235,6 +237,7 @@ export default function HomePage() {
             <Demonstracao />
           </div>
         </section>
+        <ApresentacaoNexo />
         <section
           data-reveal
           id="como-funciona"
