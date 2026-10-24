@@ -1,0 +1,7 @@
+/* Filtros de apresentação: não calculam indicadores nem alteram registros. */
+.period-shortcuts { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 14px; }
+.period-shortcuts button { min-height:42px; padding:9px 16px; border:1px solid var(--border); border-radius:11px; background:var(--surface); color:var(--text-secondary); font:inherit; font-size:.78rem; font-weight:650; cursor:pointer; transition:background .18s,border-color .18s,box-shadow .18s; }
+.period-shortcuts button:hover:not(:disabled) { background:var(--surface-interactive); border-color:var(--border-strong); box-shadow:var(--shadow-sm); }
+.period-shortcuts button[aria-pressed=true] { color:var(--accent-ink); background:var(--accent-soft); border-color:var(--border-strong); }
+.period-shortcuts button:disabled { opacity:.65; cursor:wait; }
+@media(max-width:600px) { .period-shortcuts { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; margin-bottom:10px; } .period-shortcuts button { min-width:0; font-size:.72rem; padding:9px 7px; } }

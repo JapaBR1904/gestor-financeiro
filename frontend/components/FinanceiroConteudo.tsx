@@ -1,5 +1,6 @@
 "use client";
 import { PrimeirosPassos } from "./PrimeirosPassos";
+import { PeriodosRapidos } from "./PeriodosRapidos";
 import Link from "next/link";
 import { Icone } from "./Icone";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
@@ -200,6 +201,8 @@ export function FinanceiroConteudo({ pessoal = false }: { pessoal?: boolean }) {
         <p>{perfil === "pessoal" ? "Registre uma entrada ou gasto. Seu resultado é a diferença entre os dois, sem confundir com dinheiro disponível." : perfil === "empresa" ? "Confira o período e acompanhe quem registra, consulta e administra este espaço." : "Vendas registradas não comprovam recebimento. O resultado abaixo é entradas menos saídas; os custos dos produtos podem ser consultados nos relatórios."}</p></div>
         <nav aria-label="Atalhos do seu perfil">{perfil === "pessoal" ? <Link className="text-button" href="/metas">Suas metas →</Link> : perfil === "empresa" ? <><Link className="text-button" href="/equipe">Ver responsabilidades →</Link><Link className="text-button" href="/documentos">Documentos →</Link></> : <><Link className="text-button" href="/vendas/nova">Nova venda →</Link><Link className="text-button" href="/despesas/nova">Nova despesa →</Link></>}</nav>
       </section> : null}
+      {!pessoal ? <PeriodosRapidos atual={dados} desabilitado={carregando || ocupado || formulario}
+        selecionar={(escolhido) => { setCarregando(true); setDados(null); setPeriodo(escolhido); }} /> : null}
       <details className="period-details" open={pessoal || undefined}>
         <summary>{periodo ? "Período selecionado" : "Este mês"}{dados ? ` · ${new Date(`${dados.inicio}T12:00:00`).toLocaleDateString("pt-BR")} a ${new Date(`${dados.fim}T12:00:00`).toLocaleDateString("pt-BR")}` : ""}<span>Alterar período</span></summary>
       <form
