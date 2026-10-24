@@ -23,5 +23,11 @@ public interface CodigoAutenticacaoRepository extends JpaRepository<CodigoAutent
     @Query("update CodigoAutenticacao c set c.usadoEm = :agora, c.provaUsadaEm = :agora where lower(c.email) = lower(:email) and c.finalidade = 'recuperacao_senha'")
     void invalidarRecuperacoes(@Param("email") String email, @Param("agora") OffsetDateTime agora);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select c from CodigoAutenticacao c where c.id = :id")
+    Optional<CodigoAutenticacao> buscarAssistidaBloqueada(@Param("id") Long id);
+
+    @Query("select c from CodigoAutenticacao c where c.finalidade = 'recuperacao_senha' and c.provaHash is not null and c.usadoEm is null and c.provaUsadaEm is null and c.expiraEm > :agora and c.provaExpiraEm > :agora order by c.criadoEm asc")
+    java.util.List<CodigoAutenticacao> buscarAssistidasPendentes(@Param("agora") OffsetDateTime agora, org.springframework.data.domain.Pageable limite);
     long countByEmailIgnoreCaseAndCriadoEmAfter(String email, OffsetDateTime instante);
 }

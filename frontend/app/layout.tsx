@@ -6,6 +6,7 @@ import "./motion.css";
 import "./navigation.css";
 import "./features.css";
 import "./auth.css";
+import "./admin-local.css";
 import "./auth-suggestions.css";
 import "./tables.css";
 import "./refinement.css";

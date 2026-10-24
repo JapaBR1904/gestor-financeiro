@@ -48,7 +48,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       }
     }
   }, []);
-  const publico = caminho === "/" || /^\/(login|cadastro|verificar-codigo|esqueci-senha|redefinir-senha|recuperar-senha|convite)(\/|$)/.test(caminho);
+  const publico = caminho === "/" || /^\/(admin|login|cadastro|verificar-codigo|esqueci-senha|redefinir-senha|recuperar-senha|convite)(\/|$)/.test(caminho);
   useEffect(() => {
     if (publico) {
       suspenderContexto();

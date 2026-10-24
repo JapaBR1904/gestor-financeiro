@@ -76,6 +76,10 @@ public class CodigoAutenticacao {
         return "recuperacao_senha".equals(finalidade) && usado() && provaHash != null
                 && provaUsadaEm == null && OffsetDateTime.now().isBefore(provaExpiraEm);
     }
+    public boolean assistidaPendente() {
+        return "recuperacao_senha".equals(finalidade) && !usado() && !expirou() && provaHash != null
+                && provaUsadaEm == null && provaExpiraEm != null && OffsetDateTime.now().isBefore(provaExpiraEm);
+    }
     public void consumirProva() { provaUsadaEm = OffsetDateTime.now(); }
 
     public Long getId() { return id; }

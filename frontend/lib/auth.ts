@@ -84,3 +84,14 @@ export async function logout() {
 export function disponibilidadeAutenticacao() {
   return requisicao<{ recuperacaoPorEmailDisponivel: boolean }>("/disponibilidade");
 }
+
+export type EstadoAssistido = { protocolo: number | null; estado: "ausente" | "aguardando" | "liberada" | "expirada" };
+export function disponibilidadeAssistida() {
+  return requisicao<{ disponivel: boolean }>("/recuperacao/assistida/disponibilidade");
+}
+export function solicitarAssistida(email: string) {
+  return requisicao<{ protocolo: number }>("/recuperacao/assistida", { email: email.trim() });
+}
+export function consultarAssistida() {
+  return requisicao<EstadoAssistido>("/recuperacao/assistida");
+}

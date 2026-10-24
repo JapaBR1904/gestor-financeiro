@@ -283,13 +283,13 @@ public class AuthService {
         return resultado.toString();
     }
 
-    private String gerarTokenSeguro() {
+    static String gerarTokenSeguro() {
         byte[] bytes = new byte[32];
         RANDOM.nextBytes(bytes);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 
-    private String sha256(String valor) {
+    static String sha256(String valor) {
         try {
             byte[] hash = MessageDigest.getInstance("SHA-256").digest(valor.getBytes(StandardCharsets.UTF_8));
             return java.util.HexFormat.of().formatHex(hash);
