@@ -1,5 +1,5 @@
 export type PedidoAssistido = { protocolo: number; email: string; criadoEm: string };
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+import { API_URL } from "./origem-api";
 async function requisicao<T>(caminho: string, dados?: unknown): Promise<T> {
   let resposta: Response;
   try { resposta = await fetch(`${API_URL}/api/admin/local${caminho}`, {

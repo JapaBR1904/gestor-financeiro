@@ -1,4 +1,5 @@
-export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+import { API_URL } from "./origem-api";
+export { API_URL } from "./origem-api";
 import { ApiError } from "./api-error";
 import { CABECALHO_ORGANIZACAO, contextoDaRequisicao, contextoMudou, requerContexto } from "./contexto-organizacao";
 export { ApiError } from "./api-error";

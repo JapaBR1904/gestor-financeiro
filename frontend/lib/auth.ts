@@ -9,7 +9,7 @@ export type UsuarioAutenticado = {
   papel: string;
 };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+import { API_URL } from "./origem-api";
 
 class ErroAutenticacao extends Error {
   constructor(mensagem: string, readonly status: number) { super(mensagem); }
